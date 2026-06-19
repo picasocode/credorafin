@@ -13,8 +13,8 @@ interface Step {
 
 const steps: Step[] = [
   { id: 1, title: "Understand Requirement", desc: "Listen to business needs.", icon: Search },
-  { id: 2, title: "Financial Assessment", desc: "Deep-Dive into Financials", icon: ClipboardList },
-  { id: 3, title: "Pre-Underwriting", desc: "Strengthen application.", icon: FileText },
+  { id: 2, title: "Financial Assessment", desc: "Deep-Dive into Your Financials and Credit Profile", icon: ClipboardList },
+  { id: 3, title: "Pre-Underwriting", desc: "We analyse and strengthen your application.", icon: FileText },
   { id: 4, title: "Lender Mapping", desc: "Match profile.", icon: Target },
   { id: 5, title: "Proposal Structuring", desc: "Professional proposal.", icon: Rocket },
   { id: 6, title: "Sanction & Disbursal", desc: "Faster approval.", icon: CheckCircle },

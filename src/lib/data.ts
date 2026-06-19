@@ -363,7 +363,7 @@ export const services: ServiceData[] = [
       { q: "Why should I do pre-underwriting instead of applying directly?", a: "Direct applications have ~30% approval rate because most aren't prepared properly. Pre-underwriting increases this to ~85% by fixing issues before submission, identifying the right lenders, and structuring your application professionally." },
       { q: "How long does the pre-underwriting process take?", a: "Typically 3–7 business days depending on the complexity of your financial profile and the number of documents to review." },
       { q: "What issues do you typically find during pre-underwriting?", a: "Common issues include: fund utilization not matching business narrative, excessive credit enquiries, DTI ratio issues, incomplete documentation, and mismatch between profile and lender criteria." },
-      { q: "Do you guarantee loan approval after pre-underwriting?", a: "95% approval rate and some other application factor may get delayed loan approvals." },
+      { q: "Do you guarantee loan approval after pre-underwriting?", a: "While we significantly improve approval chances, no one can guarantee approval as the final decision rests with the lender. However, our pre-underwritten applications have an 95% approval rate and some other application factor may get delayed loan approvals." },
       { q: "Is pre-underwriting useful for loan renewal or top-up?", a: "Absolutely. Pre-underwriting for renewals and top-ups helps ensure you get the best available terms and that your current financial position is presented optimally." },
     ],
     stats: [
@@ -411,7 +411,7 @@ export const services: ServiceData[] = [
     stats: [
       { label: "Lender Network", value: "70", suffix: "+" },
       { label: "Single Point of Contact", value: "1", suffix: "" },
-      { label: "Avg TAT", value: "3-14", suffix: " days" },
+      { label: "Avg TAT", value: "3–14", suffix: " days" },
       { label: "Client Satisfaction", value: "98", suffix: "%" },
     ],
   },

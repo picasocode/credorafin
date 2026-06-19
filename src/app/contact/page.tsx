@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Phone,
@@ -180,21 +179,9 @@ export default function ContactPage() {
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
       {/* ═══════════════════════════════════════
-          PAGE HERO — With background image
+          PAGE HERO — Clean background (office image removed per content spec, June 2026)
           ═══════════════════════════════════════ */}
       <section className="bg-[#F0F4FF] pt-16 md:pt-24 pb-16 md:pb-20 relative overflow-hidden">
-        {/* Background image with overlay */}
-        <div className="absolute inset-0">
-          <Image
-            src="/images/pages/contact-hero.png"
-            alt="Modern office building"
-            fill
-            sizes="100vw"
-            className="object-cover opacity-[0.07]"
-            priority
-          />
-        </div>
-
         {/* Animated gradient border at top */}
         <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden">
           <motion.div
