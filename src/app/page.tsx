@@ -794,8 +794,8 @@ function KeyNumbersSection() {
    ──────────────────────────────────────────── */
 const processSteps = [
   { icon: Search, title: "Understand Requirement", num: "01", color: "#304AC0", desc: "We listen to your business needs and funding goals." },
-  { icon: FileText, title: "Financial Assessment", num: "02", color: "#13277E", desc: "Deep-Dive into Your Financials and Capitalisation and Credit Profile" },
-  { icon: ShieldCheck, title: "Pre-Underwriting", num: "03", color: "#1C1D62", desc: "We prepare and strengthen your application." },
+  { icon: FileText, title: "Financial Assessment", num: "02", color: "#13277E", desc: "Deep-Dive into Your Financials and Credit Profile" },
+  { icon: ShieldCheck, title: "Pre-Underwriting", num: "03", color: "#1C1D62", desc: "We analyse and strengthen your application." },
   { icon: MapPin, title: "Lender Mapping", num: "04", color: "#304AC0", desc: "Match your profile to the best-fit lenders." },
   { icon: FileCheck, title: "Proposal Structuring", num: "05", color: "#13277E", desc: "Professional proposal positioned for approval." },
   { icon: Banknote, title: "Sanction & Disbursal", num: "06", color: "#1C1D62", desc: "Faster approval with managed follow-ups." },

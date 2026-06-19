@@ -187,16 +187,24 @@ export default function FundRaisingPage() {
       <section className="py-14 md:py-18 bg-white border-b border-[#E8ECF0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <StaggerParent className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {service.stats?.map((stat, idx) => (
-              <StaggerChild key={idx}>
-                <motion.div className="h-full flex flex-col min-h-[120px] text-center p-6 rounded-xl border border-[#E8ECF0] bg-[#FAFBFF] transition-all duration-300 cursor-default" whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(28,29,98,0.12)" }}>
-                  <div className="text-3xl sm:text-4xl font-bold mb-1" style={{ color: service.color }}>
-                    <CountUp target={parseInt(stat.value.replace(/[^0-9]/g, "")) || 0} suffix={stat.suffix || ""} />
-                  </div>
-                  <p className="text-sm text-[#718096] font-medium">{stat.label}</p>
-                </motion.div>
-              </StaggerChild>
-            ))}
+            {service.stats?.map((stat, idx) => {
+              const numericValue = parseInt(stat.value.replace(/[^0-9]/g, ""), 10);
+              const isNumeric = /^\d+$/.test(stat.value.trim());
+              return (
+                <StaggerChild key={idx}>
+                  <motion.div className="h-full flex flex-col min-h-[120px] text-center p-6 rounded-xl border border-[#E8ECF0] bg-[#FAFBFF] transition-all duration-300 cursor-default" whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(28,29,98,0.12)" }}>
+                    <div className="text-3xl sm:text-4xl font-bold mb-1" style={{ color: service.color }}>
+                      {isNumeric ? (
+                        <CountUp target={numericValue || 0} suffix={stat.suffix || ""} />
+                      ) : (
+                        <span className="tabular-nums">{stat.value}{stat.suffix || ""}</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-[#718096] font-medium">{stat.label}</p>
+                  </motion.div>
+                </StaggerChild>
+              );
+            })}
           </StaggerParent>
         </div>
       </section>
