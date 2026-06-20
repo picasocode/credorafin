@@ -1,11 +1,62 @@
 import type { Metadata } from "next";
+import { SITE, ogImage } from "@/lib/seo";
+import { PageSchema } from "@/components/PageSchema";
 
 export const metadata: Metadata = {
-  title: "EMI Calculator — Calculate Your Loan EMI & Amortization Schedule",
-  description: "Free EMI calculator to plan your loan repayment. View detailed amortization schedules with month-by-month principal and interest breakup for business loans, MSME loans, and more.",
-  keywords: ["EMI Calculator", "Loan EMI", "Amortization Schedule", "Business Loan Calculator", "MSME Loan EMI"],
+  title: "EMI Calculator — Calculate Loan EMI & Amortization Schedule",
+  description:
+    "Free EMI calculator to plan your loan repayment. View detailed amortization schedules with month-by-month principal and interest breakup for business loans, MSME loans, and more.",
+  keywords: [
+    "EMI Calculator",
+    "Loan EMI",
+    "Amortization Schedule",
+    "Business Loan Calculator",
+    "MSME Loan EMI",
+    "Loan Repayment Calculator India",
+    "Interest Calculator",
+  ],
+  alternates: { canonical: "/emi-calculator" },
+  openGraph: {
+    type: "website",
+    locale: SITE.localeOg,
+    url: "/emi-calculator",
+    siteName: SITE.name,
+    title: "EMI Calculator — Calculate Your Loan EMI",
+    description:
+      "Free EMI calculator with detailed amortization schedule for business loans.",
+    images: [
+      {
+        url: ogImage("emi-calculator"),
+        width: 1200,
+        height: 630,
+        alt: "EMI Calculator — Credora Fintech",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: `@${SITE.twitterHandle}`,
+    creator: `@${SITE.twitterHandle}`,
+    title: "EMI Calculator — Plan Your Loan Repayment",
+    description: "Free EMI calculator with amortization schedule. Try it now.",
+    images: [ogImage("emi-calculator")],
+  },
 };
 
 export default function EMICalculatorLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <>{children}</>;
+  return (
+    <>
+      <PageSchema
+        name="EMI Calculator"
+        description="Free EMI calculator to plan your loan repayment with detailed amortization schedule."
+        path="/emi-calculator"
+        breadcrumbs={[
+          { name: "Home", path: "/" },
+          { name: "EMI Calculator", path: "/emi-calculator" },
+        ]}
+      />
+      {children}
+    </>
+  );
 }
