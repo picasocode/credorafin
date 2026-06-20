@@ -10,7 +10,7 @@
 
 export const SITE = {
   /** Production origin — no trailing slash. */
-  url: "https://credorafin.vercel.app",
+  url: "https://credorafin.com",
   name: "Credora Fintech",
   legalName: "Credora Fintech Pvt Ltd",
   tagline: "Enrich Your Cashflow",
@@ -30,7 +30,7 @@ export const CONTACT = {
   phone: "+91 93448 99971",
   phoneE164: "+919344899971",
   email: "info@credorafin.com",
-  website: "https://credorafin.vercel.app",
+  website: "https://credorafin.com",
   /** Chennai office — Anna Nagar West Extension. */
   address: {
     street: "1157, 17th Street, Anna Nagar West Extension, Padi",
