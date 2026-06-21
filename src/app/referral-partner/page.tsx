@@ -204,11 +204,9 @@ export default function ReferralPartnerPage() {
   const validateForm = () => {
     const errors: Record<string, string> = {};
     if (!formData.fullName.trim()) errors.fullName = "Full name is required";
-    if (!formData.email.trim()) errors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = "Invalid email address";
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = "Invalid email address";
     if (!formData.phone.trim()) errors.phone = "Phone number is required";
     else if (!/^\d{10}$/.test(formData.phone.replace(/\s/g, ""))) errors.phone = "Enter a valid 10-digit phone number";
-    if (!formData.businessType) errors.businessType = "Business type is required";
     if (!formData.city.trim()) errors.city = "City is required";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -956,7 +954,7 @@ export default function ReferralPartnerPage() {
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-[#2D3748] text-sm font-medium">
-                        Email Address <span className="text-red-500">*</span>
+                        Email Address <span className="text-[#718096] font-normal">(optional)</span>
                       </Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#718096]" />
@@ -1007,7 +1005,7 @@ export default function ReferralPartnerPage() {
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="businessType" className="text-[#2D3748] text-sm font-medium">
-                        Business Type / Profession <span className="text-red-500">*</span>
+                        Business Type / Profession <span className="text-[#718096] font-normal">(optional)</span>
                       </Label>
                       <Select
                         value={formData.businessType}

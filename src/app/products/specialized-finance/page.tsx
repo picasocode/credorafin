@@ -200,7 +200,7 @@ export default function SpecializedFinancePage() {
                         <SIcon className="w-6 h-6" style={{ color: accent }} />
                       </div>
                       <div className="text-2xl sm:text-3xl font-bold" style={{ color: accent }}>
-                        <CountUp target={parseInt(stat.value.replace(/[^0-9]/g, "")) || 0} suffix={stat.suffix || ""} prefix={stat.value.match(/^[^0-9]*/)?.[0] || ""} />
+                        {/\d/.test(stat.value) ? (<CountUp target={parseInt(stat.value.replace(/[^0-9]/g, "")) || 0} suffix={stat.suffix || ""} prefix={stat.value.match(/^[^0-9]*/)?.[0] || ""} />) : (<span>{stat.value}{stat.suffix || ""}</span>)}
                       </div>
                       <div className="text-sm text-[#718096] mt-1 font-medium">{stat.label}</div>
                     </motion.div>

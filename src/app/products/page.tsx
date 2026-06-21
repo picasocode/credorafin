@@ -72,10 +72,10 @@ const totalSubProducts = products.reduce((acc, p) => acc + p.products.length, 0)
 // Comparison data for the table
 const comparisonData = [
   { feature: "Collateral", msme: "Optional (CGTMSE)", scf: "Invoice-backed", cb: "Trade docs", pf: "Project assets", spec: "Case-specific" },
-  { feature: "Tenure", msme: "1–7 years", scf: "30–180 days", cb: "60–365 days", pf: "2–15 years", spec: "Varies" },
-  { feature: "Typical Amount", msme: "₹5L – ₹5Cr", scf: "₹10L – ₹50Cr", cb: "₹50L – ₹100Cr", pf: "₹1Cr – ₹200Cr", spec: "Custom" },
-  { feature: "Disbursal Speed", msme: "7–14 days", scf: "24–72 hrs", cb: "3–10 days", pf: "15–45 days", spec: "Case-specific" },
-  { feature: "Balance Sheet Impact", msme: "On", scf: "Off-balance sheet option", cb: "On", pf: "On", spec: "Varies" },
+  { feature: "Tenure", msme: "1–10 years", scf: "30–120 days", cb: "30–120 days", pf: "Upto 10 years", spec: "Varies" },
+  { feature: "Typical Amount", msme: "₹5L – ₹5Cr", scf: "₹50L – ₹50Cr", cb: "100k USD to 2M USD", pf: "₹1Cr – ₹100Cr", spec: "Custom" },
+  { feature: "Disbursal Speed", msme: "3–14 days", scf: "12–24 hr", cb: "12–24 hr", pf: "15–45 days", spec: "Case-specific" },
+  { feature: "Balance Sheet Impact", msme: "Yes", scf: "Off-balance sheet option", cb: "Yes", pf: "Yes", spec: "Varies" },
 ];
 
 export default function ProductsPage() {
@@ -133,7 +133,7 @@ export default function ProductsPage() {
                   <div className="text-2xl sm:text-3xl font-bold text-[#1C1D62]">
                     <AnimatedCounter target={5} />
                   </div>
-                  <div className="text-xs sm:text-sm text-[#718096] font-medium uppercase tracking-wider">Products</div>
+                  <div className="text-xs sm:text-sm text-[#718096] font-medium uppercase tracking-wider">main products</div>
                 </div>
               </div>
               <div className="w-px h-12 bg-[#E8ECF0] hidden sm:block" />
@@ -174,8 +174,6 @@ export default function ProductsPage() {
           >
             {products.map((product) => {
               const IconComponent = iconMap[product.icon];
-              const maxProducts = 10;
-              const progress = (product.products.length / maxProducts) * 100;
               return (
                 <StaggerItem key={product.slug}>
                   <HoverCard className="h-full">
@@ -251,22 +249,6 @@ export default function ProductsPage() {
                           <p className="text-sm text-[#718096] leading-relaxed mb-5 flex-1">
                             {truncateText(product.fullDesc, 140)}
                           </p>
-
-                          {/* Products Inside count with mini progress bar */}
-                          <div className="mb-4">
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-xs font-semibold text-[#2D3748] uppercase tracking-wider">Products Inside</span>
-                              <span className="text-xs font-bold" style={{ color: product.color }}>
-                                {product.products.length}/{maxProducts}
-                              </span>
-                            </div>
-                            <div className="w-full h-1.5 bg-[#E8ECF0] rounded-full overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all duration-700"
-                                style={{ width: `${progress}%`, backgroundColor: product.color }}
-                              />
-                            </div>
-                          </div>
 
                           {/* Benefits Count */}
                           {product.benefits.length > 0 && (
