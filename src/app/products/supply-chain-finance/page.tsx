@@ -201,7 +201,7 @@ export default function SupplyChainFinancePage() {
                         <SIcon className="w-6 h-6" style={{ color: accent }} />
                       </div>
                       <div className="text-2xl sm:text-3xl font-bold" style={{ color: accent }}>
-                        <CountUp target={parseInt(stat.value.replace(/[^0-9]/g, "")) || 0} suffix={stat.suffix || ""} prefix={stat.value.match(/^[^0-9]*/)?.[0] || ""} />
+                        {/\d/.test(stat.value) ? (<CountUp target={parseInt(stat.value.replace(/[^0-9]/g, "")) || 0} suffix={stat.suffix || ""} prefix={stat.value.match(/^[^0-9]*/)?.[0] || ""} />) : (<span>{stat.value}{stat.suffix || ""}</span>)}
                       </div>
                       <div className="text-sm text-[#718096] mt-1 font-medium">{stat.label}</div>
                     </motion.div>
@@ -229,7 +229,7 @@ export default function SupplyChainFinancePage() {
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">
               {[
                 { icon: FileText, label: "Invoice", sub: "Convert receivables", color: accent },
-                { icon: DollarSign, label: "Immediate Cash", sub: "Liquidity in 24–72 hrs", color: accent },
+                { icon: DollarSign, label: "Immediate Cash", sub: "Liquidity in 12–24 hrs", color: accent },
                 { icon: Settings, label: "Operations", sub: "Fund business growth", color: accent },
                 { icon: Truck, label: "New Invoices", sub: "Cycle continues", color: "#87B73C" },
               ].map((step, idx, arr) => (
@@ -320,7 +320,7 @@ export default function SupplyChainFinancePage() {
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-[#1C1D62]">Product Offerings</h2>
             </div>
-            <p className="text-[#718096] mb-10 ml-12 max-w-2xl">A full suite of supply chain finance products designed to unlock working capital at every stage of your business cycle.</p>
+            <p className="text-[#718096] mb-10 ml-12 max-w-2xl">A full suite of supply chain finance products designed to unlock working capital at every stage of your working cycle.</p>
           </SectionReveal>
           <div className="space-y-4">
             {product.products.map((item, idx) => {

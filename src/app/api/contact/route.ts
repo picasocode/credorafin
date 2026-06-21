@@ -16,9 +16,9 @@ export async function POST(request: Request) {
       message,
     } = body;
 
-    if (!name || !phone || !email) {
+    if (!name || !phone) {
       return NextResponse.json(
-        { error: "Name, phone, and email are required." },
+        { error: "Name and phone are required." },
         { status: 400 }
       );
     }

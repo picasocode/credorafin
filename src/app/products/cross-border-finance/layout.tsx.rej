@@ -1,0 +1,64 @@
+diff a/src/app/products/cross-border-finance/layout.tsx b/src/app/products/cross-border-finance/layout.tsx	(rejected hunks)
+@@ -1,16 +1,55 @@
+ import type { Metadata } from "next";
++import { SITE, ogImage } from "@/lib/seo";
++import { ProductSeo } from "@/components/ProductSeo";
+ 
+ export const metadata: Metadata = {
+-  title: "Cross Border Finance — Credora Fintech",
+-  description: "Specialized trade finance for exporters and importers. Export finance, pre-shipment & post-shipment finance, import finance — manage orders, production and receivables across borders.",
+-  keywords: "cross border finance India, export finance, pre-shipment finance, post-shipment finance, import finance, trade finance India, international trade funding",
++  title: "Cross Border Finance — Export & Import Funding | Credora",
++  description:
++    "Specialized trade finance for exporters and importers. Export finance, pre-shipment & post-shipment finance, import finance — manage orders, production and receivables across borders.",
++  keywords: [
++    "cross border finance India",
++    "export finance",
++    "pre-shipment finance",
++    "post-shipment finance",
++    "import finance",
++    "trade finance India",
++    "international trade funding",
++    "export credit India",
++  ],
++  alternates: { canonical: "/products/cross-border-finance" },
+   openGraph: {
+-    title: "Cross Border Finance — Fund Your International Trade",
+-    description: "Comprehensive trade finance solutions for exporters and importers. Manage the entire trade cycle efficiently.",
+     type: "website",
++    locale: SITE.localeOg,
++    url: "/products/cross-border-finance",
++    siteName: SITE.name,
++    title: "Cross Border Finance — Fund Your International Trade",
++    description:
++      "Comprehensive trade finance solutions for exporters and importers. Manage the entire trade cycle efficiently.",
++    images: [
++      {
++        url: ogImage("cross-border-finance"),
++        width: 1200,
++        height: 630,
++        alt: "Cross Border Finance — Credora Fintech",
++        type: "image/png",
++      },
++    ],
++  },
++  twitter: {
++    card: "summary_large_image",
++    site: `@${SITE.twitterHandle}`,
++    creator: `@${SITE.twitterHandle}`,
++    title: "Cross Border Finance — Export & Import Funding",
++    description: "Pre-shipment, post-shipment & import finance. Manage the full trade cycle.",
++    images: [ogImage("cross-border-finance")],
+   },
+ };
+ 
+ export default function CrossBorderFinanceLayout({ children }: { children: React.ReactNode }) {
+-  return children;
+-}
++    return (
++      <>
++        <ProductSeo slug="cross-border-finance" />
++        {children}
++      </>
++    );
++  }

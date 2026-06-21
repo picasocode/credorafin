@@ -1,0 +1,203 @@
+From b3a36ac21539fc489f226425d63a9e3966a7ef68 Mon Sep 17 00:00:00 2001
+From: Credora QA Bot <credora-qa@picasocode>
+Date: Fri, 19 Jun 2026 11:34:40 +0000
+Subject: [PATCH] fix: apply remaining content updates from June 2026 spec
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+5 outstanding fixes from the Credora Website Content Changes PDF:
+
+1. HOME — FluidTimeline Step 02 body
+   'Deep-Dive into Financials' -> 'Deep-Dive into Your Financials and Credit Profile'
+
+2. HOME — FluidTimeline Step 03 body
+   'Strengthen application.' -> 'We analyse and strengthen your application.'
+
+3. FUND RAISING — Avg TAT stat was rendering as '314 days' because the
+   CountUp renderer stripped the en-dash via parseInt(value.replace(/[^0-9]/g,'')).
+   Fix: update data to use en-dash '3-14' -> '3–14', and update the
+   stat renderer on the fund-raising page to detect non-numeric stat values
+   and render them verbatim (no animation) instead of forcing parseInt.
+
+4. PRE-UNDERWRITING — FAQ answer for 'Do you guarantee loan approval?'
+   was missing its opening context sentence. Restored full sentence:
+   'While we significantly improve approval chances, no one can guarantee
+   approval as the final decision rests with the lender. However, our
+   pre-underwritten applications have an 95% approval rate and some other
+   application factor may get delayed loan approvals.'
+
+5. CONTACT — Removed the office-building hero image entirely (per spec)
+   along with its now-unused next/image import.
+
+Also fixed the same Step 02 / Step 03 strings in two parallel but unused
+data sources (HomeProcessTimeline.tsx, page.tsx processSteps) for
+consistency, including removing an extraneous 'Capitalisation' word that
+had slipped into the Step 02 description.
+
+TypeScript type check passes for all modified files.
+---
+ .gitignore                             |  2 +-
+ src/app/contact/page.tsx               | 15 +-------------
+ src/app/page.tsx                       |  4 ++--
+ src/app/services/fund-raising/page.tsx | 28 +++++++++++++++++---------
+ src/components/FluidTimeline.tsx       |  4 ++--
+ src/components/HomeProcessTimeline.tsx |  4 ++--
+ src/lib/data.ts                        |  4 ++--
+ 7 files changed, 28 insertions(+), 33 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index 43d8678..18cc130 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -21,4 +21,4 @@ build/
+ 
+ # OS files
+ .DS_Store
+-Thumbs.db
+\ No newline at end of file
++Thumbs.dbtsconfig.tsbuildinfo
+diff --git a/src/app/contact/page.tsx b/src/app/contact/page.tsx
+index 5717f6f..d7a1f90 100644
+--- a/src/app/contact/page.tsx
++++ b/src/app/contact/page.tsx
+@@ -2,7 +2,6 @@
+ 
+ import React, { useState } from "react";
+ import Link from "next/link";
+-import Image from "next/image";
+ import { motion } from "framer-motion";
+ import {
+   Phone,
+@@ -180,21 +179,9 @@ export default function ContactPage() {
+       transition={{ duration: 0.4, ease: "easeOut" }}
+     >
+       {/* ═══════════════════════════════════════
+-          PAGE HERO — With background image
++          PAGE HERO — Clean background (office image removed per content spec, June 2026)
+           ═══════════════════════════════════════ */}
+       <section className="bg-[#F0F4FF] pt-16 md:pt-24 pb-16 md:pb-20 relative overflow-hidden">
+-        {/* Background image with overlay */}
+-        <div className="absolute inset-0">
+-          <Image
+-            src="/images/pages/contact-hero.png"
+-            alt="Modern office building"
+-            fill
+-            sizes="100vw"
+-            className="object-cover opacity-[0.07]"
+-            priority
+-          />
+-        </div>
+-
+         {/* Animated gradient border at top */}
+         <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden">
+           <motion.div
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index e9a1840..6c908e4 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -794,8 +794,8 @@ function KeyNumbersSection() {
+    ──────────────────────────────────────────── */
+ const processSteps = [
+   { icon: Search, title: "Understand Requirement", num: "01", color: "#304AC0", desc: "We listen to your business needs and funding goals." },
+-  { icon: FileText, title: "Financial Assessment", num: "02", color: "#13277E", desc: "Deep-Dive into Your Financials and Capitalisation and Credit Profile" },
+-  { icon: ShieldCheck, title: "Pre-Underwriting", num: "03", color: "#1C1D62", desc: "We prepare and strengthen your application." },
++  { icon: FileText, title: "Financial Assessment", num: "02", color: "#13277E", desc: "Deep-Dive into Your Financials and Credit Profile" },
++  { icon: ShieldCheck, title: "Pre-Underwriting", num: "03", color: "#1C1D62", desc: "We analyse and strengthen your application." },
+   { icon: MapPin, title: "Lender Mapping", num: "04", color: "#304AC0", desc: "Match your profile to the best-fit lenders." },
+   { icon: FileCheck, title: "Proposal Structuring", num: "05", color: "#13277E", desc: "Professional proposal positioned for approval." },
+   { icon: Banknote, title: "Sanction & Disbursal", num: "06", color: "#1C1D62", desc: "Faster approval with managed follow-ups." },
+diff --git a/src/app/services/fund-raising/page.tsx b/src/app/services/fund-raising/page.tsx
+index b3168c0..d951dab 100644
+--- a/src/app/services/fund-raising/page.tsx
++++ b/src/app/services/fund-raising/page.tsx
+@@ -187,16 +187,24 @@ export default function FundRaisingPage() {
+       <section className="py-14 md:py-18 bg-white border-b border-[#E8ECF0]">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6">
+           <StaggerParent className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+-            {service.stats?.map((stat, idx) => (
+-              <StaggerChild key={idx}>
+-                <motion.div className="h-full flex flex-col min-h-[120px] text-center p-6 rounded-xl border border-[#E8ECF0] bg-[#FAFBFF] transition-all duration-300 cursor-default" whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(28,29,98,0.12)" }}>
+-                  <div className="text-3xl sm:text-4xl font-bold mb-1" style={{ color: service.color }}>
+-                    <CountUp target={parseInt(stat.value.replace(/[^0-9]/g, "")) || 0} suffix={stat.suffix || ""} />
+-                  </div>
+-                  <p className="text-sm text-[#718096] font-medium">{stat.label}</p>
+-                </motion.div>
+-              </StaggerChild>
+-            ))}
++            {service.stats?.map((stat, idx) => {
++              const numericValue = parseInt(stat.value.replace(/[^0-9]/g, ""), 10);
++              const isNumeric = /^\d+$/.test(stat.value.trim());
++              return (
++                <StaggerChild key={idx}>
++                  <motion.div className="h-full flex flex-col min-h-[120px] text-center p-6 rounded-xl border border-[#E8ECF0] bg-[#FAFBFF] transition-all duration-300 cursor-default" whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(28,29,98,0.12)" }}>
++                    <div className="text-3xl sm:text-4xl font-bold mb-1" style={{ color: service.color }}>
++                      {isNumeric ? (
++                        <CountUp target={numericValue || 0} suffix={stat.suffix || ""} />
++                      ) : (
++                        <span className="tabular-nums">{stat.value}{stat.suffix || ""}</span>
++                      )}
++                    </div>
++                    <p className="text-sm text-[#718096] font-medium">{stat.label}</p>
++                  </motion.div>
++                </StaggerChild>
++              );
++            })}
+           </StaggerParent>
+         </div>
+       </section>
+diff --git a/src/components/FluidTimeline.tsx b/src/components/FluidTimeline.tsx
+index 38ee0a0..c2aebad 100644
+--- a/src/components/FluidTimeline.tsx
++++ b/src/components/FluidTimeline.tsx
+@@ -13,8 +13,8 @@ interface Step {
+ 
+ const steps: Step[] = [
+   { id: 1, title: "Understand Requirement", desc: "Listen to business needs.", icon: Search },
+-  { id: 2, title: "Financial Assessment", desc: "Deep-Dive into Financials", icon: ClipboardList },
+-  { id: 3, title: "Pre-Underwriting", desc: "Strengthen application.", icon: FileText },
++  { id: 2, title: "Financial Assessment", desc: "Deep-Dive into Your Financials and Credit Profile", icon: ClipboardList },
++  { id: 3, title: "Pre-Underwriting", desc: "We analyse and strengthen your application.", icon: FileText },
+   { id: 4, title: "Lender Mapping", desc: "Match profile.", icon: Target },
+   { id: 5, title: "Proposal Structuring", desc: "Professional proposal.", icon: Rocket },
+   { id: 6, title: "Sanction & Disbursal", desc: "Faster approval.", icon: CheckCircle },
+diff --git a/src/components/HomeProcessTimeline.tsx b/src/components/HomeProcessTimeline.tsx
+index 0c74f69..9af2e3e 100644
+--- a/src/components/HomeProcessTimeline.tsx
++++ b/src/components/HomeProcessTimeline.tsx
+@@ -13,8 +13,8 @@ interface Step {
+ 
+ const steps: Step[] = [
+   { id: 1, title: "Understand Requirement", desc: "We listen to your business needs and funding goals.", icon: Search },
+-  { id: 2, title: "Financial Assessment", desc: "Deep-Dive into Your Financials and Capitalisation and Credit Profile", icon: ClipboardList },
+-  { id: 3, title: "Pre-Underwriting", desc: "We prepare and strengthen your application.", icon: FileText },
++  { id: 2, title: "Financial Assessment", desc: "Deep-Dive into Your Financials and Credit Profile", icon: ClipboardList },
++  { id: 3, title: "Pre-Underwriting", desc: "We analyse and strengthen your application.", icon: FileText },
+   { id: 4, title: "Lender Mapping", desc: "Match your profile to the best-fit lenders.", icon: Target },
+   { id: 5, title: "Proposal Structuring", desc: "Professional proposal positioned for approval.", icon: Rocket },
+   { id: 6, title: "Sanction & Disbursal", desc: "Faster approval with managed follow-ups.", icon: CheckCircle },
+diff --git a/src/lib/data.ts b/src/lib/data.ts
+index d1007ed..951c75e 100644
+--- a/src/lib/data.ts
++++ b/src/lib/data.ts
+@@ -363,7 +363,7 @@ export const services: ServiceData[] = [
+       { q: "Why should I do pre-underwriting instead of applying directly?", a: "Direct applications have ~30% approval rate because most aren't prepared properly. Pre-underwriting increases this to ~85% by fixing issues before submission, identifying the right lenders, and structuring your application professionally." },
+       { q: "How long does the pre-underwriting process take?", a: "Typically 3–7 business days depending on the complexity of your financial profile and the number of documents to review." },
+       { q: "What issues do you typically find during pre-underwriting?", a: "Common issues include: fund utilization not matching business narrative, excessive credit enquiries, DTI ratio issues, incomplete documentation, and mismatch between profile and lender criteria." },
+-      { q: "Do you guarantee loan approval after pre-underwriting?", a: "95% approval rate and some other application factor may get delayed loan approvals." },
++      { q: "Do you guarantee loan approval after pre-underwriting?", a: "While we significantly improve approval chances, no one can guarantee approval as the final decision rests with the lender. However, our pre-underwritten applications have an 95% approval rate and some other application factor may get delayed loan approvals." },
+       { q: "Is pre-underwriting useful for loan renewal or top-up?", a: "Absolutely. Pre-underwriting for renewals and top-ups helps ensure you get the best available terms and that your current financial position is presented optimally." },
+     ],
+     stats: [
+@@ -411,7 +411,7 @@ export const services: ServiceData[] = [
+     stats: [
+       { label: "Lender Network", value: "70", suffix: "+" },
+       { label: "Single Point of Contact", value: "1", suffix: "" },
+-      { label: "Avg TAT", value: "3-14", suffix: " days" },
++      { label: "Avg TAT", value: "3–14", suffix: " days" },
+       { label: "Client Satisfaction", value: "98", suffix: "%" },
+     ],
+   },
+-- 
+2.47.3
+

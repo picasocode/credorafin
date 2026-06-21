@@ -1,16 +1,54 @@
 import type { Metadata } from "next";
+import { SITE, ogImage } from "@/lib/seo";
+import { ServiceSeo } from "@/components/ServiceSeo";
 
 export const metadata: Metadata = {
-  title: "Pre-Underwriting & Loan Structuring — Credora Fintech",
-  description: "Get application-ready before you apply. Pre-underwriting, financial analysis, gap identification, and professional loan structuring for significantly higher approval chances.",
-  keywords: "pre-underwriting service, loan structuring India, loan application preparation, financial analysis service, bank eligibility assessment, loan proposal structuring",
+  title: "Pre-Underwriting & Loan Structuring — Get Application-Ready",
+  description:
+    "Get application-ready before you apply. Pre-underwriting, financial analysis, gap identification, and professional loan structuring for up to 90% approval chances.",
+  keywords: [
+    "pre-underwriting service",
+    "loan structuring India",
+    "loan application preparation",
+    "financial analysis service",
+    "bank eligibility assessment",
+    "loan proposal structuring",
+    "loan approval rate improvement",
+  ],
+  alternates: { canonical: "/services/pre-underwriting-loan-structuring" },
   openGraph: {
-    title: "Pre-Underwriting & Loan Structuring — Get Application-Ready",
-    description: "Evaluate your profile, fix weak spots, and structure your application for the strongest outcome.",
     type: "website",
+    locale: SITE.localeOg,
+    url: "/services/pre-underwriting-loan-structuring",
+    siteName: SITE.name,
+    title: "Pre-Underwriting & Loan Structuring — Get Application-Ready",
+    description:
+      "Evaluate your profile, fix weak spots, and structure your application for the strongest outcome.",
+    images: [
+      {
+        url: ogImage("pre-underwriting-loan-structuring"),
+        width: 1200,
+        height: 630,
+        alt: "Pre-Underwriting & Loan Structuring — Credora Fintech",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: `@${SITE.twitterHandle}`,
+    creator: `@${SITE.twitterHandle}`,
+    title: "Pre-Underwriting — 3x Higher Approval Chances",
+    description: "Get application-ready before you apply. Up to 90% approval rate with pre-underwriting.",
+    images: [ogImage("pre-underwriting-loan-structuring")],
   },
 };
 
 export default function PreUnderwritingLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <ServiceSeo slug="pre-underwriting-loan-structuring" />
+      {children}
+    </>
+  );
 }

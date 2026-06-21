@@ -198,7 +198,7 @@ export default function CrossBorderFinancePage() {
                         <SIcon className="w-6 h-6" style={{ color: accent }} />
                       </div>
                       <div className="text-2xl sm:text-3xl font-bold" style={{ color: accent }}>
-                        <CountUp target={parseInt(stat.value.replace(/[^0-9]/g, "")) || 0} suffix={stat.suffix || ""} prefix={stat.value.match(/^[^0-9]*/)?.[0] || ""} />
+                        {/\d/.test(stat.value) ? (<CountUp target={parseInt(stat.value.replace(/[^0-9]/g, "")) || 0} suffix={stat.suffix || ""} prefix={stat.value.match(/^[^0-9]*/)?.[0] || ""} />) : (<span>{stat.value}{stat.suffix || ""}</span>)}
                       </div>
                       <div className="text-sm text-[#718096] mt-1 font-medium">{stat.label}</div>
                     </motion.div>
@@ -309,7 +309,7 @@ export default function CrossBorderFinancePage() {
                     <div className="px-5 sm:px-6 pb-5 sm:pb-6 ml-14">
                       <p className="text-sm text-[#718096] leading-relaxed mb-4">{item.desc}</p>
                       {item.features && item.features.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 mb-4">
                           {item.features.map((feat, fi) => (
                             <span
                               key={fi}
@@ -318,6 +318,33 @@ export default function CrossBorderFinancePage() {
                             >
                               {feat}
                             </span>
+                          ))}
+                        </div>
+                      )}
+                      {item.subProducts && item.subProducts.length > 0 && (
+                        <div className="mt-2 space-y-3">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-[#1C1D62]">Sub-Products</p>
+                          {item.subProducts.map((sub, si) => (
+                            <div key={si} className="rounded-lg border border-[#E8ECF0] bg-[#FAFBFE] p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accent }} />
+                                <h4 className="text-sm font-semibold text-[#1C1D62]">{sub.name}</h4>
+                              </div>
+                              <p className="text-xs text-[#718096] leading-relaxed mb-3">{sub.desc}</p>
+                              {sub.features && sub.features.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {sub.features.map((feat, fi) => (
+                                    <span
+                                      key={fi}
+                                      className="text-[11px] font-medium px-2.5 py-1 rounded-full border"
+                                      style={{ borderColor: `${accent}25`, color: accent, backgroundColor: `${accent}06` }}
+                                    >
+                                      {feat}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}

@@ -1,0 +1,65 @@
+diff a/src/app/products/specialized-finance/layout.tsx b/src/app/products/specialized-finance/layout.tsx	(rejected hunks)
+@@ -1,16 +1,56 @@
+ import type { Metadata } from "next";
++import { SITE, ogImage } from "@/lib/seo";
++import { ProductSeo } from "@/components/ProductSeo";
+ 
+ export const metadata: Metadata = {
+-  title: "Specialized Finance — Credora Fintech",
+-  description: "Niche funding solutions for complex requirements. Third-party security, PEP funding, bridge finance, ship purchase, film & media finance, ARC/NCLT, structured finance and more.",
+-  keywords: "specialized finance India, bridge finance, ship purchase finance, film finance, ARC stressed assets, NCLT purchase, SMA NPA resolution, structured finance, PEP funding",
++  title: "Specialized Finance — Bridge, Film & Stressed Asset Funding | Credora",
++  description:
++    "Niche funding solutions for complex requirements. Third-party security, PEP funding, bridge finance, ship purchase, film & media finance, ARC/NCLT, structured finance and more.",
++  keywords: [
++    "specialized finance India",
++    "bridge finance",
++    "ship purchase finance",
++    "film finance",
++    "ARC stressed assets",
++    "NCLT purchase",
++    "SMA NPA resolution",
++    "structured finance",
++    "PEP funding",
++  ],
++  alternates: { canonical: "/products/specialized-finance" },
+   openGraph: {
+-    title: "Specialized Finance — Niche Solutions for Complex Requirements",
+-    description: "Customized structured finance when standard products fall short. 10 sub-products for unique scenarios.",
+     type: "website",
++    locale: SITE.localeOg,
++    url: "/products/specialized-finance",
++    siteName: SITE.name,
++    title: "Specialized Finance — Niche Solutions for Complex Requirements",
++    description:
++      "Customized structured finance when standard products fall short. 10 sub-products for unique scenarios.",
++    images: [
++      {
++        url: ogImage("specialized-finance"),
++        width: 1200,
++        height: 630,
++        alt: "Specialized Finance — Credora Fintech",
++        type: "image/png",
++      },
++    ],
++  },
++  twitter: {
++    card: "summary_large_image",
++    site: `@${SITE.twitterHandle}`,
++    creator: `@${SITE.twitterHandle}`,
++    title: "Specialized Finance — Complex Requirement Solutions",
++    description: "Bridge, film, ship, ARC/NCLT & structured finance. 10 sub-products.",
++    images: [ogImage("specialized-finance")],
+   },
+ };
+ 
+ export default function SpecializedFinanceLayout({ children }: { children: React.ReactNode }) {
+-  return children;
+-}
++    return (
++      <>
++        <ProductSeo slug="specialized-finance" />
++        {children}
++      </>
++    );
++  }
