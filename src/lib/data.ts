@@ -406,7 +406,7 @@ export const services: ServiceData[] = [
     faqs: [
       { q: "How many lenders do you approach simultaneously?", a: "We typically approach 3–5 lenders simultaneously based on your profile and requirements. Our network includes 70+ lenders — PSU banks, private banks, NBFCs, and specialized lenders." },
       { q: "How long does the fund-raising process take?", a: "Unsecured loans: 3–7 days. Secured loans: 7–15 days. Complex cases: up to 30 days. We provide realistic timelines based on your specific situation." },
-      { q: "What types of lenders are in your network?", a: "Our network includes PSU banks such as SBI, PNB and Bank of Baroda; private banks such as HDFC, ICICI and Axis; NBFCs such as Bajaj, Tata Capital and Mahindra; and specialized lenders for specific sectors." },
+      { q: "What types of lenders are in your network?", a: "Our network includes public sector banks, private sector banks, NBFCs, and specialized lenders catering to specific sectors (e.g., SBI, HDFC, ICICI, Axis, Bajaj Finance, Tata Capital, Mahindra Finance)." },
       { q: "Do you charge any fees from the borrower?", a: "Our service model and fee structure is discussed during the initial consultation. We are transparent about all costs upfront with no hidden charges." },
     ],
     stats: [
