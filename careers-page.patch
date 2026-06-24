@@ -1,0 +1,1221 @@
+diff --git a/src/components/sections/Footer.tsx b/src/components/sections/Footer.tsx
+index 4fdb365..8f66866 100644
+--- a/src/components/sections/Footer.tsx
++++ b/src/components/sections/Footer.tsx
+@@ -22,6 +22,7 @@ const serviceLinks = [
+ const quickLinks = [
+   { label: "Home", href: "/" },
+   { label: "About Us", href: "/about" },
++  { label: "Careers", href: "/careers" },
+   { label: "EMI Calculator", href: "/emi-calculator" },
+   { label: "Blog", href: "/blog" },
+   { label: "Referral Partner", href: "/referral-partner" },
+diff --git a/src/lib/data.ts b/src/lib/data.ts
+index 8a895bf..c5598c2 100644
+--- a/src/lib/data.ts
++++ b/src/lib/data.ts
+@@ -485,6 +485,7 @@ export const navLinks: NavLink[] = [
+   },
+   { label: "Blog", href: "/blog" },
+   { label: "Referral Partner", href: "/referral-partner" },
++  { label: "Careers", href: "/careers" },
+   { label: "Contact", href: "/contact" },
+   { label: "EMI Calculator", href: "/emi-calculator", isButton: true },
+ ];
+diff --git a/src/lib/seo.ts b/src/lib/seo.ts
+index 357a46a..2442096 100644
+--- a/src/lib/seo.ts
++++ b/src/lib/seo.ts
+@@ -85,6 +85,7 @@ export const NAV_ENTRIES = [
+   { path: "/referral-partner", title: "Referral Partner Program", priority: 0.7, changeFrequency: "monthly" as const },
+   { path: "/blog", title: "Blog", priority: 0.8, changeFrequency: "weekly" as const },
+   { path: "/contact", title: "Contact Us", priority: 0.7, changeFrequency: "monthly" as const },
++  { path: "/careers", title: "Careers", priority: 0.7, changeFrequency: "weekly" as const },
+ ];
+ 
+ /** Helper: build an absolute URL from a path. */
+diff --git a/src/app/careers/layout.tsx b/src/app/careers/layout.tsx
+new file mode 100644
+index 0000000..e04db59
+--- /dev/null
++++ b/src/app/careers/layout.tsx
+@@ -0,0 +1,67 @@
++import type { Metadata } from "next";
++import { SITE, ogImage } from "@/lib/seo";
++import { PageSchema } from "@/components/PageSchema";
++
++export const metadata: Metadata = {
++  title: "Careers — Join Credora Fintech | Credora Fintech",
++  description:
++    "Join Credora Fintech and build a rewarding career in fintech. Explore open positions in loan advisory, credit analysis, operations, and more. Competitive pay, growth opportunities, and a collaborative work culture in Chennai.",
++  keywords: [
++    "fintech careers Chennai",
++    "loan advisor jobs",
++    "credit analyst jobs India",
++    "Credora Fintech careers",
++    "finance jobs Chennai",
++    "MSME lending careers",
++    "fintech job openings",
++  ],
++  alternates: { canonical: "/careers" },
++  openGraph: {
++    type: "website",
++    locale: SITE.localeOg,
++    url: "/careers",
++    siteName: SITE.name,
++    title: "Careers — Build Your Future in Fintech",
++    description:
++      "Join Credora Fintech and help businesses secure the funding they need. Explore open roles across credit analysis, sales, operations, and technology.",
++    images: [
++      {
++        url: ogImage("careers"),
++        width: 1200,
++        height: 630,
++        alt: "Careers — Credora Fintech",
++        type: "image/png",
++      },
++    ],
++  },
++  twitter: {
++    card: "summary_large_image",
++    site: `@${SITE.twitterHandle}`,
++    creator: `@${SITE.twitterHandle}`,
++    title: "Careers — Build Your Future in Fintech",
++    description:
++      "Join Credora Fintech. Explore roles in credit analysis, loan advisory, operations, and technology.",
++    images: [ogImage("careers")],
++  },
++};
++
++export default function CareersLayout({
++  children,
++}: {
++  children: React.ReactNode;
++}) {
++  return (
++    <>
++      <PageSchema
++        name="Careers"
++        description="Join Credora Fintech and build a rewarding career in fintech. Explore open positions across credit analysis, loan advisory, operations, and technology."
++        path="/careers"
++        breadcrumbs={[
++          { name: "Home", path: "/" },
++          { name: "Careers", path: "/careers" },
++        ]}
++      />
++      {children}
++    </>
++  );
++}
+\ No newline at end of file
+diff --git a/src/app/careers/page.tsx b/src/app/careers/page.tsx
+new file mode 100644
+index 0000000..23d953d
+--- /dev/null
++++ b/src/app/careers/page.tsx
+@@ -0,0 +1,1104 @@
++"use client";
++
++import React, { useState, useRef, useEffect } from "react";
++import Link from "next/link";
++import Image from "next/image";
++import { motion, useInView, animate } from "framer-motion";
++import {
++  ArrowRight,
++  ChevronRight,
++  Briefcase,
++  Users,
++  TrendingUp,
++  Award,
++  Heart,
++  Clock,
++  MapPin,
++  IndianRupee,
++  CheckCircle2,
++  Zap,
++  Sparkles,
++  GraduationCap,
++  Target,
++  Send,
++  UserCircle,
++  Phone,
++  Mail,
++  Building2,
++  BookOpen,
++  Rocket,
++  Shield,
++  Coffee,
++} from "lucide-react";
++import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
++import { Textarea } from "@/components/ui/textarea";
++import { Label } from "@/components/ui/label";
++import {
++  Select,
++  SelectContent,
++  SelectItem,
++  SelectTrigger,
++  SelectValue,
++} from "@/components/ui/select";
++import { useToast } from "@/hooks/use-toast";
++import {
++  SectionReveal,
++  StaggerContainer,
++  StaggerItem,
++  HoverCard,
++  FloatingElement,
++  PulseGlow,
++  SmoothReveal,
++} from "@/lib/animations";
++import AnimatedIllustration from "@/components/AnimatedIllustration";
++
++/* ────────────────────────────────────────────
++   DATA
++   ──────────────────────────────────────────── */
++
++const openPositions = [
++  {
++    id: 1,
++    title: "Credit Analyst",
++    department: "Credit & Risk",
++    location: "Chennai",
++    type: "Full-time",
++    experience: "1–3 years",
++    salary: "₹4L – ₹7L PA",
++    color: "#304AC0",
++    description:
++      "Evaluate creditworthiness of MSME borrowers by analysing financial statements, bank statements, CIBIL reports, and GST data. Prepare structured credit notes and present recommendations to the lending committee.",
++    skills: ["Financial Statement Analysis", "CIBIL / Credit Bureau", "MSME Lending", "Excel & MIS Reporting"],
++  },
++  {
++    id: 2,
++    title: "Relationship Manager — Business Loans",
++    department: "Sales & Partnerships",
++    location: "Chennai",
++    type: "Full-time",
++    experience: "2–5 years",
++    salary: "₹5L – ₹9L PA",
++    color: "#87B73C",
++    description:
++      "Manage end-to-end client relationships for MSME loan origination. From initial profiling and needs assessment to application structuring, lender coordination, and post-disbursal support. Drive disbursal targets while maintaining high client satisfaction.",
++    skills: ["B2B Sales", "Loan Origination", "Client Relationship Management", "Negotiation"],
++  },
++  {
++    id: 3,
++    title: "Loan Processing Executive",
++    department: "Operations",
++    location: "Chennai",
++    type: "Full-time",
++    experience: "0–2 years",
++    salary: "₹3L – ₹5L PA",
++    color: "#13277E",
++    description:
++      "Handle loan application processing including document collection, verification, data entry into lender portals, and coordination with banks and NBFCs for faster turnarounds. Ensure compliance and completeness of every file.",
++    skills: ["Loan Processing", "Documentation", "Banking Operations", "Attention to Detail"],
++  },
++  {
++    id: 4,
++    title: "Business Development Associate",
++    department: "Sales & Partnerships",
++    location: "Chennai / Remote",
++    type: "Full-time",
++    experience: "0–2 years",
++    salary: "₹3L – ₹5L PA",
++    color: "#304AC0",
++    description:
++      "Identify and onboard new referral partners including CAs, tax consultants, and business brokers. Build and nurture partnerships that generate a steady pipeline of qualified leads. Support marketing campaigns and events.",
++    skills: ["Lead Generation", "Partner Onboarding", "CRM Tools", "Communication"],
++  },
++  {
++    id: 5,
++    title: "Full-Stack Developer",
++    department: "Technology",
++    location: "Chennai / Remote",
++    type: "Full-time",
++    experience: "2–4 years",
++    salary: "₹8L – ₹14L PA",
++    color: "#1C1D62",
++    description:
++      "Build and maintain Credora's web platform and internal tools. Work with Next.js, React, TypeScript, and Node.js to create seamless digital experiences for clients and partners. Collaborate with the product team on new features.",
++    skills: ["Next.js / React", "TypeScript", "Node.js", "PostgreSQL / Prisma"],
++  },
++  {
++    id: 6,
++    title: "Digital Marketing Executive",
++    department: "Marketing",
++    location: "Chennai / Remote",
++    type: "Full-time",
++    experience: "1–3 years",
++    salary: "₹4L – ₹6L PA",
++    color: "#87B73C",
++    description:
++      "Plan and execute digital marketing campaigns across Google Ads, LinkedIn, and social media. Manage SEO, content marketing, and performance analytics. Drive qualified inbound leads and improve brand visibility in the fintech space.",
++    skills: ["Google Ads", "SEO / SEM", "Social Media Marketing", "Analytics & Reporting"],
++  },
++];
++
++const cultureValues = [
++  { icon: Rocket, title: "Growth Mindset", desc: "We invest in learning. Every team member gets access to training, certifications, and mentorship to accelerate their career.", color: "#304AC0" },
++  { icon: Heart, title: "Client First", desc: "Everything we do starts with the client. We celebrate when a business gets the funding it needs to thrive.", color: "#87B73C" },
++  { icon: Users, title: "Collaborative Spirit", desc: "No silos here. Credit, sales, and operations work as one team to deliver results and learn from each other.", color: "#13277E" },
++  { icon: Shield, title: "Integrity & Transparency", desc: "We operate with the highest ethical standards. Honest advice, clear communication, and zero hidden charges.", color: "#1C1D62" },
++];
++
++const perks = [
++  { icon: IndianRupee, label: "Competitive Salary", desc: "Market-competitive pay with performance bonuses" },
++  { icon: TrendingUp, label: "Career Growth", desc: "Clear growth paths with quarterly reviews" },
++  { icon: BookOpen, label: "Learning Budget", desc: "Annual learning allowance for courses and certs" },
++  { icon: Coffee, label: "Flexible Culture", desc: "Hybrid work options and supportive environment" },
++  { icon: Heart, label: "Health Benefits", desc: "Medical insurance for you and your family" },
++  { icon: Award, label: "Recognition", desc: "Monthly awards, team outings, and celebrations" },
++];
++
++const hiringSteps = [
++  { title: "Apply", description: "Browse open positions and submit your application with your resume.", icon: Send, accent: "#304AC0" },
++  { title: "Screen", description: "Our HR team reviews your profile and reaches out within 3 business days.", icon: Search, accent: "#13277E" },
++  { title: "Interview", description: "A role-specific technical/functional round followed by a culture-fit conversation.", icon: Users, accent: "#87B73C" },
++  { title: "Offer", description: "Receive a competitive offer and join the Credora family!", icon: Sparkles, accent: "#304AC0" },
++];
++
++/* ────────────────────────────────────────────
++   ANIMATED COUNTER
++   ──────────────────────────────────────────── */
++
++function AnimatedNumber({ value }: { value: number }) {
++  const [display, setDisplay] = useState(0);
++  const ref = useRef(null);
++  const isInView = useInView(ref, { once: true });
++
++  useEffect(() => {
++    if (!isInView) return;
++    const controls = animate(0, value, {
++      duration: 1.2,
++      ease: "easeOut",
++      onUpdate: (v) => setDisplay(Math.round(v)),
++    });
++    return () => controls.stop();
++  }, [value, isInView]);
++
++  return <span ref={ref}>{display.toLocaleString("en-IN")}</span>;
++}
++
++/* ────────────────────────────────────────────
++   SEARCH ICON (inline to avoid import issues)
++   ──────────────────────────────────────────── */
++function Search(props: React.SVGProps<SVGSVGElement>) {
++  return (
++    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
++      <circle cx="11" cy="11" r="8" />
++      <path d="m21 21-4.3-4.3" />
++    </svg>
++  );
++}
++
++/* ────────────────────────────────────────────
++   PAGE COMPONENT
++   ──────────────────────────────────────────── */
++
++export default function CareersPage() {
++  const [selectedDept, setSelectedDept] = useState("All");
++  const departments = ["All", ...Array.from(new Set(openPositions.map((p) => p.department)))];
++
++  const filteredPositions =
++    selectedDept === "All"
++      ? openPositions
++      : openPositions.filter((p) => p.department === selectedDept);
++
++  const { toast } = useToast();
++  const [formData, setFormData] = useState({
++    fullName: "",
++    email: "",
++    phone: "",
++    position: "",
++    experience: "",
++    message: "",
++  });
++  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
++  const [isSubmitting, setIsSubmitting] = useState(false);
++
++  const validateForm = () => {
++    const errors: Record<string, string> = {};
++    if (!formData.fullName.trim()) errors.fullName = "Full name is required";
++    if (!formData.email.trim()) errors.email = "Email is required";
++    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = "Invalid email address";
++    if (!formData.phone.trim()) errors.phone = "Phone number is required";
++    else if (!/^\d{10}$/.test(formData.phone.replace(/\s/g, ""))) errors.phone = "Enter a valid 10-digit phone number";
++    if (!formData.position.trim()) errors.position = "Please select a position";
++    setFormErrors(errors);
++    return Object.keys(errors).length === 0;
++  };
++
++  const handleSubmit = async (e: React.FormEvent) => {
++    e.preventDefault();
++    if (!validateForm()) return;
++
++    setIsSubmitting(true);
++    try {
++      const res = await fetch("/api/contact", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({
++          type: "careers",
++          name: formData.fullName,
++          email: formData.email,
++          phone: `+91${formData.phone}`,
++          position: formData.position,
++          experience: formData.experience,
++          message: formData.message,
++        }),
++      });
++
++      if (!res.ok) throw new Error("Submission failed");
++
++      toast({
++        title: "Application Submitted!",
++        description: "Thank you for applying. Our team will review your profile and get back to you within 3 business days.",
++      });
++
++      setFormData({ fullName: "", email: "", phone: "", position: "", experience: "", message: "" });
++      setFormErrors({});
++    } catch {
++      toast({
++        title: "Submission Failed",
++        description: "Something went wrong. Please try again.",
++        variant: "destructive",
++      });
++    } finally {
++      setIsSubmitting(false);
++    }
++  };
++
++  return (
++    <motion.div
++      initial={{ opacity: 0, y: 20 }}
++      animate={{ opacity: 1, y: 0 }}
++      transition={{ duration: 0.4, ease: "easeOut" }}
++    >
++      {/* ═══════════════════════════════════════
++          PAGE HERO — Split layout with stats cards
++          ═══════════════════════════════════════ */}
++      <section className="bg-[#F0F4FF] py-16 md:py-24 relative overflow-hidden">
++        {/* Background image with overlay */}
++        <div className="absolute inset-0">
++          <Image
++            src="/images/pages/referral-india.png"
++            alt="Credora office"
++            fill
++            sizes="100vw"
++            className="object-cover opacity-[0.06]"
++            priority
++          />
++        </div>
++
++        {/* Decorative floating elements */}
++        <FloatingElement amplitude={10} duration={4} className="absolute top-10 right-[12%] hidden lg:block">
++          <div className="w-4 h-4 rounded-full bg-[#87B73C]/15" />
++        </FloatingElement>
++        <FloatingElement amplitude={8} duration={3.5} className="absolute bottom-20 left-[8%] hidden lg:block">
++          <div className="w-3 h-3 rounded-full bg-[#304AC0]/15" />
++        </FloatingElement>
++
++        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
++          <SectionReveal>
++            <nav className="flex items-center gap-1.5 text-sm text-[#718096] mb-8" aria-label="Breadcrumb">
++              <Link href="/" className="hover:text-[#304AC0] transition-colors duration-300">
++                Home
++              </Link>
++              <ChevronRight className="w-3.5 h-3.5" />
++              <span className="text-[#1C1D62] font-medium">Careers</span>
++            </nav>
++          </SectionReveal>
++
++          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
++            {/* LEFT — Heading with briefcase watermark */}
++            <SectionReveal direction="left">
++              <div className="relative">
++                {/* Decorative briefcase SVG watermark */}
++                <svg viewBox="0 0 200 200" className="absolute -top-10 -left-10 w-48 h-48 opacity-[0.07] pointer-events-none" aria-hidden="true">
++                  <rect x="30" y="70" width="140" height="100" rx="12" fill="#304AC0" />
++                  <rect x="65" y="50" width="70" height="40" rx="8" fill="#304AC0" />
++                  <rect x="55" y="100" width="90" height="8" rx="4" fill="white" opacity="0.5" />
++                  <rect x="55" y="120" width="60" height="8" rx="4" fill="white" opacity="0.3" />
++                </svg>
++
++                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1C1D62] leading-tight relative z-10">
++                  Build Your Future{" "}
++                  <span className="relative inline-block">
++                    <span className="text-[#304AC0]">in Fintech</span>
++                    <motion.span
++                      className="absolute -bottom-1 left-0 right-0 h-1.5 bg-[#304AC0]/20 rounded-full"
++                      initial={{ scaleX: 0 }}
++                      animate={{ scaleX: 1 }}
++                      transition={{ duration: 0.8, delay: 0.5, type: "spring" }}
++                      style={{ transformOrigin: "left" }}
++                    />
++                  </span>
++                </h1>
++                <p className="mt-5 text-[#2D3748] leading-relaxed max-w-xl text-base sm:text-lg relative z-10">
++                  Join Credora Fintech and help thousands of MSMEs access the funding
++                  they need. We&apos;re a young, ambitious team solving real problems
++                  in India&apos;s credit gap — and we want you on board.
++                </p>
++
++                <div className="mt-8 flex flex-wrap gap-3 relative z-10">
++                  <a href="#open-positions">
++                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
++                      <Button
++                        size="lg"
++                        className="bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider px-8 py-3 rounded-md group transition-all duration-300"
++                      >
++                        View Open Positions
++                        <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
++                      </Button>
++                    </motion.div>
++                  </a>
++                  <a href="#apply-form">
++                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
++                      <Button
++                        variant="outline"
++                        size="lg"
++                        className="border-[#304AC0] text-[#304AC0] hover:bg-[#F0F4FF] font-medium text-sm uppercase tracking-wider px-8 py-3 rounded-md transition-all duration-300"
++                      >
++                        Apply Now
++                      </Button>
++                    </motion.div>
++                  </a>
++                </div>
++              </div>
++            </SectionReveal>
++
++            {/* RIGHT — Stats cards */}
++            <SectionReveal direction="right" delay={0.15}>
++              <div className="relative flex flex-col items-center gap-5">
++                {[
++                  { value: 50, suffix: "+", label: "Team Members", icon: Users, color: "#304AC0", bg: "bg-[#F0F4FF]" },
++                  { value: 1200, suffix: "+", label: "Clients Served", icon: Briefcase, color: "#87B73C", bg: "bg-[#F5F8EC]" },
++                  { value: 70, suffix: "+", label: "Lender Partners", icon: Building2, color: "#304AC0", bg: "bg-[#F0F4FF]" },
++                ].map((card, i) => (
++                  <motion.div
++                    key={i}
++                    className="w-full max-w-xs"
++                    initial={{ opacity: 0, y: 30 }}
++                    animate={{ opacity: 1, y: 0 }}
++                    transition={{ duration: 0.6, delay: 0.3 + i * 0.15, ease: "easeOut" }}
++                    whileHover={{ y: -4, boxShadow: "0 12px 24px rgba(48,74,192,0.10)" }}
++                  >
++                    <div
++                      className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm flex items-center gap-5 transition-all duration-300 group"
++                      style={{ borderLeftWidth: "4px", borderLeftColor: card.color }}
++                    >
++                      <motion.div
++                        className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${card.bg}`}
++                        whileHover={{ rotate: 5, scale: 1.05 }}
++                        transition={{ type: "spring", stiffness: 300, damping: 15 }}
++                      >
++                        <card.icon className="w-6 h-6" style={{ color: card.color }} />
++                      </motion.div>
++                      <div>
++                        <p className="text-2xl font-bold text-[#1C1D62]">
++                          <AnimatedNumber value={card.value} />
++                          <span className="text-base font-semibold text-[#718096]">{card.suffix}</span>
++                        </p>
++                        <p className="text-[#718096] text-sm mt-0.5">{card.label}</p>
++                      </div>
++                    </div>
++                  </motion.div>
++                ))}
++              </div>
++            </SectionReveal>
++          </div>
++        </div>
++      </section>
++
++      {/* ═══════════════════════════════════════
++          WHY WORK HERE — Culture values cards
++          ═══════════════════════════════════════ */}
++      <section className="py-16 md:py-20 bg-white">
++        <div className="max-w-7xl mx-auto px-4 sm:px-6">
++          <SmoothReveal>
++            <span className="inline-block text-[#304AC0] text-xs font-semibold uppercase tracking-widest mb-4">
++              Our Culture
++            </span>
++            <h2 className="text-2xl sm:text-3xl font-semibold text-[#1C1D62] mb-10">
++              Why Work at Credora
++            </h2>
++          </SmoothReveal>
++
++          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" staggerDelay={0.12}>
++            {cultureValues.map((item, i) => (
++              <StaggerItem key={i}>
++                <motion.div
++                  className="h-full"
++                  whileHover={{ y: -6, boxShadow: "0 16px 32px rgba(48,74,192,0.10)" }}
++                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
++                >
++                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm h-full min-h-[200px] flex flex-col text-center group relative overflow-hidden transition-all duration-300">
++                    <div
++                      className="absolute bottom-0 left-0 right-0 h-1 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
++                      style={{ backgroundColor: item.color }}
++                    />
++                    <motion.div
++                      className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4"
++                      style={{ backgroundColor: `${item.color}10` }}
++                      whileHover={{ rotate: 5, scale: 1.1 }}
++                      transition={{ type: "spring", stiffness: 300, damping: 15 }}
++                    >
++                      <item.icon className="w-7 h-7" style={{ color: item.color }} />
++                    </motion.div>
++                    <h3 className="text-base font-semibold text-[#1C1D62] mb-2 group-hover:text-[#304AC0] transition-colors duration-300">
++                      {item.title}
++                    </h3>
++                    <p className="text-sm text-[#718096] leading-relaxed flex-1">{item.desc}</p>
++                  </div>
++                </motion.div>
++              </StaggerItem>
++            ))}
++          </StaggerContainer>
++        </div>
++      </section>
++
++      {/* ═══════════════════════════════════════
++          PERKS & BENEFITS — 2x3 grid with accent
++          ═══════════════════════════════════════ */}
++      <section className="py-16 md:py-20 bg-[#F0F4FF]">
++        <div className="max-w-7xl mx-auto px-4 sm:px-6">
++          <div className="grid lg:grid-cols-2 gap-12 items-center">
++            <SectionReveal direction="left">
++              <span className="inline-block text-[#304AC0] text-xs font-semibold uppercase tracking-widest mb-4">
++                Perks & Benefits
++              </span>
++              <h2 className="text-2xl sm:text-3xl font-semibold text-[#1C1D62] mb-6">
++                More Than Just a Paycheck
++              </h2>
++              <p className="text-[#2D3748] leading-relaxed mb-8">
++                We believe great work happens when people feel valued and supported.
++                Beyond competitive compensation, we offer a range of benefits
++                designed to help you grow personally and professionally while
++                maintaining a healthy work-life balance.
++              </p>
++            </SectionReveal>
++
++            <SectionReveal direction="right" delay={0.15}>
++              <StaggerContainer className="grid sm:grid-cols-2 gap-5" staggerDelay={0.1}>
++                {perks.map((perk, i) => (
++                  <StaggerItem key={i}>
++                    <motion.div
++                      className="h-full"
++                      whileHover={{ y: -4, boxShadow: "0 12px 24px rgba(48,74,192,0.08)" }}
++                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
++                    >
++                      <div
++                        className={`${i % 2 === 0 ? "bg-white" : "bg-[#F5F8EC]"} rounded-2xl p-5 h-full min-h-[120px] flex flex-col border border-[#E8ECF0] group transition-all duration-300`}
++                        style={{ borderTopWidth: "4px", borderTopColor: i % 2 === 0 ? "#304AC0" : "#87B73C" }}
++                      >
++                        <motion.div
++                          className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mb-3 shadow-sm"
++                          whileHover={{ rotate: 5, scale: 1.1 }}
++                          transition={{ type: "spring", stiffness: 300, damping: 15 }}
++                        >
++                          <perk.icon className="w-5 h-5" style={{ color: i % 2 === 0 ? "#304AC0" : "#87B73C" }} />
++                        </motion.div>
++                        <p className="text-[#1C1D62] font-semibold text-sm mb-1">{perk.label}</p>
++                        <p className="text-[#718096] text-xs leading-relaxed flex-1">{perk.desc}</p>
++                      </div>
++                    </motion.div>
++                  </StaggerItem>
++                ))}
++              </StaggerContainer>
++            </SectionReveal>
++          </div>
++        </div>
++      </section>
++
++      {/* ═══════════════════════════════════════
++          OPEN POSITIONS — Filterable job cards
++          ═══════════════════════════════════════ */}
++      <section id="open-positions" className="py-16 md:py-20 bg-white scroll-mt-20">
++        <div className="max-w-7xl mx-auto px-4 sm:px-6">
++          <SectionReveal>
++            <div className="text-center mb-10">
++              <span className="inline-block text-[#304AC0] text-xs font-semibold uppercase tracking-widest mb-4">
++                Open Positions
++              </span>
++              <h2 className="text-2xl sm:text-3xl font-semibold text-[#1C1D62] mb-3">
++                Find Your Role
++              </h2>
++              <p className="text-[#718096] text-sm sm:text-base max-w-lg mx-auto">
++                We&apos;re growing fast and always looking for talented people.
++                Explore our current openings and find the right fit for you.
++              </p>
++            </div>
++          </SectionReveal>
++
++          {/* Department filter */}
++          <SectionReveal delay={0.1}>
++            <div className="flex flex-wrap justify-center gap-2 mb-10">
++              {departments.map((dept) => (
++                <motion.button
++                  key={dept}
++                  onClick={() => setSelectedDept(dept)}
++                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
++                    selectedDept === dept
++                      ? "bg-[#304AC0] text-white shadow-md"
++                      : "bg-[#F0F4FF] text-[#2D3748] hover:bg-[#E0E7FF]"
++                  }`}
++                  whileHover={{ scale: 1.03 }}
++                  whileTap={{ scale: 0.97 }}
++                >
++                  {dept}
++                </motion.button>
++              ))}
++            </div>
++          </SectionReveal>
++
++          {/* Position cards */}
++          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" staggerDelay={0.1}>
++            {filteredPositions.map((pos) => (
++              <StaggerItem key={pos.id}>
++                <motion.div
++                  className="h-full"
++                  whileHover={{ y: -6, boxShadow: "0 16px 32px rgba(48,74,192,0.10)" }}
++                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
++                >
++                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm h-full flex flex-col group transition-all duration-300 relative overflow-hidden">
++                    {/* Colored top accent */}
++                    <div className="absolute top-0 left-0 right-0 h-1.5" style={{ backgroundColor: pos.color }} />
++
++                    {/* Department & Type badges */}
++                    <div className="flex items-center gap-2 mt-2 mb-4">
++                      <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ backgroundColor: `${pos.color}12`, color: pos.color }}>
++                        {pos.department}
++                      </span>
++                      <span className="text-[10px] font-medium text-[#718096] bg-[#F0F4FF] px-2.5 py-1 rounded-full">
++                        {pos.type}
++                      </span>
++                    </div>
++
++                    <h3 className="text-lg font-semibold text-[#1C1D62] mb-2 group-hover:text-[#304AC0] transition-colors duration-300">
++                      {pos.title}
++                    </h3>
++
++                    {/* Meta info */}
++                    <div className="flex flex-wrap gap-3 mb-3 text-xs text-[#718096]">
++                      <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{pos.location}</span>
++                      <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{pos.experience}</span>
++                    </div>
++                    <p className="text-[#2D3748] text-sm font-medium mb-3">{pos.salary}</p>
++
++                    <p className="text-[#718096] text-sm leading-relaxed flex-1 mb-4">{pos.description}</p>
++
++                    {/* Skills tags */}
++                    <div className="flex flex-wrap gap-1.5 mb-5">
++                      {pos.skills.map((skill, j) => (
++                        <span key={j} className="text-[11px] text-[#304AC0] bg-[#F0F4FF] px-2 py-0.5 rounded-md">
++                          {skill}
++                        </span>
++                      ))}
++                    </div>
++
++                    {/* CTA */}
++                    <a href="#apply-form">
++                      <Button
++                        variant="outline"
++                        className="w-full border-[#304AC0] text-[#304AC0] hover:bg-[#304AC0] hover:text-white text-sm font-medium rounded-lg group/btn transition-all duration-300"
++                      >
++                        Apply Now
++                        <ArrowRight className="ml-1.5 w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform duration-300" />
++                      </Button>
++                    </a>
++                  </div>
++                </motion.div>
++              </StaggerItem>
++            ))}
++          </StaggerContainer>
++        </div>
++      </section>
++
++      {/* ═══════════════════════════════════════
++          HOW WE HIRE — Timeline steps
++          ═══════════════════════════════════════ */}
++      <section className="py-16 md:py-20 bg-[#F0F4FF]">
++        <div className="max-w-7xl mx-auto px-4 sm:px-6">
++          <SectionReveal>
++            <span className="inline-block text-[#304AC0] text-xs font-semibold uppercase tracking-widest mb-4">
++              How We Hire
++            </span>
++            <h2 className="text-2xl sm:text-3xl font-semibold text-[#1C1D62] mb-12">
++              Four Simple Steps to Join Us
++            </h2>
++          </SectionReveal>
++
++          {/* Desktop — Horizontal timeline */}
++          <div className="hidden md:flex flex-col md:flex-row items-stretch gap-0 relative">
++            {hiringSteps.map((step, i) => (
++              <SectionReveal key={i} delay={i * 0.2} direction="up" className="flex-1 relative">
++                {i < hiringSteps.length - 1 && (
++                  <div className="absolute top-16 -right-3 w-6 z-20 pointer-events-none hidden md:block">
++                    <svg viewBox="0 0 24 40" className="w-full h-10" fill="none" aria-hidden="true">
++                      <motion.path
++                        d="M0 20 C12 4, 12 36, 24 20"
++                        stroke="#304AC0"
++                        strokeWidth="2"
++                        strokeDasharray="4 3"
++                        fill="none"
++                        initial={{ pathLength: 0 }}
++                        whileInView={{ pathLength: 1 }}
++                        viewport={{ once: true }}
++                        transition={{ duration: 1, delay: 0.3 + i * 0.2 }}
++                      />
++                      <motion.circle
++                        r="3"
++                        fill="#87B73C"
++                        animate={{ offsetDistance: ["0%", "100%"], opacity: [0, 1, 1, 0] }}
++                        transition={{ duration: 2, delay: i * 0.3, repeat: Infinity, ease: "easeInOut" }}
++                        style={{ offsetPath: "path('M0 20 C12 4, 12 36, 24 20')" }}
++                      />
++                    </svg>
++                  </div>
++                )}
++
++                <motion.div
++                  whileHover={{ y: -6, boxShadow: "0 16px 32px rgba(48,74,192,0.10)" }}
++                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
++                >
++                  <div
++                    className={`relative bg-white rounded-2xl border border-[#E8ECF0] shadow-sm p-6 sm:p-8 h-full min-h-[200px] flex flex-col text-center ${
++                      i < hiringSteps.length - 1 ? "md:mr-6" : ""
++                    } transition-all duration-300 group overflow-hidden`}
++                  >
++                    <div className="flex justify-center mb-5">
++                      <motion.div
++                        className="w-16 h-16 rounded-2xl flex items-center justify-center"
++                        style={{ backgroundColor: `${step.accent}12` }}
++                        whileHover={{ rotate: 5, scale: 1.1 }}
++                        transition={{ type: "spring", stiffness: 300, damping: 15 }}
++                      >
++                        <step.icon className="w-8 h-8" style={{ color: step.accent }} />
++                      </motion.div>
++                    </div>
++
++                    <span className="inline-block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.accent }}>
++                      Step {String(i + 1).padStart(2, "0")}
++                    </span>
++
++                    <h3 className="text-xl font-semibold text-[#1C1D62] mb-3 group-hover:text-[#304AC0] transition-colors duration-300">
++                      {step.title}
++                    </h3>
++                    <p className="text-[#2D3748] leading-relaxed text-sm sm:text-base max-w-xs mx-auto flex-1">
++                      {step.description}
++                    </p>
++
++                    <div
++                      className="mt-6 h-1 rounded-full mx-auto w-16 group-hover:w-24 transition-all duration-500"
++                      style={{ backgroundColor: step.accent }}
++                    />
++                  </div>
++                </motion.div>
++              </SectionReveal>
++            ))}
++          </div>
++
++          {/* Mobile — Vertical timeline */}
++          <div className="md:hidden space-y-0">
++            {hiringSteps.map((step, i) => (
++              <motion.div
++                key={i}
++                className="flex items-start gap-4 relative"
++                initial={{ opacity: 0, x: -20 }}
++                whileInView={{ opacity: 1, x: 0 }}
++                viewport={{ once: true }}
++                transition={{ duration: 0.4, delay: i * 0.15 }}
++              >
++                <div className="flex flex-col items-center">
++                  <motion.div
++                    className="w-14 h-14 rounded-xl bg-white border-2 shadow-sm flex items-center justify-center flex-shrink-0"
++                    style={{ borderColor: step.accent }}
++                    whileHover={{ scale: 1.05, rotate: 3 }}
++                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
++                  >
++                    <step.icon className="w-6 h-6" style={{ color: step.accent }} />
++                  </motion.div>
++                  {i < hiringSteps.length - 1 && (
++                    <motion.div
++                      className="w-0.5 flex-1 min-h-[32px]"
++                      style={{ backgroundColor: `${step.accent}30` }}
++                      initial={{ scaleY: 0 }}
++                      whileInView={{ scaleY: 1 }}
++                      viewport={{ once: true }}
++                      transition={{ duration: 0.4, delay: 0.4 }}
++                    />
++                  )}
++                </div>
++                <div className="pb-8 pt-1">
++                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: step.accent }}>
++                    Step {String(i + 1).padStart(2, "0")}
++                  </span>
++                  <h4 className="text-lg font-semibold text-[#1C1D62] mt-0.5">{step.title}</h4>
++                  <p className="text-sm text-[#718096] mt-1 leading-relaxed">{step.description}</p>
++                </div>
++              </motion.div>
++            ))}
++          </div>
++        </div>
++      </section>
++
++      {/* ═══════════════════════════════════════
++          TESTIMONIAL with AnimatedIllustration
++          ═══════════════════════════════════════ */}
++      <section className="py-16 md:py-20 bg-white">
++        <div className="max-w-7xl mx-auto px-4 sm:px-6">
++          <SectionReveal>
++            <div className="max-w-3xl mx-auto relative">
++              <svg viewBox="0 0 80 80" className="absolute -top-6 -left-4 w-16 h-16 opacity-10 pointer-events-none" aria-hidden="true">
++                <text x="0" y="65" fontSize="80" fontFamily="Georgia, serif" fill="#304AC0">&ldquo;</text>
++              </svg>
++
++              <div className="bg-white rounded-2xl p-8 sm:p-10 border border-[#E8ECF0] relative z-10">
++                <div className="flex flex-col md:flex-row items-start gap-6">
++                  <div className="flex-shrink-0 hidden md:block">
++                    <AnimatedIllustration theme="business" size={100} color="#304AC0" />
++                  </div>
++                  <div>
++                    <blockquote className="text-lg sm:text-xl font-medium text-[#1C1D62] leading-relaxed italic">
++                      Credora gave me the opportunity to grow from a fresher to a
++                      credit analyst handling complex MSME profiles. The learning
++                      never stops, and the team genuinely supports your development.
++                    </blockquote>
++                    <div className="mt-5 flex items-center gap-3">
++                      <div className="w-10 h-10 rounded-full bg-[#304AC0] flex items-center justify-center text-white font-bold text-sm">
++                        AK
++                      </div>
++                      <div>
++                        <p className="text-[#1C1D62] font-semibold text-sm">Anitha Krishnan</p>
++                        <p className="text-[#718096] text-xs">Credit Analyst — Credora Fintech</p>
++                      </div>
++                    </div>
++                  </div>
++                </div>
++              </div>
++            </div>
++          </SectionReveal>
++        </div>
++      </section>
++
++      {/* ═══════════════════════════════════════
++          WHY CREDORA — Dark card with progress bars
++          ═══════════════════════════════════════ */}
++      <section className="py-16 md:py-20 bg-[#F0F4FF]">
++        <div className="max-w-7xl mx-auto px-4 sm:px-6">
++          <SectionReveal>
++            <div className="bg-[#1C1D62] rounded-2xl p-8 sm:p-10 md:p-12 text-white relative overflow-hidden">
++              <div
++                className="absolute inset-0 opacity-[0.06] pointer-events-none"
++                style={{
++                  backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
++                  backgroundSize: "20px 20px",
++                }}
++                aria-hidden="true"
++              />
++
++              <div className="relative z-10">
++                <h2 className="text-2xl sm:text-3xl font-semibold mb-10">
++                  Why Credora
++                </h2>
++
++                <StaggerContainer className="flex flex-col gap-5" staggerDelay={0.1}>
++                  {[
++                    { text: "Real impact — help businesses access the funding they need to grow", progress: 95 },
++                    { text: "Flat hierarchy — your ideas are heard and implemented from day one", progress: 90 },
++                    { text: "Exposure to 70+ lenders and the full spectrum of financial products", progress: 100 },
++                    { text: "Fast-growing fintech with clear career progression paths", progress: 88 },
++                  ].map((item, i) => (
++                    <StaggerItem key={i}>
++                      <motion.div
++                        className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5"
++                        whileHover={{ x: 4 }}
++                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
++                      >
++                        <p className="text-white/90 leading-relaxed text-base sm:w-80 flex-shrink-0">
++                          {item.text}
++                        </p>
++                        <div className="flex-1 h-3 rounded-full bg-white/10 overflow-hidden">
++                          <motion.div
++                            className="h-full rounded-full"
++                            style={{ backgroundColor: i % 2 === 0 ? "#87B73C" : "#304AC0" }}
++                            initial={{ width: 0 }}
++                            whileInView={{ width: `${item.progress}%` }}
++                            viewport={{ once: true }}
++                            transition={{ duration: 1.2, delay: 0.2 + i * 0.15, ease: "easeOut" }}
++                          />
++                        </div>
++                        <span className="text-white/60 text-sm font-medium w-10 text-right flex-shrink-0">
++                          {item.progress}%
++                        </span>
++                      </motion.div>
++                    </StaggerItem>
++                  ))}
++                </StaggerContainer>
++              </div>
++            </div>
++          </SectionReveal>
++        </div>
++      </section>
++
++      {/* ═══════════════════════════════════════
++          APPLICATION FORM
++          ═══════════════════════════════════════ */}
++      <section id="apply-form" className="py-16 md:py-20 bg-white scroll-mt-20">
++        <div className="max-w-7xl mx-auto px-4 sm:px-6">
++          <SectionReveal>
++            <div className="max-w-3xl mx-auto">
++              <div className="text-center mb-10">
++                <span className="inline-block text-[#304AC0] text-xs font-semibold uppercase tracking-widest mb-4">
++                  Join the Team
++                </span>
++                <h2 className="text-2xl sm:text-3xl font-semibold text-[#1C1D62] mb-3">
++                  Submit Your Application
++                </h2>
++                <p className="text-[#718096] text-sm sm:text-base max-w-lg mx-auto">
++                  Fill out the form below to apply. Our team will review your
++                  profile and reach out within 3 business days if there&apos;s a fit.
++                </p>
++              </div>
++
++              <div className="bg-white rounded-2xl p-6 sm:p-8 md:p-10 border border-[#E8ECF0] shadow-lg">
++                <form onSubmit={handleSubmit} noValidate className="space-y-6">
++                  {/* Full Name */}
++                  <div className="space-y-2">
++                    <Label htmlFor="fullName" className="text-[#2D3748] text-sm font-medium">
++                      Full Name <span className="text-red-500">*</span>
++                    </Label>
++                    <div className="relative">
++                      <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#718096]" />
++                      <Input
++                        id="fullName"
++                        type="text"
++                        placeholder="Enter your full name"
++                        value={formData.fullName}
++                        onChange={(e) => {
++                          setFormData({ ...formData, fullName: e.target.value });
++                          if (formErrors.fullName) setFormErrors({ ...formErrors, fullName: "" });
++                        }}
++                        className={`pl-10 h-11 rounded-lg border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 ${formErrors.fullName ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}`}
++                      />
++                    </div>
++                    {formErrors.fullName && <p className="text-red-500 text-xs mt-1">{formErrors.fullName}</p>}
++                  </div>
++
++                  {/* Email & Phone Row */}
++                  <div className="grid sm:grid-cols-2 gap-6">
++                    <div className="space-y-2">
++                      <Label htmlFor="email" className="text-[#2D3748] text-sm font-medium">
++                        Email Address <span className="text-red-500">*</span>
++                      </Label>
++                      <div className="relative">
++                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#718096]" />
++                        <Input
++                          id="email"
++                          type="email"
++                          placeholder="you@example.com"
++                          value={formData.email}
++                          onChange={(e) => {
++                            setFormData({ ...formData, email: e.target.value });
++                            if (formErrors.email) setFormErrors({ ...formErrors, email: "" });
++                          }}
++                          className={`pl-10 h-11 rounded-lg border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 ${formErrors.email ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}`}
++                        />
++                      </div>
++                      {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
++                    </div>
++
++                    <div className="space-y-2">
++                      <Label htmlFor="phone" className="text-[#2D3748] text-sm font-medium">
++                        Phone Number <span className="text-red-500">*</span>
++                      </Label>
++                      <div className="relative">
++                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#718096]" />
++                        <div className="flex">
++                          <span className="inline-flex items-center px-3 h-11 rounded-l-lg border border-r-0 border-[#E8ECF0] bg-[#F7F8FA] text-[#718096] text-sm font-medium">
++                            +91
++                          </span>
++                          <Input
++                            id="phone"
++                            type="tel"
++                            placeholder="9876543210"
++                            value={formData.phone}
++                            onChange={(e) => {
++                              const val = e.target.value.replace(/\D/g, "").slice(0, 10);
++                              setFormData({ ...formData, phone: val });
++                              if (formErrors.phone) setFormErrors({ ...formErrors, phone: "" });
++                            }}
++                            className={`rounded-l-none h-11 rounded-r-lg border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 ${formErrors.phone ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}`}
++                          />
++                        </div>
++                      </div>
++                      {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
++                    </div>
++                  </div>
++
++                  {/* Position & Experience Row */}
++                  <div className="grid sm:grid-cols-2 gap-6">
++                    <div className="space-y-2">
++                      <Label htmlFor="position" className="text-[#2D3748] text-sm font-medium">
++                        Position <span className="text-red-500">*</span>
++                      </Label>
++                      <Select
++                        value={formData.position}
++                        onValueChange={(val) => {
++                          setFormData({ ...formData, position: val });
++                          if (formErrors.position) setFormErrors({ ...formErrors, position: "" });
++                        }}
++                      >
++                        <SelectTrigger className={`w-full h-11 rounded-lg border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 ${formErrors.position ? "border-red-400" : ""}`}>
++                          <SelectValue placeholder="Select a position" />
++                        </SelectTrigger>
++                        <SelectContent>
++                          {openPositions.map((pos) => (
++                            <SelectItem key={pos.id} value={pos.title}>
++                              {pos.title} — {pos.department}
++                            </SelectItem>
++                          ))}
++                          <SelectItem value="Other / General Application">Other / General Application</SelectItem>
++                        </SelectContent>
++                      </Select>
++                      {formErrors.position && <p className="text-red-500 text-xs mt-1">{formErrors.position}</p>}
++                    </div>
++
++                    <div className="space-y-2">
++                      <Label htmlFor="experience" className="text-[#2D3748] text-sm font-medium">
++                        Total Experience <span className="text-[#718096] font-normal">(optional)</span>
++                      </Label>
++                      <Select value={formData.experience} onValueChange={(val) => setFormData({ ...formData, experience: val })}>
++                        <SelectTrigger className="w-full h-11 rounded-lg border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20">
++                          <SelectValue placeholder="Select experience" />
++                        </SelectTrigger>
++                        <SelectContent>
++                          <SelectItem value="Fresher (0 years)">Fresher (0 years)</SelectItem>
++                          <SelectItem value="0–1 year">0–1 year</SelectItem>
++                          <SelectItem value="1–3 years">1–3 years</SelectItem>
++                          <SelectItem value="3–5 years">3–5 years</SelectItem>
++                          <SelectItem value="5–10 years">5–10 years</SelectItem>
++                          <SelectItem value="10+ years">10+ years</SelectItem>
++                        </SelectContent>
++                      </Select>
++                    </div>
++                  </div>
++
++                  {/* Message */}
++                  <div className="space-y-2">
++                    <Label htmlFor="message" className="text-[#2D3748] text-sm font-medium">
++                      Cover Note / Additional Details <span className="text-[#718096] font-normal">(optional)</span>
++                    </Label>
++                    <Textarea
++                      id="message"
++                      placeholder="Tell us about yourself, your relevant experience, and why you'd like to join Credora..."
++                      rows={4}
++                      value={formData.message}
++                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
++                      className="rounded-lg border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 resize-none"
++                    />
++                  </div>
++
++                  {/* Submit Button */}
++                  <div className="pt-2">
++                    <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
++                      <Button
++                        type="submit"
++                        disabled={isSubmitting}
++                        className="w-full h-12 bg-[#304AC0] hover:bg-[#13277E] text-white font-semibold text-sm uppercase tracking-wider rounded-lg group transition-all duration-300"
++                      >
++                        {isSubmitting ? (
++                          <span className="flex items-center gap-2">
++                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
++                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
++                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
++                            </svg>
++                            Submitting...
++                          </span>
++                        ) : (
++                          <span className="flex items-center gap-2">
++                            <Send className="w-4 h-4" />
++                            Submit Application
++                          </span>
++                        )}
++                      </Button>
++                    </motion.div>
++                  </div>
++
++                  <p className="text-[#718096] text-xs text-center">
++                    By submitting, you agree to our privacy policy. We will never share your information with third parties.
++                  </p>
++                </form>
++              </div>
++            </div>
++          </SectionReveal>
++        </div>
++      </section>
++
++      {/* ═══════════════════════════════════════
++          CTA — Full-width with confetti dots + bouncing arrow
++          ═══════════════════════════════════════ */}
++      <section className="py-16 md:py-20 bg-[#1C1D62] relative overflow-hidden">
++        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
++          {Array.from({ length: 24 }).map((_, i) => (
++            <motion.span
++              key={i}
++              className="absolute block rounded-full"
++              style={{
++                width: `${4 + (i % 3) * 2}px`,
++                height: `${4 + (i % 3) * 2}px`,
++                backgroundColor:
++                  i % 4 === 0
++                    ? "#87B73C"
++                    : i % 4 === 1
++                    ? "#304AC0"
++                    : i % 4 === 2
++                    ? "rgba(255,255,255,0.15)"
++                    : "rgba(135,183,60,0.3)",
++                left: `${(i * 17 + 5) % 100}%`,
++                top: `${(i * 23 + 10) % 100}%`,
++              }}
++              animate={{ y: [0, -8, 0], opacity: [0.4, 1, 0.4] }}
++              transition={{ duration: 2 + (i % 3), delay: i * 0.15, repeat: Infinity, ease: "easeInOut" }}
++            />
++          ))}
++        </div>
++
++        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center relative z-10">
++          <SectionReveal>
++            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-4">
++              Don&apos;t See the Right Role?
++            </h2>
++            <p className="text-white/70 mb-8 max-w-xl mx-auto">
++              We&apos;re always looking for talented people. Send us your resume and
++              we&apos;ll reach out when a suitable position opens up.
++            </p>
++            <a href="#apply-form">
++              <PulseGlow color="#87B73C" className="inline-block">
++                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
++                  <Button
++                    size="lg"
++                    className="bg-[#87B73C] hover:bg-[#6f9a2f] text-white font-medium text-sm uppercase tracking-wider px-8 py-3 rounded-md group transition-all duration-300"
++                  >
++                    Send General Application
++                    <motion.span
++                      className="ml-2 inline-flex"
++                      animate={{ y: [0, -4, 0] }}
++                      transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
++                    >
++                      <ArrowRight className="w-4 h-4" />
++                    </motion.span>
++                  </Button>
++                </motion.div>
++              </PulseGlow>
++            </a>
++          </SectionReveal>
++        </div>
++      </section>
++    </motion.div>
++  );
++}
+\ No newline at end of file
