@@ -485,6 +485,7 @@ export const navLinks: NavLink[] = [
   },
   { label: "Blog", href: "/blog" },
   { label: "Referral Partner", href: "/referral-partner" },
+  { label: "Careers", href: "/careers" },
   { label: "Contact", href: "/contact" },
   { label: "EMI Calculator", href: "/emi-calculator", isButton: true },
 ];

@@ -85,6 +85,7 @@ export const NAV_ENTRIES = [
   { path: "/referral-partner", title: "Referral Partner Program", priority: 0.7, changeFrequency: "monthly" as const },
   { path: "/blog", title: "Blog", priority: 0.8, changeFrequency: "weekly" as const },
   { path: "/contact", title: "Contact Us", priority: 0.7, changeFrequency: "monthly" as const },
+  { path: "/careers", title: "Careers", priority: 0.7, changeFrequency: "weekly" as const },
 ];
 
 /** Helper: build an absolute URL from a path. */

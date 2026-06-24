@@ -22,6 +22,7 @@ const serviceLinks = [
 const quickLinks = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
+  { label: "Careers", href: "/careers" },
   { label: "EMI Calculator", href: "/emi-calculator" },
   { label: "Blog", href: "/blog" },
   { label: "Referral Partner", href: "/referral-partner" },
