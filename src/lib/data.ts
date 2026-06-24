@@ -472,7 +472,14 @@ export interface NavLink {
 
 export const navLinks: NavLink[] = [
   { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
+  {
+    label: "About",
+    href: "/about",
+    children: [
+      { label: "About Us", href: "/about" },
+      { label: "Careers", href: "/careers" },
+    ],
+  },
   {
     label: "Products",
     href: "/products",
@@ -485,7 +492,5 @@ export const navLinks: NavLink[] = [
   },
   { label: "Blog", href: "/blog" },
   { label: "Referral Partner", href: "/referral-partner" },
-  { label: "Careers", href: "/careers" },
   { label: "Contact", href: "/contact" },
-  { label: "EMI Calculator", href: "/emi-calculator", isButton: true },
 ];
