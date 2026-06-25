@@ -154,9 +154,9 @@ export default function Footer() {
             © {new Date().getFullYear()} Credora Fintech Pvt Ltd. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-xs text-white/40">
-            <a href="#" className="hover:text-white/70 transition-colors">Privacy Policy</a>
+            <Link href="/privacy-policy" className="hover:text-white/70 transition-colors">Privacy Policy</Link>
             <span>|</span>
-            <a href="#" className="hover:text-white/70 transition-colors">Terms of Service</a>
+            <Link href="/terms-and-conditions" className="hover:text-white/70 transition-colors">Terms &amp; Conditions</Link>
           </div>
           <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-[#304AC0] transition-colors">
             <ArrowUp className="w-4 h-4" />
