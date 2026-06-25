@@ -86,6 +86,8 @@ export const NAV_ENTRIES = [
   { path: "/blog", title: "Blog", priority: 0.8, changeFrequency: "weekly" as const },
   { path: "/contact", title: "Contact Us", priority: 0.7, changeFrequency: "monthly" as const },
   { path: "/careers", title: "Careers", priority: 0.7, changeFrequency: "weekly" as const },
+  { path: "/privacy-policy", title: "Privacy Policy", priority: 0.4, changeFrequency: "yearly" as const },
+  { path: "/terms-and-conditions", title: "Terms and Conditions", priority: 0.4, changeFrequency: "yearly" as const },
 ];
 
 /** Helper: build an absolute URL from a path. */
