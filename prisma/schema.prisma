@@ -1,0 +1,137 @@
+// Prisma schema for CredoraFin — SQLite (file-based, no external DB required)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  role          String    @default("viewer") // super_admin | admin | viewer
+  passwordHash  String
+  lastLogin     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
+model ContactInquiry {
+  id                 String   @id @default(cuid())
+  name               String
+  businessName       String?
+  businessType       String?
+  fundingRequirement String?
+  phone              String
+  email              String?
+  message            String?
+  status             String   @default("new") // new | contacted | in_progress | converted | closed
+  ipAddress          String?  @map("ip_address")
+  userAgent          String?  @map("user_agent")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("contact_inquiries")
+}
+
+model ReferralPartner {
+  id             String   @id @default(cuid())
+  name           String
+  email          String?
+  phone          String
+  businessName   String?  @map("business_name")
+  businessType   String?  @map("business_type")
+  city           String?
+  referralSource String?  @map("referral_source")
+  message        String?
+  status         String   @default("pending") // pending | approved | active | suspended | rejected
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("referral_partners")
+}
+
+model JobPosition {
+  id          String   @id @default(cuid())
+  title       String
+  department  String
+  location    String
+  type        String   @default("Full-time")
+  experience  String
+  salary      String
+  color       String   @default("#304AC0")
+  description String
+  skills      String   // JSON-encoded string array
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("job_positions")
+}
+
+model JobApplication {
+  id         String   @id @default(cuid())
+  fullName   String   @map("full_name")
+  email      String
+  phone      String
+  position   String
+  experience String?
+  message    String?
+  status     String   @default("new") // new | screening | interview | offered | rejected | hired
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  resumeUrl  String?  @map("resume_url")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("job_applications")
+}
+
+model BrochureDownload {
+  id           String   @id @default(cuid())
+  email        String
+  product      String
+  brochureFile String   @map("brochure_file")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now())
+
+  @@map("brochure_downloads")
+}
+
+model BrochureFile {
+  id          String   @id @default(cuid())
+  slug        String   @unique // product slug
+  fileName    String   @map("file_name") // stored filename on disk
+  originalName String  @map("original_name") // user-uploaded filename
+  mimeType    String   @map("mime_type")
+  size        Int
+  uploadedBy  String?  @map("uploaded_by")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("brochure_files")
+}
+
+model ProductOverride {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String?
+  shortDesc   String?  @map("short_desc")
+  fullDesc    String?  @map("full_desc")
+  brochureFile String? @map("brochure_file")
+  brochureUrl String?  @map("brochure_url")
+  isActive    Boolean  @default(true) @map("is_active")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+  updatedBy   String?  @map("updated_by")
+
+  @@map("product_overrides")
+}
