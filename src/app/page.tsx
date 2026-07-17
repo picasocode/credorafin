@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import {
   SectionReveal,
   StaggerContainer,
@@ -121,7 +121,7 @@ function AnimatedCounter({
 }
 
 /* ────────────────────────────────────────────
-   HERO SLIDES DATA
+   HERO SLIDES DATA — with per-slide accent theming + floating stats
    ──────────────────────────────────────────── */
 const heroSlides = [
   {
@@ -138,6 +138,10 @@ const heroSlides = [
     ctaSecondary: "Speak to an Advisor",
     ctaLink: "/contact",
     cardLabel: "Funding Dashboard",
+    accent: "#304AC0",
+    accentDark: "#13277E",
+    floatTop: { label: "Quick Disbursal", value: "7-10 Days" },
+    floatBottom: { label: "Funding Range", value: "₹5L - ₹50Cr" },
   },
   {
     badge: "₹5L - ₹50Cr Funding Range",
@@ -153,6 +157,10 @@ const heroSlides = [
     ctaSecondary: "Talk to an Expert",
     ctaLink: "/products/project-finance",
     cardLabel: "Project Finance",
+    accent: "#87B73C",
+    accentDark: "#2E7D32",
+    floatTop: { label: "Tenure", value: "Up to 20 yrs" },
+    floatBottom: { label: "Ticket Size", value: "₹1Cr - ₹500Cr" },
   },
   {
     badge: "Global Trade Ready",
@@ -168,11 +176,16 @@ const heroSlides = [
     ctaSecondary: "Speak to an Advisor",
     ctaLink: "/products/cross-border-finance",
     cardLabel: "Cross-Border Finance",
+    accent: "#13277E",
+    accentDark: "#1C1D62",
+    floatTop: { label: "Trade Finance", value: "LC & BG" },
+    floatBottom: { label: "Global Reach", value: "40+ Countries" },
   },
 ];
 
 /* ────────────────────────────────────────────
-   HERO SECTION — with auto-advancing slider
+   HERO SECTION — creative slider with accent theming, 3D tilt,
+   progress bar, keyboard + swipe navigation, word-by-word headline
    ──────────────────────────────────────────── */
 function HeroSection() {
   const heroRef = useRef(null);
@@ -185,6 +198,21 @@ function HeroSection() {
   });
   const circleY1 = useTransform(scrollYProgress, [0, 1], [0, -60]);
   const circleY2 = useTransform(scrollYProgress, [0, 1], [0, 40]);
+
+  // ── 3D tilt motion values for the funding card ──
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [6, -6]), {
+    stiffness: 150,
+    damping: 20,
+  });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-6, 6]), {
+    stiffness: 150,
+    damping: 20,
+  });
+
+  // ── Swipe tracking ──
+  const touchStartX = useRef(0);
 
   const totalSlides = heroSlides.length;
 
@@ -206,8 +234,7 @@ function HeroSection() {
     [currentSlide]
   );
 
-  // Auto-advance every 6 seconds — timer resets on manual navigation
-  // (lastNavTick) so manual clicks and auto-advance never collide.
+  // ── Auto-advance every 6 seconds — timer resets on manual navigation ──
   useEffect(() => {
     const timer = setInterval(() => {
       setDirection(1);
@@ -216,7 +243,25 @@ function HeroSection() {
     return () => clearInterval(timer);
   }, [totalSlides, lastNavTick]);
 
+  // ── Keyboard navigation (← / →) ──
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") paginate(-1);
+      else if (e.key === "ArrowRight") paginate(1);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [paginate]);
+
   const slide = heroSlides[currentSlide];
+  const accentVar = {
+    "--hero-accent": slide.accent,
+    "--hero-accent-dark": slide.accentDark,
+    "--hero-accent-05": slide.accent + "0D",
+    "--hero-accent-10": slide.accent + "1A",
+    "--hero-accent-20": slide.accent + "33",
+  } as React.CSSProperties;
+  const headlineWords = slide.titlePrefix.split(" ");
 
   const slideVariants = {
     enter: (dir: number) => ({
@@ -230,12 +275,54 @@ function HeroSection() {
     }),
   };
 
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+  const handleCardMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(delta) > 50) {
+      paginate(delta > 0 ? -1 : 1);
+    }
+  };
+
   return (
     <section
       id="hero"
       className="relative min-h-[90vh] flex items-center overflow-hidden bg-[#F0F4FF]"
       ref={heroRef}
+      style={accentVar}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
+      {/* Scoped CSS for accent-themed hover states (CSS vars cascade from section) */}
+      <style>{`
+        .hero-cta-primary { background-color: var(--hero-accent); }
+        .hero-cta-primary:hover { background-color: var(--hero-accent-dark); }
+        .hero-cta-secondary { border-color: var(--hero-accent-dark); color: var(--hero-accent-dark); }
+        .hero-cta-secondary:hover { background-color: var(--hero-accent-05); }
+        .hero-arrow { border: 1px solid var(--hero-accent-20); color: var(--hero-accent); }
+        .hero-arrow:hover { background-color: var(--hero-accent); color: #fff; border-color: var(--hero-accent); }
+        .hero-focus:focus-visible { outline: 2px solid var(--hero-accent-20); outline-offset: 2px; }
+      `}</style>
+
+      {/* Accent-tinted ambient glow that shifts with the slide */}
+      <motion.div
+        className="absolute top-1/2 right-0 w-[700px] h-[700px] rounded-full pointer-events-none blur-3xl"
+        style={{ backgroundColor: slide.accent }}
+        animate={{ opacity: [0.03, 0.06, 0.03] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
+
       {/* Decorative circles with parallax */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -292,60 +379,97 @@ function HeroSection() {
                 >
                   {/* Badge */}
                   <div>
-                    <span className="inline-flex items-center gap-2 bg-white text-[#304AC0] text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full border border-[#304AC0]/10 shadow-sm">
+                    <span
+                      className="inline-flex items-center gap-2 bg-white text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full border shadow-sm"
+                      style={{ color: slide.accent, borderColor: slide.accent + "1A" }}
+                    >
                       <span className="w-2 h-2 rounded-full bg-[#87B73C] animate-pulse" />
                       {slide.badge}
                     </span>
                   </div>
 
-                  {/* Headline */}
+                  {/* Headline — word-by-word reveal */}
                   <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-[#1C1D62] leading-[1.1] tracking-tight">
-                    {slide.titlePrefix}{" "}
+                    {headlineWords.map((word, i) => (
+                      <React.Fragment key={i}>
+                        <motion.span
+                          className="inline-block"
+                          initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
+                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                          transition={{ duration: 0.5, delay: 0.1 + i * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        >
+                          {word}
+                        </motion.span>{" "}
+                      </React.Fragment>
+                    ))}
                     <span className="relative inline-block">
-                      <span className="relative z-10 text-[#304AC0]">{slide.titleHighlight}</span>
                       <motion.span
-                        className="absolute bottom-1 left-0 right-0 h-3 bg-[#87B73C]/20 -skew-x-3 rounded"
+                        className="relative z-10 inline-block"
+                        style={{ color: slide.accent }}
+                        initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
+                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        transition={{ duration: 0.5, delay: 0.1 + headlineWords.length * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      >
+                        {slide.titleHighlight}
+                      </motion.span>
+                      <motion.span
+                        className="absolute bottom-1 left-0 right-0 h-3 -skew-x-3 rounded"
+                        style={{ transformOrigin: "left", backgroundColor: slide.accent + "20" }}
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
-                        transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 60 }}
-                        style={{ transformOrigin: "left" }}
+                        transition={{ duration: 0.6, delay: 0.4 + headlineWords.length * 0.08, type: "spring", stiffness: 60 }}
                       />
                     </span>
                   </h1>
 
                   {/* Description 1 */}
-                  <p className="text-lg sm:text-xl text-[#718096] leading-relaxed max-w-xl">
+                  <motion.p
+                    className="text-lg sm:text-xl text-[#718096] leading-relaxed max-w-xl"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                  >
                     {slide.desc1}
-                  </p>
+                  </motion.p>
 
                   {/* Description 2 */}
-                  <p className="text-base text-[#2D3748] leading-relaxed max-w-xl">
+                  <motion.p
+                    className="text-base text-[#2D3748] leading-relaxed max-w-xl"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                  >
                     {slide.desc2Pre}
-                    <strong className="text-[#304AC0]">{slide.desc2Highlight}</strong>
+                    <strong style={{ color: slide.accent }}>{slide.desc2Highlight}</strong>
                     {slide.desc2Post}
-                  </p>
+                  </motion.p>
 
                   {/* CTAs */}
-                  <div className="flex flex-wrap gap-4">
+                  <motion.div
+                    className="flex flex-wrap gap-4"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.5 }}
+                  >
                     <Link href={slide.ctaLink}>
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button className="bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300 shadow-lg hover:shadow-xl group">
+                      <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}>
+                        <Button className="hero-cta-primary text-white font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300 shadow-lg hover:shadow-xl group">
                           {slide.ctaPrimary}
                           <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                         </Button>
                       </motion.div>
                     </Link>
                     <Link href="/contact">
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}>
                         <Button
                           variant="outline"
-                          className="border-[#13277E] text-[#13277E] hover:bg-[#F8F9FA] font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300"
+                          className="hero-cta-secondary font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300"
                         >
                           {slide.ctaSecondary}
                         </Button>
                       </motion.div>
                     </Link>
-                  </div>
+                  </motion.div>
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -383,7 +507,7 @@ function HeroSection() {
                 type="button"
                 onClick={() => paginate(-1)}
                 aria-label="Previous slide"
-                className="w-10 h-10 shrink-0 rounded-full border border-[#304AC0]/20 bg-white/80 backdrop-blur flex items-center justify-center text-[#304AC0] hover:bg-[#304AC0] hover:text-white hover:border-[#304AC0] transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#304AC0]/40"
+                className="hero-arrow hero-focus w-10 h-10 shrink-0 rounded-full bg-white/80 backdrop-blur flex items-center justify-center transition-all duration-200 shadow-sm focus:outline-none"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -395,15 +519,16 @@ function HeroSection() {
                     type="button"
                     onClick={() => goToSlide(i)}
                     aria-label={`Go to slide ${i + 1}: ${s.titlePrefix} ${s.titleHighlight}`}
-                    className="group relative py-2 px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#304AC0]/40 rounded"
+                    className="hero-focus group relative py-2 px-1 focus:outline-none rounded"
                   >
                     <span
                       className={cn(
                         "block h-2 rounded-full transition-all duration-300",
                         i === currentSlide
-                          ? "w-8 bg-[#304AC0]"
+                          ? "w-8"
                           : "w-2 bg-[#304AC0]/30 group-hover:bg-[#304AC0]/50"
                       )}
+                      style={i === currentSlide ? { backgroundColor: slide.accent } : undefined}
                     />
                   </button>
                 ))}
@@ -413,7 +538,7 @@ function HeroSection() {
                 type="button"
                 onClick={() => paginate(1)}
                 aria-label="Next slide"
-                className="w-10 h-10 shrink-0 rounded-full border border-[#304AC0]/20 bg-white/80 backdrop-blur flex items-center justify-center text-[#304AC0] hover:bg-[#304AC0] hover:text-white hover:border-[#304AC0] transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#304AC0]/40"
+                className="hero-arrow hero-focus w-10 h-10 shrink-0 rounded-full bg-white/80 backdrop-blur flex items-center justify-center transition-all duration-200 shadow-sm focus:outline-none"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -422,20 +547,31 @@ function HeroSection() {
                 {String(currentSlide + 1).padStart(2, "0")} / {String(totalSlides).padStart(2, "0")}
               </span>
             </div>
+
+            {/* Keyboard hint */}
+            <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-[#718096]/70">
+              <kbd className="px-1.5 py-0.5 rounded border border-[#E8ECF0] bg-white/60 text-[10px] font-medium text-[#718096]">←</kbd>
+              <kbd className="px-1.5 py-0.5 rounded border border-[#E8ECF0] bg-white/60 text-[10px] font-medium text-[#718096]">→</kbd>
+              <span>to navigate</span>
+            </div>
           </div>
 
-          {/* Right side — Funding Overview Card with Image (synced with slide) */}
+          {/* Right side — Funding Overview Card with 3D tilt + synced image */}
           <motion.div
             className="relative hidden lg:block"
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3, type: "spring", stiffness: 60 }}
+            style={{ perspective: 1200 }}
           >
-            <div className="relative">
-              {/* Main card */}
-              <div className="bg-white rounded-3xl shadow-2xl p-8 border border-[#E8ECF0] overflow-hidden">
+            <div className="relative" onMouseMove={handleCardMouseMove} onMouseLeave={handleCardMouseLeave}>
+              {/* Main card with 3D tilt */}
+              <motion.div
+                className="bg-white rounded-3xl shadow-2xl p-8 border border-[#E8ECF0] overflow-hidden"
+                style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+              >
                 {/* Hero image strip at top — crossfades with slide */}
-                <div className="relative -mx-8 -mt-8 mb-6 h-40 overflow-hidden rounded-t-3xl">
+                <div className="relative -mx-8 -mt-8 mb-6 h-40 overflow-hidden rounded-t-3xl" style={{ transform: "translateZ(40px)", transformStyle: "preserve-3d" }}>
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={slide.image}
@@ -457,17 +593,17 @@ function HeroSection() {
                   </AnimatePresence>
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/80" />
                   <div className="absolute bottom-3 left-6 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[#87B73C]" />
+                    <Sparkles className="w-4 h-4" style={{ color: slide.accent }} />
                     <span className="text-sm font-medium text-[#1C1D62]">{slide.cardLabel}</span>
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-6" style={{ transform: "translateZ(20px)" }}>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-[#718096]">
                       Funding Overview
                     </span>
-                    <span className="text-xs bg-[#87B73C]/10 text-[#2E7D32] px-3 py-1 rounded-full font-medium">
+                    <span className="text-xs px-3 py-1 rounded-full font-medium" style={{ backgroundColor: slide.accent + "15", color: slide.accentDark }}>
                       Active
                     </span>
                   </div>
@@ -562,30 +698,42 @@ function HeroSection() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Floating accent card — Quick Disbursal */}
+              {/* Floating accent card — top (per-slide, accent-themed) */}
               <FloatingElement amplitude={8} duration={3} className="absolute -top-4 -left-4">
-                <div className="bg-[#304AC0] text-white rounded-xl px-4 py-3 shadow-lg">
+                <div className="text-white rounded-xl px-4 py-3 shadow-lg" style={{ backgroundColor: slide.accent }}>
                   <div className="text-xs font-medium opacity-80">
-                    Quick Disbursal
+                    {slide.floatTop.label}
                   </div>
-                  <div className="text-sm font-bold">7-10 Days</div>
+                  <div className="text-sm font-bold">{slide.floatTop.value}</div>
                 </div>
               </FloatingElement>
 
-              {/* Floating accent card — Funding Range */}
+              {/* Floating accent card — bottom (per-slide, accent-dark-themed) */}
               <FloatingElement amplitude={8} duration={3.5} className="absolute -bottom-4 -right-4">
-                <div className="bg-[#87B73C] text-white rounded-xl px-4 py-3 shadow-lg">
+                <div className="text-white rounded-xl px-4 py-3 shadow-lg" style={{ backgroundColor: slide.accentDark }}>
                   <div className="text-xs font-medium opacity-80">
-                    Funding Range
+                    {slide.floatBottom.label}
                   </div>
-                  <div className="text-sm font-bold">₹5L - ₹50Cr</div>
+                  <div className="text-sm font-bold">{slide.floatBottom.value}</div>
                 </div>
               </FloatingElement>
             </div>
           </motion.div>
         </div>
+      </div>
+
+      {/* Auto-advance progress bar — resets on slide change */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#304AC0]/10">
+        <motion.div
+          key={currentSlide}
+          className="h-full rounded-r-full"
+          style={{ backgroundColor: slide.accent }}
+          initial={{ width: "0%" }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 6, ease: "linear" }}
+        />
       </div>
     </section>
   );
