@@ -92,3 +92,46 @@ Stage Summary:
   5. Frontend creates hidden iframe pointing to downloadUrl → browser downloads PDF directly
   6. UI shows "Download started! Check your browser downloads." (no misleading inbox message)
 - Admin "Edit product" form for msme-loans works as expected — admin uploads PDF via BrochureUploadWidget, the PDF is stored in public/uploads/brochures/, and the slug-based lookup connects the uploaded file to the product page form
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Add a slide option (carousel/slider) to the home page hero section of credorafin and push to git. Do not change other parts.
+
+Work Log:
+- Cloned https://github.com/picasocode/credorafin.git (using provided PAT) to inspect the codebase
+- Identified the home page hero is an inline `HeroSection()` function in src/app/page.tsx (lines 123-444), NOT the standalone Hero.tsx component
+- Synced the credorafin project into /home/z/my-project (replacing the default template) so the dev server / Write-Edit tools work and the preview can run on port 3000; preserved credorafin's .git so the push goes to the correct remote
+- Set up DATABASE_URL (.env) → SQLite at db/custom.db; ran `bun install` (869 packages) and `bun run db:push` (schema in sync, reuse existing seeded DB)
+- Designed a 3-slide carousel using existing brand assets:
+  * Slide 1 — "Enrich Your Cashflow" (MSME funding, hero-indian-team.png, /contact)
+  * Slide 2 — "Power Your Projects" (Project Finance, project-hero.png, /products/project-finance)
+  * Slide 3 — "Expand Across Borders" (Cross-Border Finance, cross-border-hero.png, /products/cross-border-finance)
+- Implemented via a Python splice script (replaced the HERO SECTION block only, preserved WHY CHOOSE US and all later sections untouched):
+  * Added imports: useCallback, AnimatePresence, ChevronLeft, ChevronRight, cn
+  * Added `heroSlides` data array + rewrote `HeroSection()` to be slider-driven
+  * Left content (badge, h1, 2 paragraphs, CTAs) cycles via framer-motion AnimatePresence (mode="wait", custom direction)
+  * Right-side Funding Overview card image crossfades with the active slide (keyed by slide.image)
+  * Prev/Next arrow buttons + 3 clickable dot indicators + "01 / 03" counter
+  * Auto-advance every 6s; timer resets on any manual navigation (lastNavTick dep) so clicks never collide with auto-advance
+  - (initial version had a collision bug: NEXT from slide 1 jumped to slide 3 because the 6s timer fired during the click; fixed by adding lastNavTick to the useEffect deps)
+  * Fully accessible: aria-labels on all 5 controls, keyboard-focusable rings, sr-friendly labels
+  * Responsive: slider works on mobile (390px tested); right card hides on <lg as before
+- Lint: 0 errors in page.tsx (53 pre-existing errors in other credorafin files — left untouched per "Don't change other")
+- Browser-verified end-to-end with agent-browser (server kept alive within a single Bash command):
+  * Page title "Credora Fintech — Enrich Your Cashflow" loads, HTTP 200, no console errors, no dev.log errors
+  * Slide 1 H1 "Enrich Your Cashflow" → NEXT → "Power Your Projects" → NEXT → "Expand Across Borders" → PREV → "Power Your Projects" → dot 1 → "Enrich Your Cashflow" ✓
+  * Card image src switches between hero-indian-team / project-hero / cross-border-hero (confirmed via Next.js image warnings + DOM eval)
+  * Slide counter "01 / 03" correct
+  * Mobile (390x844): NEXT works, H1 updates correctly
+  * VLM (glm-4.6v) visual analysis of slide-1 screenshot confirmed: headline, slider arrows+dots visible, right card with business-team image, professional aligned layout
+- Cleaned up all verification artifacts (verify.sh, /home/z/verify-shots/) so they are not committed
+- Committed ONLY src/app/page.tsx (242 insertions, 94 deletions) as commit 9ecbc54 "feat(home): add auto-advancing slider to hero section"
+- Pushed to origin/main: 1722a22..9ecbc54 main -> main (success)
+- Verified git status: main in sync with origin/main; .env / node_modules / db / .zscripts NOT tracked or ignored, not pushed
+
+Stage Summary:
+- Home page hero section now has a polished 3-slide carousel with auto-advance, manual prev/next arrows, clickable dots, slide counter, crossfading card image, full keyboard/screen-reader accessibility, and responsive mobile support
+- Auto-advance timer correctly resets on manual interaction (no click/auto-advance collisions)
+- Only src/app/page.tsx changed — every other section, page, component, API route, and config file is untouched
+- Change pushed to https://github.com/picasocode/credorafin.git on main (commit 9ecbc54)

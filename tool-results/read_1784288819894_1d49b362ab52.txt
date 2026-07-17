@@ -1,0 +1,1484 @@
+     1→"use client";
+     2→
+     3→import React, { useRef, useEffect, useState } from "react";
+     4→import Link from "next/link";
+     5→import Image from "next/image";
+     6→import { motion, useInView, useScroll, useTransform } from "framer-motion";
+     7→import {
+     8→  SectionReveal,
+     9→  StaggerContainer,
+    10→  StaggerItem,
+    11→  HoverCard,
+    12→  ParallaxSection,
+    13→  PulseGlow,
+    14→  FloatingElement,
+    15→  SmoothReveal,
+    16→  ImageReveal,
+    17→} from "@/lib/animations";
+    18→import FluidTimeline from "@/components/FluidTimeline";
+    19→import AnimatedIllustration from "@/components/AnimatedIllustration";
+    20→import EMICalculator from "@/components/EMICalculator";
+    21→import { Button } from "@/components/ui/button";
+    22→import {
+    23→  ArrowRight,
+    24→  ShieldCheck,
+    25→  Landmark,
+    26→  Settings,
+    27→  TrendingUp,
+    28→  Building2,
+    29→  Link2,
+    30→  Globe,
+    31→  HardHat,
+    32→  Puzzle,
+    33→  Search,
+    34→  FileText,
+    35→  MapPin,
+    36→  FileCheck,
+    37→  Banknote,
+    38→  HeadphonesIcon,
+    39→  Sparkles,
+    40→  Star,
+    41→  Quote,
+    42→} from "lucide-react";
+    43→
+    44→/* ────────────────────────────────────────────
+    45→   Animated Counter Component
+    46→   ──────────────────────────────────────────── */
+    47→interface CounterProps {
+    48→  end: number;
+    49→  suffix?: string;
+    50→  prefix?: string;
+    51→  duration?: number;
+    52→  label: string;
+    53→  sublabel?: string;
+    54→}
+    55→
+    56→function AnimatedCounter({
+    57→  end,
+    58→  suffix = "",
+    59→  prefix = "",
+    60→  duration = 2,
+    61→  label,
+    62→  sublabel,
+    63→}: CounterProps) {
+    64→  const [count, setCount] = useState(0);
+    65→  const ref = useRef(null);
+    66→  const isInView = useInView(ref, { once: true, margin: "-50px" });
+    67→
+    68→  useEffect(() => {
+    69→    if (!isInView) return;
+    70→    let start = 0;
+    71→    const totalFrames = duration * 60;
+    72→    const step = end / totalFrames;
+    73→    // Ease-out cubic for smoother animation
+    74→    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+    75→    let frame = 0;
+    76→    const timer = setInterval(() => {
+    77→      frame++;
+    78→      const progress = Math.min(frame / totalFrames, 1);
+    79→      const easedProgress = easeOut(progress);
+    80→      const currentValue = Math.floor(easedProgress * end);
+    81→      if (progress >= 1) {
+    82→        setCount(end);
+    83→        clearInterval(timer);
+    84→      } else {
+    85→        setCount(currentValue);
+    86→      }
+    87→    }, 1000 / 60);
+    88→    return () => clearInterval(timer);
+    89→  }, [isInView, end, duration]);
+    90→
+    91→  return (
+    92→    <motion.div
+    93→      ref={ref}
+    94→      className="text-center group"
+    95→      initial={{ opacity: 0, y: 30 }}
+    96→      animate={isInView ? { opacity: 1, y: 0 } : {}}
+    97→      transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+    98→    >
+    99→      <motion.div
+   100→        className="inline-block"
+   101→        animate={isInView ? { scale: [1, 1.05, 1] } : {}}
+   102→        transition={{ duration: 2, delay: 1, repeat: Infinity, ease: "easeInOut" }}
+   103→      >
+   104→        <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-2">
+   105→          {prefix}
+   106→          {count.toLocaleString()}
+   107→          {suffix}
+   108→        </div>
+   109→      </motion.div>
+   110→      <div className="text-base sm:text-lg text-white/90 font-medium">
+   111→        {label}
+   112→      </div>
+   113→      {sublabel && (
+   114→        <div className="text-sm text-white/60 mt-1">{sublabel}</div>
+   115→      )}
+   116→    </motion.div>
+   117→  );
+   118→}
+   119→
+   120→/* ────────────────────────────────────────────
+   121→   HERO SECTION
+   122→   ──────────────────────────────────────────── */
+   123→function HeroSection() {
+   124→  const heroRef = useRef(null);
+   125→  const { scrollYProgress } = useScroll({
+   126→    target: heroRef,
+   127→    offset: ["start start", "end start"],
+   128→  });
+   129→  const circleY1 = useTransform(scrollYProgress, [0, 1], [0, -60]);
+   130→  const circleY2 = useTransform(scrollYProgress, [0, 1], [0, 40]);
+   131→
+   132→  return (
+   133→    <section
+   134→      id="hero"
+   135→      className="relative min-h-[90vh] flex items-center overflow-hidden bg-[#F0F4FF]"
+   136→      ref={heroRef}
+   137→    >
+   138→      {/* Decorative circles with parallax */}
+   139→      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+   140→        <motion.div
+   141→          className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-[#304AC0]/5"
+   142→          style={{ y: circleY1 }}
+   143→          animate={{ scale: [1, 1.05, 1], rotate: [0, 5, 0] }}
+   144→          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+   145→        />
+   146→        <motion.div
+   147→          className="absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full bg-[#87B73C]/5"
+   148→          style={{ y: circleY2 }}
+   149→          animate={{ scale: [1, 1.08, 1], rotate: [0, -5, 0] }}
+   150→          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+   151→        />
+   152→        {/* Dot patterns — top-left */}
+   153→        <div className="absolute top-20 left-[10%] grid grid-cols-5 gap-4 opacity-10">
+   154→          {Array.from({ length: 25 }).map((_, i) => (
+   155→            <motion.div
+   156→              key={i}
+   157→              className="w-2 h-2 rounded-full bg-[#304AC0]"
+   158→              animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.2, 0.1] }}
+   159→              transition={{ duration: 3, delay: i * 0.1, repeat: Infinity }}
+   160→            />
+   161→          ))}
+   162→        </div>
+   163→        {/* Dot patterns — bottom-right */}
+   164→        <div className="absolute bottom-20 right-[8%] grid grid-cols-5 gap-4 opacity-10">
+   165→          {Array.from({ length: 25 }).map((_, i) => (
+   166→            <motion.div
+   167→              key={i}
+   168→              className="w-2 h-2 rounded-full bg-[#13277E]"
+   169→              animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.18, 0.1] }}
+   170→              transition={{ duration: 3.5, delay: i * 0.12, repeat: Infinity }}
+   171→            />
+   172→          ))}
+   173→        </div>
+   174→      </div>
+   175→
+   176→      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24 w-full">
+   177→        <div className="grid lg:grid-cols-2 gap-12 items-center">
+   178→          {/* Left content */}
+   179→          <div className="space-y-8">
+   180→            <motion.div
+   181→              initial={{ opacity: 0, y: 30 }}
+   182→              animate={{ opacity: 1, y: 0 }}
+   183→              transition={{ duration: 0.6, type: "spring", stiffness: 80 }}
+   184→            >
+   185→              <span className="inline-flex items-center gap-2 bg-white text-[#304AC0] text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full border border-[#304AC0]/10 shadow-sm">
+   186→                <span className="w-2 h-2 rounded-full bg-[#87B73C] animate-pulse" />
+   187→                Trusted by 1,200+ Clients
+   188→              </span>
+   189→            </motion.div>
+   190→
+   191→            <motion.h1
+   192→              className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-[#1C1D62] leading-[1.1] tracking-tight"
+   193→              initial={{ opacity: 0, y: 30 }}
+   194→              animate={{ opacity: 1, y: 0 }}
+   195→              transition={{ duration: 0.8, delay: 0.15, type: "spring", stiffness: 80 }}
+   196→            >
+   197→              Enrich Your{" "}
+   198→              <span className="relative inline-block">
+   199→                <span className="relative z-10 text-[#304AC0]">Cashflow</span>
+   200→                <motion.span
+   201→                  className="absolute bottom-1 left-0 right-0 h-3 bg-[#87B73C]/20 -skew-x-3 rounded"
+   202→                  initial={{ scaleX: 0 }}
+   203→                  animate={{ scaleX: 1 }}
+   204→                  transition={{ duration: 0.8, delay: 1, type: "spring", stiffness: 60 }}
+   205→                  style={{ transformOrigin: "left" }}
+   206→                />
+   207→              </span>
+   208→            </motion.h1>
+   209→
+   210→            <motion.p
+   211→              className="text-lg sm:text-xl text-[#718096] leading-relaxed max-w-xl"
+   212→              initial={{ opacity: 0, y: 30 }}
+   213→              animate={{ opacity: 1, y: 0 }}
+   214→              transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 80 }}
+   215→            >
+   216→              Structured funding solutions for MSMEs, professionals, and growing
+   217→              businesses across India. We simplify access to capital by bridging
+   218→              the gap between your funding needs and the right financial
+   219→              institutions.
+   220→            </motion.p>
+   221→
+   222→            <motion.p
+   223→              className="text-base text-[#2D3748] leading-relaxed max-w-xl"
+   224→              initial={{ opacity: 0, y: 30 }}
+   225→              animate={{ opacity: 1, y: 0 }}
+   226→              transition={{ duration: 0.6, delay: 0.4, type: "spring", stiffness: 80 }}
+   227→            >
+   228→              With disciplined pre-underwriting, end-to-end advisory, and access
+   229→              to{" "}
+   230→              <strong className="text-[#304AC0]">
+   231→                70+ Financial Institutions
+   232→              </strong>
+   233→              , we prepare your profile for success.
+   234→            </motion.p>
+   235→
+   236→            <motion.div
+   237→              className="flex flex-wrap gap-4"
+   238→              initial={{ opacity: 0, y: 30 }}
+   239→              animate={{ opacity: 1, y: 0 }}
+   240→              transition={{ duration: 0.6, delay: 0.5, type: "spring", stiffness: 80 }}
+   241→            >
+   242→              <Link href="/contact">
+   243→                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+   244→                  <Button className="bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300 shadow-lg hover:shadow-xl group">
+   245→                    Get Funded Now
+   246→                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+   247→                  </Button>
+   248→                </motion.div>
+   249→              </Link>
+   250→              <Link href="/contact">
+   251→                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+   252→                  <Button
+   253→                    variant="outline"
+   254→                    className="border-[#13277E] text-[#13277E] hover:bg-[#F8F9FA] font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300"
+   255→                  >
+   256→                    Speak to an Advisor
+   257→                  </Button>
+   258→                </motion.div>
+   259→              </Link>
+   260→            </motion.div>
+   261→
+   262→            {/* Trust indicators */}
+   263→            <motion.div
+   264→              className="flex items-center gap-6 pt-4"
+   265→              initial={{ opacity: 0 }}
+   266→              animate={{ opacity: 1 }}
+   267→              transition={{ duration: 0.6, delay: 0.7 }}
+   268→            >
+   269→              <div className="flex items-center gap-2">
+   270→                <div className="flex -space-x-2">
+   271→                  {["M", "S", "R", "K"].map((letter, i) => (
+   272→                    <motion.div
+   273→                      key={i}
+   274→                      className="w-8 h-8 rounded-full bg-[#304AC0]/10 border-2 border-white flex items-center justify-center text-[10px] font-semibold text-[#304AC0]"
+   275→                      initial={{ opacity: 0, scale: 0.5 }}
+   276→                      animate={{ opacity: 1, scale: 1 }}
+   277→                      transition={{ delay: 0.9 + i * 0.1, type: "spring" }}
+   278→                    >
+   279→                      {letter}
+   280→                    </motion.div>
+   281→                  ))}
+   282→                </div>
+   283→                <span className="text-sm text-[#718096]">
+   284→                  1,200+ Happy Clients
+   285→                </span>
+   286→              </div>
+   287→            </motion.div>
+   288→          </div>
+   289→
+   290→          {/* Right side — Funding Overview Card with Image */}
+   291→          <motion.div
+   292→            className="relative hidden lg:block"
+   293→            initial={{ opacity: 0, x: 60 }}
+   294→            animate={{ opacity: 1, x: 0 }}
+   295→            transition={{ duration: 0.8, delay: 0.3, type: "spring", stiffness: 60 }}
+   296→          >
+   297→            <div className="relative">
+   298→              {/* Main card */}
+   299→              <div className="bg-white rounded-3xl shadow-2xl p-8 border border-[#E8ECF0] overflow-hidden">
+   300→                {/* Hero image strip at top */}
+   301→                <div className="relative -mx-8 -mt-8 mb-6 h-40 overflow-hidden rounded-t-3xl">
+   302→                  <Image
+   303→                    src="/images/pages/hero-indian-team.png"
+   304→                    alt="Indian business team collaborating"
+   305→                    fill
+   306→                    sizes="100vw"
+   307→                    className="object-cover"
+   308→                    priority
+   309→                  />
+   310→                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/80" />
+   311→                  <div className="absolute bottom-3 left-6 flex items-center gap-2">
+   312→                    <Sparkles className="w-4 h-4 text-[#87B73C]" />
+   313→                    <span className="text-sm font-medium text-[#1C1D62]">Funding Dashboard</span>
+   314→                  </div>
+   315→                </div>
+   316→
+   317→                <div className="space-y-6">
+   318→                  <div className="flex items-center justify-between">
+   319→                    <span className="text-sm font-medium text-[#718096]">
+   320→                      Funding Overview
+   321→                    </span>
+   322→                    <span className="text-xs bg-[#87B73C]/10 text-[#2E7D32] px-3 py-1 rounded-full font-medium">
+   323→                      Active
+   324→                    </span>
+   325→                  </div>
+   326→
+   327→                  {/* Animated progress bars */}
+   328→                  <div className="space-y-4">
+   329→                    <div>
+   330→                      <div className="flex justify-between text-sm mb-1.5">
+   331→                        <span className="text-[#2D3748]">
+   332→                          Loan Approval Rate
+   333→                        </span>
+   334→                        <span className="font-semibold text-[#304AC0]">
+   335→                          92%
+   336→                        </span>
+   337→                      </div>
+   338→                      <div className="h-2 bg-[#F0F4FF] rounded-full overflow-hidden">
+   339→                        <motion.div
+   340→                          className="h-full bg-[#304AC0] rounded-full"
+   341→                          initial={{ width: 0 }}
+   342→                          animate={{ width: "92%" }}
+   343→                          transition={{
+   344→                            duration: 1.8,
+   345→                            delay: 1,
+   346→                            ease: [0.25, 0.46, 0.45, 0.94],
+   347→                          }}
+   348→                        />
+   349→                      </div>
+   350→                    </div>
+   351→                    <div>
+   352→                      <div className="flex justify-between text-sm mb-1.5">
+   353→                        <span className="text-[#2D3748]">
+   354→                          Client Satisfaction
+   355→                        </span>
+   356→                        <span className="font-semibold text-[#87B73C]">
+   357→                          98%
+   358→                        </span>
+   359→                      </div>
+   360→                      <div className="h-2 bg-[#F0F4FF] rounded-full overflow-hidden">
+   361→                        <motion.div
+   362→                          className="h-full bg-[#87B73C] rounded-full"
+   363→                          initial={{ width: 0 }}
+   364→                          animate={{ width: "98%" }}
+   365→                          transition={{
+   366→                            duration: 1.8,
+   367→                            delay: 1.2,
+   368→                            ease: [0.25, 0.46, 0.45, 0.94],
+   369→                          }}
+   370→                        />
+   371→                      </div>
+   372→                    </div>
+   373→                    <div>
+   374→                      <div className="flex justify-between text-sm mb-1.5">
+   375→                        <span className="text-[#2D3748]">Lender Network</span>
+   376→                        <span className="font-semibold text-[#13277E]">
+   377→                          70+
+   378→                        </span>
+   379→                      </div>
+   380→                      <div className="h-2 bg-[#F0F4FF] rounded-full overflow-hidden">
+   381→                        <motion.div
+   382→                          className="h-full bg-[#13277E] rounded-full"
+   383→                          initial={{ width: 0 }}
+   384→                          animate={{ width: "85%" }}
+   385→                          transition={{
+   386→                            duration: 1.8,
+   387→                            delay: 1.4,
+   388→                            ease: [0.25, 0.46, 0.45, 0.94],
+   389→                          }}
+   390→                        />
+   391→                      </div>
+   392→                    </div>
+   393→                  </div>
+   394→
+   395→                  {/* Mini stats */}
+   396→                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[#E8ECF0]">
+   397→                    <div className="text-center">
+   398→                      <div className="text-2xl font-bold text-[#1C1D62]">
+   399→                        20+
+   400→                      </div>
+   401→                      <div className="text-xs text-[#718096]">Years Exp.</div>
+   402→                    </div>
+   403→                    <div className="text-center">
+   404→                      <div className="text-2xl font-bold text-[#304AC0]">
+   405→                        70+
+   406→                      </div>
+   407→                      <div className="text-xs text-[#718096]">Banks</div>
+   408→                    </div>
+   409→                    <div className="text-center">
+   410→                      <div className="text-2xl font-bold text-[#87B73C]">
+   411→                        20+
+   412→                      </div>
+   413→                      <div className="text-xs text-[#718096]">Products</div>
+   414→                    </div>
+   415→                  </div>
+   416→                </div>
+   417→              </div>
+   418→
+   419→              {/* Floating accent card — Quick Disbursal */}
+   420→              <FloatingElement amplitude={8} duration={3} className="absolute -top-4 -left-4">
+   421→                <div className="bg-[#304AC0] text-white rounded-xl px-4 py-3 shadow-lg">
+   422→                  <div className="text-xs font-medium opacity-80">
+   423→                    Quick Disbursal
+   424→                  </div>
+   425→                  <div className="text-sm font-bold">7-10 Days</div>
+   426→                </div>
+   427→              </FloatingElement>
+   428→
+   429→              {/* Floating accent card — Funding Range */}
+   430→              <FloatingElement amplitude={8} duration={3.5} className="absolute -bottom-4 -right-4">
+   431→                <div className="bg-[#87B73C] text-white rounded-xl px-4 py-3 shadow-lg">
+   432→                  <div className="text-xs font-medium opacity-80">
+   433→                    Funding Range
+   434→                  </div>
+   435→                  <div className="text-sm font-bold">₹5L - ₹50Cr</div>
+   436→                </div>
+   437→              </FloatingElement>
+   438→            </div>
+   439→          </motion.div>
+   440→        </div>
+   441→      </div>
+   442→    </section>
+   443→  );
+   444→}
+   445→
+   446→/* ────────────────────────────────────────────
+   447→   WHY CHOOSE US SECTION
+   448→   ──────────────────────────────────────────── */
+   449→const whyChooseData = [
+   450→  {
+   451→    icon: ShieldCheck,
+   452→    title: "Disciplined Pre-Underwriting",
+   453→    desc: "We prepare your profile before submission, ensuring higher approval rates.",
+   454→  },
+   455→  {
+   456→    icon: Landmark,
+   457→    title: "Access to 70+ Financial Institutions",
+   458→    desc: "A wide network of financial institutions means better terms and the right fit for your business.",
+   459→  },
+   460→  {
+   461→    icon: Settings,
+   462→    title: "Tailored Solutions",
+   463→    desc: "Every solution is customized. Every recommendation is intentional, with end-to-end support.",
+   464→  },
+   465→  {
+   466→    icon: TrendingUp,
+   467→    title: "Cash Flow & Long-Term Growth",
+   468→    desc: "We focus on improving your cash flow and positioning your business for sustainable growth.",
+   469→  },
+   470→];
+   471→
+   472→function WhyChooseUsSection() {
+   473→  return (
+   474→    <section
+   475→      id="why-us"
+   476→      className="py-20 md:py-28 bg-white relative overflow-hidden"
+   477→    >
+   478→      {/* Subtle background pattern */}
+   479→      <div className="absolute inset-0 pointer-events-none">
+   480→        <div className="absolute top-0 right-0 w-96 h-96 bg-[#F0F4FF] rounded-full -translate-y-1/2 translate-x-1/2 opacity-50" />
+   481→        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#F0F4FF] rounded-full translate-y-1/2 -translate-x-1/2 opacity-50" />
+   482→      </div>
+   483→
+   484→      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+   485→        {/* Section header — using SmoothReveal for smoother entrance */}
+   486→        <SmoothReveal className="text-center max-w-3xl mx-auto mb-16">
+   487→          <span className="inline-block text-[#304AC0] text-xs font-semibold uppercase tracking-widest mb-4">
+   488→            Why Choose Us
+   489→          </span>
+   490→          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1C1D62] leading-tight">
+   491→            We go beyond arranging funds
+   492→          </h2>
+   493→          <p className="mt-5 text-lg text-[#718096] leading-relaxed">
+   494→            We prepare your profile, structure your application, and connect you
+   495→            with lenders who are the right fit for your business.
+   496→          </p>
+   497→        </SmoothReveal>
+   498→
+   499→        {/* Cards grid */}
+   500→        <StaggerContainer
+   501→          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
+   502→          staggerDelay={0.15}
+   503→        >
+   504→          {whyChooseData.map((item, i) => (
+   505→            <StaggerItem key={i}>
+   506→              <motion.div
+   507→                className="h-full"
+   508→                whileHover={{ y: -6, boxShadow: "0 16px 32px rgba(48,74,192,0.12)" }}
+   509→                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+   510→              >
+   511→                <div className="group relative bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm hover:border-[#304AC0]/20 transition-all duration-300 h-full min-h-[220px] flex flex-col">
+   512→                  {/* Icon with rotation on hover */}
+   513→                  <motion.div
+   514→                    className="w-14 h-14 rounded-xl bg-[#F0F4FF] flex items-center justify-center mb-5 group-hover:bg-[#304AC0] transition-colors duration-300"
+   515→                    whileHover={{ rotate: 5, scale: 1.05 }}
+   516→                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
+   517→                  >
+   518→                    <item.icon className="w-7 h-7 text-[#304AC0] group-hover:text-white transition-colors duration-300" />
+   519→                  </motion.div>
+   520→                  {/* Content */}
+   521→                  <h3 className="text-lg font-semibold text-[#1C1D62] mb-2 group-hover:text-[#304AC0] transition-colors duration-300">
+   522→                    {item.title}
+   523→                  </h3>
+   524→                  <p className="text-sm text-[#718096] leading-relaxed flex-1">
+   525→                    {item.desc}
+   526→                  </p>
+   527→                  {/* Accent line */}
+   528→                  <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#304AC0] scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
+   529→                </div>
+   530→              </motion.div>
+   531→            </StaggerItem>
+   532→          ))}
+   533→        </StaggerContainer>
+   534→      </div>
+   535→    </section>
+   536→  );
+   537→}
+   538→
+   539→/* ────────────────────────────────────────────
+   540→   WHAT WE DO SECTION
+   541→   ──────────────────────────────────────────── */
+   542→const whatWeDoData = [
+   543→  {
+   544→    icon: Building2,
+   545→    title: "MSME Loans",
+   546→    desc: "Collateral-free and secured funding for growth and operations.",
+   547→    href: "/products/msme-loans",
+   548→    color: "#304AC0",
+   549→    image: "/images/products/msme-indian.png",
+   550→  },
+   551→  {
+   552→    icon: Link2,
+   553→    title: "Supply Chain Finance",
+   554→    desc: "Unlock liquidity from invoices, payables, and inventory.",
+   555→    href: "/products/supply-chain-finance",
+   556→    color: "#13277E",
+   557→    image: "/images/products/scf-indian.png",
+   558→  },
+   559→  {
+   560→    icon: Globe,
+   561→    title: "Cross Border Finance",
+   562→    desc: "Export and import solutions for international trade.",
+   563→    href: "/products/cross-border-finance",
+   564→    color: "#1C1D62",
+   565→    image: "/images/products/crossborder-indian.png",
+   566→  },
+   567→  {
+   568→    icon: HardHat,
+   569→    title: "Project Finance",
+   570→    desc: "Structured funding for real estate and large-scale projects.",
+   571→    href: "/products/project-finance",
+   572→    color: "#304AC0",
+   573→    image: "/images/products/project-indian.png",
+   574→  },
+   575→  {
+   576→    icon: Puzzle,
+   577→    title: "Specialized Finance",
+   578→    desc: "Niche solutions including stressed assets and complex requirements.",
+   579→    href: "/products/specialized-finance",
+   580→    color: "#87B73C",
+   581→    image: "/images/services/advisory-indian.png",
+   582→  },
+   583→];
+   584→
+   585→function WhatWeDoSection() {
+   586→  return (
+   587→    <section
+   588→      id="what-we-do"
+   589→      className="py-20 md:py-28 bg-[#F0F4FF] relative overflow-hidden"
+   590→    >
+   591→      {/* Decorative dots */}
+   592→      <div className="absolute inset-0 pointer-events-none">
+   593→        <div className="absolute top-20 left-[5%] w-3 h-3 rounded-full bg-[#304AC0]/10" />
+   594→        <div className="absolute top-40 right-[12%] w-4 h-4 rounded-full bg-[#87B73C]/10" />
+   595→        <div className="absolute bottom-32 left-[20%] w-2 h-2 rounded-full bg-[#13277E]/10" />
+   596→      </div>
+   597→
+   598→      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+   599→        {/* Section header */}
+   600→        <SectionReveal className="text-center max-w-3xl mx-auto mb-16">
+   601→          <span className="inline-block text-[#304AC0] text-xs font-semibold uppercase tracking-widest mb-4">
+   602→            What We Do
+   603→          </span>
+   604→          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1C1D62] leading-tight">
+   605→            Tailored Solutions. Intentional Recommendations.
+   606→          </h2>
+   607→          <p className="mt-5 text-lg text-[#718096] leading-relaxed">
+   608→            We assess your financials, repair credit where needed, structure
+   609→            proposals, and connect you with the right lender.
+   610→          </p>
+   611→        </SectionReveal>
+   612→
+   613→        {/* Cards grid */}
+   614→        <StaggerContainer
+   615→          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+   616→          staggerDelay={0.12}
+   617→        >
+   618→          {whatWeDoData.map((item, i) => (
+   619→            <StaggerItem key={i}>
+   620→              <motion.div
+   621→                className="h-full"
+   622→                whileHover={{ y: -4 }}
+   623→                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+   624→              >
+   625→                <Link
+   626→                  href={item.href}
+   627→                  className="group relative bg-white rounded-2xl text-center border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 h-full min-h-[280px] flex flex-col overflow-hidden"
+   628→                >
+   629→                  {/* Image strip at top with gradient overlay */}
+   630→                  <div className="relative h-28 overflow-hidden rounded-t-2xl">
+   631→                    <Image
+   632→                      src={item.image}
+   633→                      alt={item.title}
+   634→                      fill
+   635→                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
+   636→                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+   637→                    />
+   638→                    <div
+   639→                      className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white"
+   640→                    />
+   641→                  </div>
+   642→
+   643→                  {/* Icon centered on top of image bottom edge (overlapping) */}
+   644→                  <div className="relative -mt-8 z-10">
+   645→                    <div className="relative w-16 h-16 mx-auto">
+   646→                      <div
+   647→                        className="absolute inset-0 rounded-2xl opacity-10 group-hover:opacity-20 transition-opacity duration-300"
+   648→                        style={{ backgroundColor: item.color }}
+   649→                      />
+   650→                      <div className="relative w-full h-full rounded-2xl flex items-center justify-center bg-white shadow-md group-hover:shadow-lg transition-shadow duration-300 border border-[#E8ECF0]">
+   651→                        <motion.div whileHover={{ rotate: 5, scale: 1.1 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
+   652→                          <item.icon
+   653→                            className="w-8 h-8 transition-colors duration-300"
+   654→                            style={{ color: item.color }}
+   655→                          />
+   656→                        </motion.div>
+   657→                      </div>
+   658→                    </div>
+   659→                  </div>
+   660→
+   661→                  {/* Content below image + icon */}
+   662→                  <div className="px-5 pb-5 pt-2 flex-1 flex flex-col">
+   663→                    <h3 className="text-base font-semibold text-[#1C1D62] mb-2 group-hover:text-[#304AC0] transition-colors duration-300">
+   664→                      {item.title}
+   665→                    </h3>
+   666→                    <p className="text-sm text-[#718096] leading-relaxed flex-1">
+   667→                      {item.desc}
+   668→                    </p>
+   669→                    {/* Hover arrow that slides right */}
+   670→                    <div className="mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-0 group-hover:translate-x-1">
+   671→                      <span
+   672→                        className="text-sm font-medium inline-flex items-center gap-1"
+   673→                        style={{ color: item.color }}
+   674→                      >
+   675→                        Learn More
+   676→                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
+   677→                      </span>
+   678→                    </div>
+   679→                  </div>
+   680→
+   681→                  {/* Colored border bottom on hover */}
+   682→                  <div
+   683→                    className="absolute bottom-0 left-0 right-0 h-1 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
+   684→                    style={{ backgroundColor: item.color }}
+   685→                  />
+   686→                </Link>
+   687→              </motion.div>
+   688→            </StaggerItem>
+   689→          ))}
+   690→        </StaggerContainer>
+   691→      </div>
+   692→    </section>
+   693→  );
+   694→}
+   695→
+   696→/* ────────────────────────────────────────────
+   697→   KEY NUMBERS SECTION
+   698→   ──────────────────────────────────────────── */
+   699→const keyStats = [
+   700→  {
+   701→    end: 20,
+   702→    suffix: "+",
+   703→    label: "Years of Combined Experience",
+   704→    sublabel: "Industry expertise",
+   705→  },
+   706→  {
+   707→    end: 70,
+   708→    suffix: "+",
+   709→    label: "Banks and NBFCs Associated",
+   710→    sublabel: "Pan-India network",
+   711→  },
+   712→  {
+   713→    end: 1200,
+   714→    suffix: "+",
+   715→    label: "Happy Clients",
+   716→    sublabel: "Across India",
+   717→  },
+   718→  {
+   719→    end: 20,
+   720→    suffix: "+",
+   721→    label: "Funding Products",
+   722→    sublabel: "Tailored solutions",
+   723→  },
+   724→];
+   725→
+   726→function KeyNumbersSection() {
+   727→  const ref = useRef(null);
+   728→  const isInView = useInView(ref, { once: true, margin: "-100px" });
+   729→
+   730→  return (
+   731→    <section
+   732→      id="key-numbers"
+   733→      className="py-20 md:py-28 bg-[#1C1D62] relative overflow-hidden"
+   734→      ref={ref}
+   735→    >
+   736→      {/* Background decoration */}
+   737→      <div className="absolute inset-0 pointer-events-none">
+   738→        {/* Grid pattern */}
+   739→        <div className="absolute top-0 left-0 w-full h-full opacity-[0.03]">
+   740→          <svg width="100%" height="100%">
+   741→            <defs>
+   742→              <pattern
+   743→                id="grid"
+   744→                width="40"
+   745→                height="40"
+   746→                patternUnits="userSpaceOnUse"
+   747→              >
+   748→                <path
+   749→                  d="M 40 0 L 0 0 0 40"
+   750→                  fill="none"
+   751→                  stroke="white"
+   752→                  strokeWidth="0.5"
+   753→                />
+   754→              </pattern>
+   755→            </defs>
+   756→            <rect width="100%" height="100%" fill="url(#grid)" />
+   757→          </svg>
+   758→        </div>
+   759→        <motion.div
+   760→          className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-[#304AC0]/10"
+   761→          animate={{ scale: [1, 1.1, 1] }}
+   762→          transition={{ duration: 15, repeat: Infinity }}
+   763→        />
+   764→        <motion.div
+   765→          className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-[#87B73C]/10"
+   766→          animate={{ scale: [1, 1.15, 1] }}
+   767→          transition={{ duration: 20, repeat: Infinity }}
+   768→        />
+   769→      </div>
+   770→
+   771→      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+   772→        {/* Section header — using SmoothReveal for smoother entrance */}
+   773→        <SmoothReveal className="text-center mb-14">
+   774→          <span className="inline-block text-[#87B73C] text-xs font-semibold uppercase tracking-widest mb-4">
+   775→            Key Numbers
+   776→          </span>
+   777→          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
+   778→            Numbers That Speak
+   779→          </h2>
+   780→        </SmoothReveal>
+   781→
+   782→        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+   783→          {keyStats.map((stat, i) => (
+   784→            <AnimatedCounter key={i} {...stat} />
+   785→          ))}
+   786→        </div>
+   787→      </div>
+   788→    </section>
+   789→  );
+   790→}
+   791→
+   792→/* ────────────────────────────────────────────
+   793→   PROCESS FLOW SECTION — Clean Card-Based Flow
+   794→   ──────────────────────────────────────────── */
+   795→const processSteps = [
+   796→  { icon: Search, title: "Understand Requirement", num: "01", color: "#304AC0", desc: "We listen to your business needs and funding goals." },
+   797→  { icon: FileText, title: "Financial Assessment", num: "02", color: "#13277E", desc: "Deep-Dive into Your Financials and Credit Profile" },
+   798→  { icon: ShieldCheck, title: "Pre-Underwriting", num: "03", color: "#1C1D62", desc: "We analyse and strengthen your application." },
+   799→  { icon: MapPin, title: "Lender Mapping", num: "04", color: "#304AC0", desc: "Match your profile to the best-fit lenders." },
+   800→  { icon: FileCheck, title: "Proposal Structuring", num: "05", color: "#13277E", desc: "Professional proposal positioned for approval." },
+   801→  { icon: Banknote, title: "Sanction & Disbursal", num: "06", color: "#1C1D62", desc: "Faster approval with managed follow-ups." },
+   802→  { icon: HeadphonesIcon, title: "Client Support Service", num: "07", color: "#87B73C", desc: "Ongoing support beyond disbursal." },
+   803→];
+   804→
+   805→function ProcessFlowSection() {
+   806→  const ref = useRef(null);
+   807→  const isInView = useInView(ref, { once: true, margin: "-100px" });
+   808→
+   809→  /* Step colors cycle through brand palette */
+   810→  const stepColors = ["#304AC0", "#13277E", "#87B73C", "#1C1D62"];
+   811→  const getStepColor = (idx: number) => stepColors[idx % stepColors.length];
+   812→
+   813→  return (
+   814→    <section id="process" className="py-20 md:py-28 bg-[#F7F9FC] relative">
+   815→      <div className="relative max-w-7xl mx-auto px-4 sm:px-6" ref={ref}>
+   816→        {/* ── Section Header ── */}
+   817→        <motion.div
+   818→          className="text-center max-w-3xl mx-auto mb-16"
+   819→          initial={{ opacity: 0, y: 20 }}
+   820→          animate={isInView ? { opacity: 1, y: 0 } : {}}
+   821→          transition={{ duration: 0.5, ease: "easeOut" }}
+   822→        >
+   823→          <span className="inline-block text-[#304AC0] text-xs font-semibold uppercase tracking-widest mb-4">Our Process</span>
+   824→          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1C1D62] leading-tight">From Assessment to Disbursal</h2>
+   825→          <p className="mt-5 text-lg text-[#718096] leading-relaxed">A structured, disciplined approach that ensures your funding journey is smooth and successful.</p>
+   826→        </motion.div>
+   827→
+   828→        {/* ══════════════════════════════════════════
+   829→            DESKTOP: Two-row layout (4 + 3) with connectors
+   830→            ══════════════════════════════════════════ */}
+   831→        <div className="hidden lg:block">
+   832→          {/* ── Top Row: Steps 1–4 (left → right) ── */}
+   833→          <div className="relative">
+   834→            <div className="grid grid-cols-4 gap-x-6 gap-y-0">
+   835→              {processSteps.slice(0, 4).map((step, i) => {
+   836→                const color = getStepColor(i);
+   837→                return (
+   838→                  <motion.div
+   839→                    key={i}
+   840→                    className="relative"
+   841→                    initial={{ opacity: 0, y: 24 }}
+   842→                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+   843→                    transition={{ duration: 0.5, delay: 0.15 + i * 0.1, ease: "easeOut" }}
+   844→                  >
+   845→                    {/* ── Step Card ── */}
+   846→                    <div className="relative bg-white rounded-lg border border-[#E8ECF0] shadow-sm flex flex-col min-h-[200px] cursor-default overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[#D0D8E8]">
+   847→                      {/* Top accent border */}
+   848→                      <div className="h-[3px] w-full" style={{ backgroundColor: color }} />
+   849→
+   850→                      <div className="p-6">
+   851→                        {/* Step number + icon row */}
+   852→                        <div className="flex items-center gap-3 mb-4">
+   853→                          <div
+   854→                            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+   855→                            style={{ backgroundColor: color }}
+   856→                          >
+   857→                            <span className="text-white text-sm font-semibold">{step.num}</span>
+   858→                          </div>
+   859→                          <div
+   860→                            className="w-9 h-9 rounded-md flex items-center justify-center flex-shrink-0"
+   861→                            style={{ backgroundColor: `${color}10` }}
+   862→                          >
+   863→                            <step.icon className="w-[18px] h-[18px]" style={{ color }} />
+   864→                          </div>
+   865→                        </div>
+   866→
+   867→                        {/* Title */}
+   868→                        <h4 className="text-[15px] font-semibold text-[#1C1D62] leading-tight mb-2">{step.title}</h4>
+   869→
+   870→                        {/* Description */}
+   871→                        <p className="text-[13px] text-[#718096] leading-relaxed">{step.desc}</p>
+   872→                      </div>
+   873→                    </div>
+   874→
+   875→                    {/* ── Horizontal Connector ── */}
+   876→                    {i < 3 && (
+   877→                      <div className="absolute top-1/2 -right-3 translate-x-1/2 -translate-y-1/2 z-20">
+   878→                        <svg width="28" height="12" viewBox="0 0 28 12" fill="none">
+   879→                          <line x1="0" y1="6" x2="18" y2="6" stroke="#E8ECF0" strokeWidth="1.5" />
+   880→                          <path
+   881→                            d="M14 2 L22 6 L14 10"
+   882→                            stroke={getStepColor(i + 1)}
+   883→                            strokeWidth="1.5"
+   884→                            strokeLinecap="round"
+   885→                            strokeLinejoin="round"
+   886→                            fill="none"
+   887→                          />
+   888→                        </svg>
+   889→                      </div>
+   890→                    )}
+   891→                  </motion.div>
+   892→                );
+   893→              })}
+   894→            </div>
+   895→          </div>
+   896→
+   897→          {/* ── Curved Connector: Row 1 → Row 2 ── */}
+   898→          <motion.div
+   899→            className="relative h-12 my-3 flex justify-end pr-[12.5%]"
+   900→            initial={{ opacity: 0 }}
+   901→            animate={isInView ? { opacity: 1 } : {}}
+   902→            transition={{ duration: 0.5, delay: 0.7 }}
+   903→          >
+   904→            <svg width="40" height="48" viewBox="0 0 40 48" fill="none">
+   905→              <path
+   906→                d="M20 0 L20 16 Q20 32 20 32 L20 48"
+   907→                stroke="#E8ECF0"
+   908→                strokeWidth="1.5"
+   909→                strokeLinecap="round"
+   910→                fill="none"
+   911→              />
+   912→              <path
+   913→                d="M16 42 L20 48 L24 42"
+   914→                stroke={getStepColor(4)}
+   915→                strokeWidth="1.5"
+   916→                strokeLinecap="round"
+   917→                strokeLinejoin="round"
+   918→                fill="none"
+   919→              />
+   920→            </svg>
+   921→          </motion.div>
+   922→
+   923→          {/* ── Bottom Row: Steps 5–7 (right → left) ── */}
+   924→          <div className="relative">
+   925→            <div className="grid grid-cols-4 gap-x-6 gap-y-0">
+   926→              {/* Empty offset cell */}
+   927→              <div />
+   928→              {processSteps.slice(4).map((step, i) => {
+   929→                const color = getStepColor(i + 4);
+   930→                return (
+   931→                  <motion.div
+   932→                    key={i + 4}
+   933→                    className="relative"
+   934→                    initial={{ opacity: 0, y: 24 }}
+   935→                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+   936→                    transition={{ duration: 0.5, delay: 0.9 + i * 0.1, ease: "easeOut" }}
+   937→                  >
+   938→                    {/* ── Step Card ── */}
+   939→                    <div className="relative bg-white rounded-lg border border-[#E8ECF0] shadow-sm flex flex-col min-h-[200px] cursor-default overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[#D0D8E8]">
+   940→                      {/* Top accent border */}
+   941→                      <div className="h-[3px] w-full" style={{ backgroundColor: color }} />
+   942→
+   943→                      <div className="p-6">
+   944→                        {/* Step number + icon row */}
+   945→                        <div className="flex items-center gap-3 mb-4">
+   946→                          <div
+   947→                            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+   948→                            style={{ backgroundColor: color }}
+   949→                          >
+   950→                            <span className="text-white text-sm font-semibold">{step.num}</span>
+   951→                          </div>
+   952→                          <div
+   953→                            className="w-9 h-9 rounded-md flex items-center justify-center flex-shrink-0"
+   954→                            style={{ backgroundColor: `${color}10` }}
+   955→                          >
+   956→                            <step.icon className="w-[18px] h-[18px]" style={{ color }} />
+   957→                          </div>
+   958→                        </div>
+   959→
+   960→                        {/* Title */}
+   961→                        <h4 className="text-[15px] font-semibold text-[#1C1D62] leading-tight mb-2">{step.title}</h4>
+   962→
+   963→                        {/* Description */}
+   964→                        <p className="text-[13px] text-[#718096] leading-relaxed">{step.desc}</p>
+   965→                      </div>
+   966→                    </div>
+   967→
+   968→                    {/* ── Horizontal Connector (right to left, so arrow points left) ── */}
+   969→                    {i < 2 && (
+   970→                      <div className="absolute top-1/2 -left-3 -translate-x-1/2 -translate-y-1/2 z-20">
+   971→                        <svg width="28" height="12" viewBox="0 0 28 12" fill="none">
+   972→                          <line x1="10" y1="6" x2="28" y2="6" stroke="#E8ECF0" strokeWidth="1.5" />
+   973→                          <path
+   974→                            d="M14 2 L6 6 L14 10"
+   975→                            stroke={getStepColor(i + 5)}
+   976→                            strokeWidth="1.5"
+   977→                            strokeLinecap="round"
+   978→                            strokeLinejoin="round"
+   979→                            fill="none"
+   980→                          />
+   981→                        </svg>
+   982→                      </div>
+   983→                    )}
+   984→                  </motion.div>
+   985→                );
+   986→              })}
+   987→            </div>
+   988→          </div>
+   989→        </div>
+   990→
+   991→        {/* ══════════════════════════════════════════
+   992→            TABLET: 2-column grid
+   993→            ══════════════════════════════════════════ */}
+   994→        <div className="hidden md:grid lg:hidden grid-cols-2 gap-4">
+   995→          {processSteps.map((step, i) => {
+   996→            const color = getStepColor(i);
+   997→            return (
+   998→              <motion.div
+   999→                key={i}
+  1000→                className="relative"
+  1001→                initial={{ opacity: 0, y: 20 }}
+  1002→                animate={isInView ? { opacity: 1, y: 0 } : {}}
+  1003→                transition={{ duration: 0.4, delay: 0.1 + i * 0.08, ease: "easeOut" }}
+  1004→              >
+  1005→                <div
+  1006→                  className="bg-white rounded-lg p-5 border border-[#E8ECF0] shadow-sm min-h-[140px] flex flex-col cursor-default transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm hover:border-[#D0D8E8]"
+  1007→                  style={{ borderLeftWidth: "3px", borderLeftColor: color }}
+  1008→                >
+  1009→                  {/* Number Badge + Icon row */}
+  1010→                  <div className="flex items-center gap-3 mb-3">
+  1011→                    <div
+  1012→                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0"
+  1013→                      style={{ backgroundColor: color }}
+  1014→                    >
+  1015→                      {step.num}
+  1016→                    </div>
+  1017→                    <div
+  1018→                      className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
+  1019→                      style={{ backgroundColor: `${color}10` }}
+  1020→                    >
+  1021→                      <step.icon className="w-4 h-4" style={{ color }} />
+  1022→                    </div>
+  1023→                  </div>
+  1024→                  <h4 className="text-sm font-semibold text-[#1C1D62] mb-1">{step.title}</h4>
+  1025→                  <p className="text-xs text-[#718096] leading-relaxed flex-1">{step.desc}</p>
+  1026→                </div>
+  1027→              </motion.div>
+  1028→            );
+  1029→          })}
+  1030→        </div>
+  1031→
+  1032→        {/* ══════════════════════════════════════════
+  1033→            MOBILE: Clean Vertical Timeline
+  1034→            ══════════════════════════════════════════ */}
+  1035→        <div className="md:hidden relative">
+  1036→          {/* Static vertical line */}
+  1037→          <div className="absolute left-4 top-0 bottom-0 w-px bg-[#E8ECF0]" />
+  1038→
+  1039→          <div className="space-y-0">
+  1040→            {processSteps.map((step, i) => {
+  1041→              const color = getStepColor(i);
+  1042→              return (
+  1043→                <motion.div
+  1044→                  key={i}
+  1045→                  className="flex items-start gap-4 relative pl-0"
+  1046→                  initial={{ opacity: 0, y: 16 }}
+  1047→                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+  1048→                  transition={{ duration: 0.4, delay: 0.08 + i * 0.08, ease: "easeOut" }}
+  1049→                >
+  1050→                  {/* Timeline node */}
+  1051→                  <div className="flex flex-col items-center relative z-10 flex-shrink-0 ml-0">
+  1052→                    <div
+  1053→                      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+  1054→                      style={{ backgroundColor: color }}
+  1055→                    >
+  1056→                      <span className="text-white text-xs font-semibold">{step.num}</span>
+  1057→                    </div>
+  1058→                  </div>
+  1059→
+  1060→                  {/* Content card */}
+  1061→                  <div
+  1062→                    className="flex-1 bg-white rounded-lg p-4 border border-[#E8ECF0] shadow-sm mb-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
+  1063→                    style={{ borderLeftWidth: "3px", borderLeftColor: color }}
+  1064→                  >
+  1065→                    <h4 className="text-sm font-semibold text-[#1C1D62] mb-1">{step.title}</h4>
+  1066→                    <p className="text-xs text-[#718096] leading-relaxed">{step.desc}</p>
+  1067→                  </div>
+  1068→                </motion.div>
+  1069→              );
+  1070→            })}
+  1071→          </div>
+  1072→        </div>
+  1073→
+  1074→        {/* ── Bottom CTA ── */}
+  1075→        <motion.div
+  1076→          className="mt-14 text-center"
+  1077→          initial={{ opacity: 0, y: 16 }}
+  1078→          animate={isInView ? { opacity: 1, y: 0 } : {}}
+  1079→          transition={{ duration: 0.5, delay: 1.2, ease: "easeOut" }}
+  1080→        >
+  1081→          <div className="inline-flex items-center gap-2 text-sm text-[#304AC0] font-medium group cursor-default">
+  1082→            <span className="w-8 h-8 rounded-full bg-[#304AC0]/10 flex items-center justify-center group-hover:bg-[#304AC0]/20 transition-colors">
+  1083→              <Sparkles className="w-4 h-4" />
+  1084→            </span>
+  1085→            <span>Each step is managed by our expert advisors</span>
+  1086→          </div>
+  1087→        </motion.div>
+  1088→      </div>
+  1089→    </section>
+  1090→  );
+  1091→}
+  1092→
+  1093→/* ────────────────────────────────────────────
+  1094→   TESTIMONIAL SECTION
+  1095→   ──────────────────────────────────────────── */
+  1096→function TestimonialSection() {
+  1097→  const ref = useRef(null);
+  1098→  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  1099→
+  1100→  return (
+  1101→    <section
+  1102→      id="testimonial"
+  1103→      className="py-20 md:py-28 bg-white relative overflow-hidden"
+  1104→      ref={ref}
+  1105→    >
+  1106→      {/* Subtle blue tint pattern background */}
+  1107→      <div className="absolute inset-0 pointer-events-none">
+  1108→        <div className="absolute top-0 left-0 w-full h-full opacity-[0.02]">
+  1109→          <svg width="100%" height="100%">
+  1110→            <defs>
+  1111→              <pattern
+  1112→                id="testimonial-dots"
+  1113→                width="24"
+  1114→                height="24"
+  1115→                patternUnits="userSpaceOnUse"
+  1116→              >
+  1117→                <circle cx="2" cy="2" r="1" fill="#304AC0" />
+  1118→              </pattern>
+  1119→            </defs>
+  1120→            <rect width="100%" height="100%" fill="url(#testimonial-dots)" />
+  1121→          </svg>
+  1122→        </div>
+  1123→        <div className="absolute -top-20 right-0 w-96 h-96 rounded-full bg-[#304AC0]/[0.03]" />
+  1124→        <div className="absolute -bottom-16 left-0 w-80 h-80 rounded-full bg-[#87B73C]/[0.03]" />
+  1125→      </div>
+  1126→
+  1127→      <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+  1128→        <motion.div
+  1129→          className="grid lg:grid-cols-2 gap-12 items-center"
+  1130→          initial={{ opacity: 0, y: 40 }}
+  1131→          animate={isInView ? { opacity: 1, y: 0 } : {}}
+  1132→          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+  1133→        >
+  1134→          {/* Left side — Image */}
+  1135→          <ImageReveal className="relative">
+  1136→            <div className="relative rounded-2xl overflow-hidden shadow-xl">
+  1137→              <Image
+  1138→                src="/images/pages/success-india.png"
+  1139→                alt="Successful Indian business professional"
+  1140→                width={600}
+  1141→                height={500}
+  1142→                className="w-full h-auto object-cover"
+  1143→              />
+  1144→              {/* Subtle gradient overlay on image */}
+  1145→              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10" />
+  1146→            </div>
+  1147→            {/* Decorative accent */}
+  1148→            <div className="absolute -bottom-4 -right-4 w-32 h-32 rounded-xl bg-[#304AC0]/5 -z-10" />
+  1149→            <div className="absolute -top-4 -left-4 w-24 h-24 rounded-xl bg-[#87B73C]/5 -z-10" />
+  1150→          </ImageReveal>
+  1151→
+  1152→          {/* Right side — Quote content */}
+  1153→          <SmoothReveal direction="right" className="space-y-6">
+  1154→            {/* Star rating */}
+  1155→            <div className="flex items-center gap-1">
+  1156→              {[1, 2, 3, 4, 5].map((star) => (
+  1157→                <motion.div
+  1158→                  key={star}
+  1159→                  initial={{ opacity: 0, scale: 0 }}
+  1160→                  animate={isInView ? { opacity: 1, scale: 1 } : {}}
+  1161→                  transition={{ delay: 0.5 + star * 0.1, type: "spring", stiffness: 200 }}
+  1162→                >
+  1163→                  <Star className="w-5 h-5 fill-[#F6AD55] text-[#F6AD55]" />
+  1164→                </motion.div>
+  1165→              ))}
+  1166→            </div>
+  1167→
+  1168→            {/* Quote icon */}
+  1169→            <div className="text-[#304AC0]/10">
+  1170→              <Quote className="w-12 h-12" />
+  1171→            </div>
+  1172→
+  1173→            {/* Quote text */}
+  1174→            <blockquote className="text-xl sm:text-2xl font-medium text-[#1C1D62] leading-relaxed">
+  1175→              &ldquo;Being a Credora client has been transformative. They didn&rsquo;t just find us a lender — they prepared our entire financial profile.&rdquo;
+  1176→            </blockquote>
+  1177→
+  1178→            {/* Attribution */}
+  1179→            <div className="space-y-1">
+  1180→              <div className="text-base font-semibold text-[#304AC0]">
+  1181→                Rajesh Kumar
+  1182→              </div>
+  1183→              <div className="text-sm text-[#718096]">
+  1184→                Director, Kumar Industries, Chennai
+  1185→              </div>
+  1186→            </div>
+  1187→
+  1188→            {/* Decorative line */}
+  1189→            <div className="w-16 h-1 bg-[#87B73C] rounded-full" />
+  1190→          </SmoothReveal>
+  1191→        </motion.div>
+  1192→      </div>
+  1193→    </section>
+  1194→  );
+  1195→}
+  1196→
+  1197→/* ────────────────────────────────────────────
+  1198→   CTA BANNER SECTION
+  1199→   ──────────────────────────────────────────── */
+  1200→function CTABannerSection() {
+  1201→  const ref = useRef(null);
+  1202→  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  1203→
+  1204→  return (
+  1205→    <section
+  1206→      id="cta"
+  1207→      className="py-16 md:py-20 bg-[#1C1D62] relative overflow-hidden"
+  1208→      ref={ref}
+  1209→    >
+  1210→      {/* Background image with overlay */}
+  1211→      <div className="absolute inset-0 pointer-events-none">
+  1212→        <Image
+  1213→          src="/images/pages/office-india.png"
+  1214→          alt="Indian office background"
+  1215→          fill
+  1216→          sizes="100vw"
+  1217→          className="object-cover opacity-[0.08]"
+  1218→        />
+  1219→        <div className="absolute inset-0 bg-[#1C1D62]/80" />
+  1220→      </div>
+  1221→
+  1222→      {/* Decorative circles with animation */}
+  1223→      <div className="absolute inset-0 pointer-events-none">
+  1224→        <motion.div
+  1225→          className="absolute top-0 left-[10%] w-64 h-64 bg-[#304AC0]/10 rounded-full -translate-y-1/2"
+  1226→          animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.15, 0.1] }}
+  1227→          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+  1228→        />
+  1229→        <motion.div
+  1230→          className="absolute bottom-0 right-[15%] w-48 h-48 bg-[#87B73C]/10 rounded-full translate-y-1/2"
+  1231→          animate={{ scale: [1, 1.12, 1], opacity: [0.1, 0.18, 0.1] }}
+  1232→          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+  1233→        />
+  1234→        {/* Confetti-like animated dots */}
+  1235→        {[
+  1236→          { x: "8%", y: "25%", size: 6, color: "#87B73C", delay: 0, dur: 4 },
+  1237→          { x: "22%", y: "65%", size: 4, color: "#304AC0", delay: 0.8, dur: 5 },
+  1238→          { x: "35%", y: "15%", size: 5, color: "#87B73C", delay: 1.6, dur: 3.5 },
+  1239→          { x: "48%", y: "80%", size: 7, color: "rgba(255,255,255,0.25)", delay: 0.4, dur: 6 },
+  1240→          { x: "62%", y: "20%", size: 4, color: "#304AC0", delay: 2, dur: 4.5 },
+  1241→          { x: "75%", y: "70%", size: 6, color: "#87B73C", delay: 1.2, dur: 5.5 },
+  1242→          { x: "88%", y: "35%", size: 5, color: "rgba(255,255,255,0.2)", delay: 0.6, dur: 4 },
+  1243→          { x: "15%", y: "45%", size: 3, color: "#304AC0", delay: 1.8, dur: 3.8 },
+  1244→          { x: "55%", y: "50%", size: 4, color: "#87B73C", delay: 2.4, dur: 5 },
+  1245→          { x: "80%", y: "55%", size: 5, color: "rgba(255,255,255,0.15)", delay: 1, dur: 4.2 },
+  1246→          { x: "42%", y: "30%", size: 3, color: "#304AC0", delay: 2.8, dur: 3.5 },
+  1247→          { x: "68%", y: "85%", size: 6, color: "#87B73C", delay: 0.3, dur: 5.8 },
+  1248→          { x: "92%", y: "75%", size: 4, color: "rgba(255,255,255,0.2)", delay: 1.5, dur: 4.8 },
+  1249→          { x: "5%", y: "80%", size: 5, color: "#304AC0", delay: 2.2, dur: 5.2 },
+  1250→          { x: "30%", y: "40%", size: 3, color: "#87B73C", delay: 3, dur: 4.5 },
+  1251→        ].map((dot, i) => (
+  1252→          <motion.div
+  1253→            key={i}
+  1254→            className="absolute rounded-full"
+  1255→            style={{
+  1256→              left: dot.x,
+  1257→              top: dot.y,
+  1258→              width: dot.size,
+  1259→              height: dot.size,
+  1260→              backgroundColor: dot.color,
+  1261→            }}
+  1262→            animate={{
+  1263→              y: [0, -30, -10, -35, 0],
+  1264→              x: [0, 8, -6, 4, 0],
+  1265→              opacity: [0, 0.8, 0.5, 0.7, 0],
+  1266→              scale: [0.5, 1.2, 0.8, 1, 0.5],
+  1267→            }}
+  1268→            transition={{
+  1269→              duration: dot.dur,
+  1270→              delay: dot.delay,
+  1271→              repeat: Infinity,
+  1272→              ease: "easeInOut",
+  1273→            }}
+  1274→          />
+  1275→        ))}
+  1276→        {/* Original floating sparkle elements */}
+  1277→        {[
+  1278→          { x: "20%", y: "20%", delay: 0, color: "#87B73C" },
+  1279→          { x: "75%", y: "15%", delay: 1.5, color: "#304AC0" },
+  1280→          { x: "60%", y: "80%", delay: 0.8, color: "#87B73C" },
+  1281→          { x: "15%", y: "70%", delay: 2, color: "rgba(255,255,255,0.2)" },
+  1282→          { x: "85%", y: "60%", delay: 1.2, color: "rgba(255,255,255,0.15)" },
+  1283→        ].map((spark, i) => (
+  1284→          <motion.div
+  1285→            key={`spark-${i}`}
+  1286→            className="absolute w-2 h-2 rounded-full"
+  1287→            style={{
+  1288→              left: spark.x,
+  1289→              top: spark.y,
+  1290→              backgroundColor: spark.color,
+  1291→            }}
+  1292→            animate={{
+  1293→              scale: [0, 1.5, 0],
+  1294→              opacity: [0, 1, 0],
+  1295→              y: [0, -20, -40],
+  1296→            }}
+  1297→            transition={{
+  1298→              duration: 3,
+  1299→              delay: spark.delay,
+  1300→              repeat: Infinity,
+  1301→              ease: "easeInOut",
+  1302→            }}
+  1303→          />
+  1304→        ))}
+  1305→      </div>
+  1306→
+  1307→      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
+  1308→        <motion.h2
+  1309→          className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight mb-4"
+  1310→          initial={{ opacity: 0, y: 30 }}
+  1311→          animate={isInView ? { opacity: 1, y: 0 } : {}}
+  1312→          transition={{ duration: 0.6, type: "spring", stiffness: 80 }}
+  1313→        >
+  1314→          Ready to Strengthen your Credit Profile?
+  1315→        </motion.h2>
+  1316→        <motion.p
+  1317→          className="text-lg text-white/70 mb-8 max-w-2xl mx-auto"
+  1318→          initial={{ opacity: 0, y: 30 }}
+  1319→          animate={isInView ? { opacity: 1, y: 0 } : {}}
+  1320→          transition={{ duration: 0.6, delay: 0.15, type: "spring", stiffness: 80 }}
+  1321→        >
+  1322→          Contact us now for a free credit and Financial Assessment.
+  1323→        </motion.p>
+  1324→        <motion.div
+  1325→          initial={{ opacity: 0, y: 30 }}
+  1326→          animate={isInView ? { opacity: 1, y: 0 } : {}}
+  1327→          transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 80 }}
+  1328→        >
+  1329→          <Link href="/contact">
+  1330→            <PulseGlow color="#304AC0" className="inline-block">
+  1331→              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+  1332→                <Button className="bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider px-10 py-4 rounded-md shadow-xl group transition-all duration-300">
+  1333→                  Get in Touch
+  1334→                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+  1335→                </Button>
+  1336→              </motion.div>
+  1337→            </PulseGlow>
+  1338→          </Link>
+  1339→        </motion.div>
+  1340→      </div>
+  1341→    </section>
+  1342→  );
+  1343→}
+  1344→
+  1345→/* ────────────────────────────────────────────
+  1346→   EMI CALCULATOR SECTION
+  1347→   ──────────────────────────────────────────── */
+  1348→function EMICalculatorSection() {
+  1349→  return <EMICalculator />;
+  1350→}
+  1351→
+  1352→/* ────────────────────────────────────────────
+  1353→   BLOG PREVIEW SECTION
+  1354→   ──────────────────────────────────────────── */
+  1355→const blogPosts = [
+  1356→  {
+  1357→    category: "Credit Health",
+  1358→    title: "Why Your Credit Profile Matters More Than Your CIBIL Score",
+  1359→    excerpt: "Lenders look beyond just your score. Learn how a well-structured credit profile can significantly improve your loan approval chances and get you better interest rates.",
+  1360→    href: "/blog",
+  1361→    color: "#304AC0",
+  1362→  },
+  1363→  {
+  1364→    category: "Loan Structuring",
+  1365→    title: "Pre-Underwriting: The Secret to 95% Loan Approval Rates",
+  1366→    excerpt: "Most businesses apply directly and get rejected. Discover how disciplined pre-underwriting can transform your approval rate from 30% to 95%.",
+  1367→    href: "/blog",
+  1368→    color: "#13277E",
+  1369→  },
+  1370→  {
+  1371→    category: "MSME Funding",
+  1372→    title: "5 Common Mistakes MSMEs Make When Applying for Business Loans",
+  1373→    excerpt: "From incomplete documentation to choosing the wrong lender, avoid these common pitfalls that delay or derail your funding journey.",
+  1374→    href: "/blog",
+  1375→    color: "#87B73C",
+  1376→  },
+  1377→];
+  1378→
+  1379→function BlogPreviewSection() {
+  1380→  const ref = useRef(null);
+  1381→  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  1382→
+  1383→  return (
+  1384→    <section id="blog-preview" className="py-20 md:py-28 bg-white relative overflow-hidden" ref={ref}>
+  1385→      {/* Decorative background */}
+  1386→      <div className="absolute inset-0 pointer-events-none">
+  1387→        <div className="absolute top-0 left-0 w-96 h-96 bg-[#F0F4FF] rounded-full -translate-y-1/2 -translate-x-1/2 opacity-50" />
+  1388→        <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#F5F8EC] rounded-full translate-y-1/2 translate-x-1/2 opacity-50" />
+  1389→      </div>
+  1390→
+  1391→      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+  1392→        <SectionReveal className="text-center max-w-3xl mx-auto mb-16">
+  1393→          <span className="inline-block text-[#304AC0] text-xs font-semibold uppercase tracking-widest mb-4">
+  1394→            Insights & Resources
+  1395→          </span>
+  1396→          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1C1D62] leading-tight">
+  1397→            Latest from Our Blog
+  1398→          </h2>
+  1399→          <p className="mt-5 text-lg text-[#718096] leading-relaxed">
+  1400→            Expert insights on credit management, loan structuring, and funding strategies for growing businesses.
+  1401→          </p>
+  1402→        </SectionReveal>
+  1403→
+  1404→        <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" staggerDelay={0.12}>
+  1405→          {blogPosts.map((post, i) => (
+  1406→            <StaggerItem key={i}>
+  1407→              <motion.div
+  1408→                className="h-full"
+  1409→                whileHover={{ y: -6 }}
+  1410→                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+  1411→              >
+  1412→                <Link
+  1413→                  href={post.href}
+  1414→                  className="group relative bg-white rounded-2xl border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 h-full min-h-[260px] flex flex-col overflow-hidden"
+  1415→                >
+  1416→                  {/* Category strip */}
+  1417→                  <div className="h-1.5 w-full" style={{ backgroundColor: post.color }} />
+  1418→
+  1419→                  <div className="p-6 flex flex-col flex-1">
+  1420→                    <span
+  1421→                      className="text-[10px] font-semibold uppercase tracking-widest mb-3"
+  1422→                      style={{ color: post.color }}
+  1423→                    >
+  1424→                      {post.category}
+  1425→                    </span>
+  1426→                    <h3 className="text-base font-semibold text-[#1C1D62] mb-3 group-hover:text-[#304AC0] transition-colors duration-300 leading-snug">
+  1427→                      {post.title}
+  1428→                    </h3>
+  1429→                    <p className="text-sm text-[#718096] leading-relaxed flex-1">
+  1430→                      {post.excerpt}
+  1431→                    </p>
+  1432→                    <div className="mt-4 flex items-center gap-1.5 text-sm font-medium" style={{ color: post.color }}>
+  1433→                      Read More
+  1434→                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
+  1435→                    </div>
+  1436→                  </div>
+  1437→                </Link>
+  1438→              </motion.div>
+  1439→            </StaggerItem>
+  1440→          ))}
+  1441→        </StaggerContainer>
+  1442→
+  1443→        <div className="text-center mt-10">
+  1444→          <Link href="/blog">
+  1445→            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+  1446→              <Button
+  1447→                variant="outline"
+  1448→                className="border-[#304AC0] text-[#304AC0] hover:bg-[#304AC0] hover:text-white font-medium text-sm uppercase tracking-wider px-8 py-3 rounded-md transition-all duration-300"
+  1449→              >
+  1450→                View All Articles
+  1451→                <ArrowRight className="ml-2 w-4 h-4" />
+  1452→              </Button>
+  1453→            </motion.div>
+  1454→          </Link>
+  1455→        </div>
+  1456→      </div>
+  1457→    </section>
+  1458→  );
+  1459→}
+  1460→
+  1461→/* ────────────────────────────────────────────
+  1462→   HOME PAGE — Compose all sections
+  1463→   ──────────────────────────────────────────── */
+  1464→export default function Home() {
+  1465→  return (
+  1466→    <>
+  1467→      <HeroSection />
+  1468→      <WhyChooseUsSection />
+  1469→      <WhatWeDoSection />
+  1470→      <KeyNumbersSection />
+  1471→      <FluidTimeline />
+  1472→      <EMICalculatorSection />
+  1473→      <BlogPreviewSection />
+  1474→      <TestimonialSection />
+  1475→      <CTABannerSection />
+  1476→    </>
+  1477→  );
+  1478→}
+  1479→
+  1480→
+  1481→
+  1482→
+  1483→
+  1484→
