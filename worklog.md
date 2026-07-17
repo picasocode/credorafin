@@ -217,3 +217,47 @@ Stage Summary:
 - All interactions verified working end-to-end in the browser
 - Only src/app/page.tsx changed — all other files untouched
 - Change pushed to https://github.com/picasocode/credorafin.git on main (commit 01b13ed)
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Add background picture slide animation to home page hero section (cinematic, AOS-style) and push to git
+
+Work Log:
+- Read current hero structure in src/app/page.tsx (post Task ID 5 creative enhancements)
+- Designed a full-bleed background image slideshow layer:
+  * Per-slide backgroundImage field (distinct from card images for variety):
+    - Slide 1 (Cashflow): /images/pages/office-india.png
+    - Slide 2 (Projects): /images/products/project-indian.png
+    - Slide 3 (Borders): /images/products/crossborder-indian.png
+  * AnimatePresence crossfade between images (1.4s opacity, easeInOut)
+  * Ken Burns slow zoom (scale 1.02 → 1.15 over 6s, easeOut) for cinematic motion
+  * Scroll parallax (bgY 0%→18%, bgScale 1→1.08) for AOS-style depth
+  * Layered gradient overlay for text readability:
+    - Left-to-right: from-[#F0F4FF] via-[#F0F4FF]/90 to-[#F0F4FF]/40 (strong on left where text is, light on right where card is)
+    - Top-to-bottom: from-[#F0F4FF]/80 via-[#F0F4FF]/10 to-[#F0F4FF]/50 (vignette)
+- Initial opacity was 0.22 — too subtle. VLM said it only saw "gradient with circular shapes", not the photo
+- Increased to 0.55 and lightened the right side of the gradient (to-/40 instead of /80) so pictures are clearly visible
+- Re-verified with VLM (glm-4.6v) — all 3 background images now confirmed visible:
+  * Slide 1: "business professionals in formal attire interacting"
+  * Slide 2: "construction site with cranes and partially built buildings"
+  * Slide 3: "group of professionals in business attire engaged in discussion"
+  * All headlines confirmed "clearly readable"
+  * Mobile: background image visible, text readable
+- Programmatic checks:
+  * Background image opacity = 0.55 ✓
+  * 3 gradient overlay divs present ✓
+  * H1 color rgb(28,29,98) = #1C1D62 (readable) ✓
+  * Background image src changes per slide ✓
+  * No console errors, no dev.log errors ✓
+- Lint: 0 errors in page.tsx
+- Committed ONLY src/app/page.tsx (41 insertions) as commit 1620059
+- Pushed to origin/main: 01b13ed..1620059 main -> main (success)
+
+Stage Summary:
+- Hero section now has a cinematic background image slideshow: full-bleed photos that crossfade + Ken Burns zoom per slide, with scroll parallax for AOS-style depth
+- Each slide has a distinct, topic-relevant background photo (office/construction/professionals)
+- Gradient overlay keeps all text readable while letting pictures show through (stronger on left, lighter on right)
+- VLM-verified: all 3 background images clearly visible, all headlines readable, mobile works
+- Only src/app/page.tsx changed — all other files untouched
+- Change pushed to https://github.com/picasocode/credorafin.git on main (commit 1620059)
