@@ -134,6 +134,7 @@ const heroSlides = [
     desc2Post: ", we prepare your profile for success.",
     image: "/images/pages/hero-indian-team.png",
     imageAlt: "Indian business team collaborating",
+    backgroundImage: "/images/pages/office-india.png",
     ctaPrimary: "Get Funded Now",
     ctaSecondary: "Speak to an Advisor",
     ctaLink: "/contact",
@@ -153,6 +154,7 @@ const heroSlides = [
     desc2Post: " ensure your project gets funded on the right terms.",
     image: "/images/products/project-hero.png",
     imageAlt: "Project finance infrastructure development",
+    backgroundImage: "/images/products/project-indian.png",
     ctaPrimary: "Explore Project Finance",
     ctaSecondary: "Talk to an Expert",
     ctaLink: "/products/project-finance",
@@ -172,6 +174,7 @@ const heroSlides = [
     desc2Post: " designed to keep your global operations liquid and compliant.",
     image: "/images/products/cross-border-hero.png",
     imageAlt: "Cross-border international trade finance",
+    backgroundImage: "/images/products/crossborder-indian.png",
     ctaPrimary: "Explore Cross-Border",
     ctaSecondary: "Speak to an Advisor",
     ctaLink: "/products/cross-border-finance",
@@ -198,6 +201,9 @@ function HeroSection() {
   });
   const circleY1 = useTransform(scrollYProgress, [0, 1], [0, -60]);
   const circleY2 = useTransform(scrollYProgress, [0, 1], [0, 40]);
+  // Background image parallax — moves slower than scroll for depth (AOS-style)
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
 
   // ── 3D tilt motion values for the funding card ──
   const mouseX = useMotionValue(0);
@@ -314,6 +320,41 @@ function HeroSection() {
         .hero-arrow:hover { background-color: var(--hero-accent); color: #fff; border-color: var(--hero-accent); }
         .hero-focus:focus-visible { outline: 2px solid var(--hero-accent-20); outline-offset: 2px; }
       `}</style>
+
+      {/* ══ BACKGROUND IMAGE SLIDESHOW ══
+          Full-bleed images that crossfade + Ken Burns zoom per slide,
+          with a layered gradient overlay keeping text readable. */}
+      <motion.div
+        className="absolute inset-0 z-0 overflow-hidden"
+        style={{ y: bgY, scale: bgScale }}
+      >
+        <AnimatePresence>
+          <motion.div
+            key={slide.backgroundImage}
+            className="absolute inset-0"
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 0.55, scale: 1.15 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              opacity: { duration: 1.4, ease: "easeInOut" },
+              scale: { duration: 6, ease: "easeOut" },
+            }}
+          >
+            <Image
+              src={slide.backgroundImage}
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+          </motion.div>
+        </AnimatePresence>
+        {/* Readability overlay — strong on the left where text sits,
+            lighter on the right so the picture shows through */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F0F4FF] via-[#F0F4FF]/90 to-[#F0F4FF]/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#F0F4FF]/80 via-[#F0F4FF]/10 to-[#F0F4FF]/50" />
+      </motion.div>
 
       {/* Accent-tinted ambient glow that shifts with the slide */}
       <motion.div
