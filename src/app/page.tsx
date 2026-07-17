@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useInView, useScroll, useTransform } from "framer-motion";
 import {
   SectionReveal,
   StaggerContainer,
@@ -19,6 +19,7 @@ import FluidTimeline from "@/components/FluidTimeline";
 import AnimatedIllustration from "@/components/AnimatedIllustration";
 import EMICalculator from "@/components/EMICalculator";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   ArrowRight,
   ShieldCheck,
@@ -39,6 +40,8 @@ import {
   Sparkles,
   Star,
   Quote,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────
@@ -118,16 +121,114 @@ function AnimatedCounter({
 }
 
 /* ────────────────────────────────────────────
-   HERO SECTION
+   HERO SLIDES DATA
+   ──────────────────────────────────────────── */
+const heroSlides = [
+  {
+    badge: "Trusted by 1,200+ Clients",
+    titlePrefix: "Enrich Your",
+    titleHighlight: "Cashflow",
+    desc1: "Structured funding solutions for MSMEs, professionals, and growing businesses across India. We simplify access to capital by bridging the gap between your funding needs and the right financial institutions.",
+    desc2Pre: "With disciplined pre-underwriting, end-to-end advisory, and access to ",
+    desc2Highlight: "70+ Financial Institutions",
+    desc2Post: ", we prepare your profile for success.",
+    image: "/images/pages/hero-indian-team.png",
+    imageAlt: "Indian business team collaborating",
+    ctaPrimary: "Get Funded Now",
+    ctaSecondary: "Speak to an Advisor",
+    ctaLink: "/contact",
+    cardLabel: "Funding Dashboard",
+  },
+  {
+    badge: "₹5L - ₹50Cr Funding Range",
+    titlePrefix: "Power Your",
+    titleHighlight: "Projects",
+    desc1: "From infrastructure to expansion, our project finance solutions help you secure the capital needed to execute large-scale ventures with confidence and clarity.",
+    desc2Pre: "Tailored structuring, syndicated debt, and access to ",
+    desc2Highlight: "specialized lenders",
+    desc2Post: " ensure your project gets funded on the right terms.",
+    image: "/images/products/project-hero.png",
+    imageAlt: "Project finance infrastructure development",
+    ctaPrimary: "Explore Project Finance",
+    ctaSecondary: "Talk to an Expert",
+    ctaLink: "/products/project-finance",
+    cardLabel: "Project Finance",
+  },
+  {
+    badge: "Global Trade Ready",
+    titlePrefix: "Expand Across",
+    titleHighlight: "Borders",
+    desc1: "Cross-border finance solutions that enable international trade, exports, and global business expansion with seamless fund flows and compliance.",
+    desc2Pre: "Trade finance, export credit, and ",
+    desc2Highlight: "forex solutions",
+    desc2Post: " designed to keep your global operations liquid and compliant.",
+    image: "/images/products/cross-border-hero.png",
+    imageAlt: "Cross-border international trade finance",
+    ctaPrimary: "Explore Cross-Border",
+    ctaSecondary: "Speak to an Advisor",
+    ctaLink: "/products/cross-border-finance",
+    cardLabel: "Cross-Border Finance",
+  },
+];
+
+/* ────────────────────────────────────────────
+   HERO SECTION — with auto-advancing slider
    ──────────────────────────────────────────── */
 function HeroSection() {
   const heroRef = useRef(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [lastNavTick, setLastNavTick] = useState(0);
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
   const circleY1 = useTransform(scrollYProgress, [0, 1], [0, -60]);
   const circleY2 = useTransform(scrollYProgress, [0, 1], [0, 40]);
+
+  const totalSlides = heroSlides.length;
+
+  const paginate = useCallback(
+    (newDirection: number) => {
+      setDirection(newDirection);
+      setCurrentSlide((prev) => (prev + newDirection + totalSlides) % totalSlides);
+      setLastNavTick((t) => t + 1);
+    },
+    [totalSlides]
+  );
+
+  const goToSlide = useCallback(
+    (index: number) => {
+      setDirection(index > currentSlide ? 1 : -1);
+      setCurrentSlide(index);
+      setLastNavTick((t) => t + 1);
+    },
+    [currentSlide]
+  );
+
+  // Auto-advance every 6 seconds — timer resets on manual navigation
+  // (lastNavTick) so manual clicks and auto-advance never collide.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDirection(1);
+      setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [totalSlides, lastNavTick]);
+
+  const slide = heroSlides[currentSlide];
+
+  const slideVariants = {
+    enter: (dir: number) => ({
+      opacity: 0,
+      x: dir > 0 ? 50 : -50,
+    }),
+    center: { opacity: 1, x: 0 },
+    exit: (dir: number) => ({
+      opacity: 0,
+      x: dir > 0 ? -50 : 50,
+    }),
+  };
 
   return (
     <section
@@ -175,91 +276,81 @@ function HeroSection() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24 w-full">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left content */}
-          <div className="space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, type: "spring", stiffness: 80 }}
-            >
-              <span className="inline-flex items-center gap-2 bg-white text-[#304AC0] text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full border border-[#304AC0]/10 shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-[#87B73C] animate-pulse" />
-                Trusted by 1,200+ Clients
-              </span>
-            </motion.div>
+          {/* Left content — SLIDER */}
+          <div className="space-y-8 relative">
+            <div className="relative min-h-[440px] sm:min-h-[400px] flex flex-col justify-center">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={currentSlide}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="space-y-8"
+                >
+                  {/* Badge */}
+                  <div>
+                    <span className="inline-flex items-center gap-2 bg-white text-[#304AC0] text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full border border-[#304AC0]/10 shadow-sm">
+                      <span className="w-2 h-2 rounded-full bg-[#87B73C] animate-pulse" />
+                      {slide.badge}
+                    </span>
+                  </div>
 
-            <motion.h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-[#1C1D62] leading-[1.1] tracking-tight"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.15, type: "spring", stiffness: 80 }}
-            >
-              Enrich Your{" "}
-              <span className="relative inline-block">
-                <span className="relative z-10 text-[#304AC0]">Cashflow</span>
-                <motion.span
-                  className="absolute bottom-1 left-0 right-0 h-3 bg-[#87B73C]/20 -skew-x-3 rounded"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.8, delay: 1, type: "spring", stiffness: 60 }}
-                  style={{ transformOrigin: "left" }}
-                />
-              </span>
-            </motion.h1>
+                  {/* Headline */}
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-[#1C1D62] leading-[1.1] tracking-tight">
+                    {slide.titlePrefix}{" "}
+                    <span className="relative inline-block">
+                      <span className="relative z-10 text-[#304AC0]">{slide.titleHighlight}</span>
+                      <motion.span
+                        className="absolute bottom-1 left-0 right-0 h-3 bg-[#87B73C]/20 -skew-x-3 rounded"
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 60 }}
+                        style={{ transformOrigin: "left" }}
+                      />
+                    </span>
+                  </h1>
 
-            <motion.p
-              className="text-lg sm:text-xl text-[#718096] leading-relaxed max-w-xl"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 80 }}
-            >
-              Structured funding solutions for MSMEs, professionals, and growing
-              businesses across India. We simplify access to capital by bridging
-              the gap between your funding needs and the right financial
-              institutions.
-            </motion.p>
+                  {/* Description 1 */}
+                  <p className="text-lg sm:text-xl text-[#718096] leading-relaxed max-w-xl">
+                    {slide.desc1}
+                  </p>
 
-            <motion.p
-              className="text-base text-[#2D3748] leading-relaxed max-w-xl"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, type: "spring", stiffness: 80 }}
-            >
-              With disciplined pre-underwriting, end-to-end advisory, and access
-              to{" "}
-              <strong className="text-[#304AC0]">
-                70+ Financial Institutions
-              </strong>
-              , we prepare your profile for success.
-            </motion.p>
+                  {/* Description 2 */}
+                  <p className="text-base text-[#2D3748] leading-relaxed max-w-xl">
+                    {slide.desc2Pre}
+                    <strong className="text-[#304AC0]">{slide.desc2Highlight}</strong>
+                    {slide.desc2Post}
+                  </p>
 
-            <motion.div
-              className="flex flex-wrap gap-4"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5, type: "spring", stiffness: 80 }}
-            >
-              <Link href="/contact">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button className="bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300 shadow-lg hover:shadow-xl group">
-                    Get Funded Now
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                  </Button>
+                  {/* CTAs */}
+                  <div className="flex flex-wrap gap-4">
+                    <Link href={slide.ctaLink}>
+                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Button className="bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300 shadow-lg hover:shadow-xl group">
+                          {slide.ctaPrimary}
+                          <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                        </Button>
+                      </motion.div>
+                    </Link>
+                    <Link href="/contact">
+                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Button
+                          variant="outline"
+                          className="border-[#13277E] text-[#13277E] hover:bg-[#F8F9FA] font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300"
+                        >
+                          {slide.ctaSecondary}
+                        </Button>
+                      </motion.div>
+                    </Link>
+                  </div>
                 </motion.div>
-              </Link>
-              <Link href="/contact">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    variant="outline"
-                    className="border-[#13277E] text-[#13277E] hover:bg-[#F8F9FA] font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300"
-                  >
-                    Speak to an Advisor
-                  </Button>
-                </motion.div>
-              </Link>
-            </motion.div>
+              </AnimatePresence>
+            </div>
 
-            {/* Trust indicators */}
+            {/* Trust indicators — fixed across slides */}
             <motion.div
               className="flex items-center gap-6 pt-4"
               initial={{ opacity: 0 }}
@@ -285,9 +376,55 @@ function HeroSection() {
                 </span>
               </div>
             </motion.div>
+
+            {/* Slider controls — prev / dots / next / counter */}
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => paginate(-1)}
+                aria-label="Previous slide"
+                className="w-10 h-10 shrink-0 rounded-full border border-[#304AC0]/20 bg-white/80 backdrop-blur flex items-center justify-center text-[#304AC0] hover:bg-[#304AC0] hover:text-white hover:border-[#304AC0] transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#304AC0]/40"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-2">
+                {heroSlides.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => goToSlide(i)}
+                    aria-label={`Go to slide ${i + 1}: ${s.titlePrefix} ${s.titleHighlight}`}
+                    className="group relative py-2 px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#304AC0]/40 rounded"
+                  >
+                    <span
+                      className={cn(
+                        "block h-2 rounded-full transition-all duration-300",
+                        i === currentSlide
+                          ? "w-8 bg-[#304AC0]"
+                          : "w-2 bg-[#304AC0]/30 group-hover:bg-[#304AC0]/50"
+                      )}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => paginate(1)}
+                aria-label="Next slide"
+                className="w-10 h-10 shrink-0 rounded-full border border-[#304AC0]/20 bg-white/80 backdrop-blur flex items-center justify-center text-[#304AC0] hover:bg-[#304AC0] hover:text-white hover:border-[#304AC0] transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#304AC0]/40"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              <span className="ml-1 text-xs font-medium text-[#718096] tabular-nums">
+                {String(currentSlide + 1).padStart(2, "0")} / {String(totalSlides).padStart(2, "0")}
+              </span>
+            </div>
           </div>
 
-          {/* Right side — Funding Overview Card with Image */}
+          {/* Right side — Funding Overview Card with Image (synced with slide) */}
           <motion.div
             className="relative hidden lg:block"
             initial={{ opacity: 0, x: 60 }}
@@ -297,20 +434,31 @@ function HeroSection() {
             <div className="relative">
               {/* Main card */}
               <div className="bg-white rounded-3xl shadow-2xl p-8 border border-[#E8ECF0] overflow-hidden">
-                {/* Hero image strip at top */}
+                {/* Hero image strip at top — crossfades with slide */}
                 <div className="relative -mx-8 -mt-8 mb-6 h-40 overflow-hidden rounded-t-3xl">
-                  <Image
-                    src="/images/pages/hero-indian-team.png"
-                    alt="Indian business team collaborating"
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    priority
-                  />
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={slide.image}
+                      initial={{ opacity: 0, scale: 1.06 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      className="absolute inset-0"
+                    >
+                      <Image
+                        src={slide.image}
+                        alt={slide.imageAlt}
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
+                        priority
+                      />
+                    </motion.div>
+                  </AnimatePresence>
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/80" />
                   <div className="absolute bottom-3 left-6 flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-[#87B73C]" />
-                    <span className="text-sm font-medium text-[#1C1D62]">Funding Dashboard</span>
+                    <span className="text-sm font-medium text-[#1C1D62]">{slide.cardLabel}</span>
                   </div>
                 </div>
 
