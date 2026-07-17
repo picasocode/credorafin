@@ -135,3 +135,32 @@ Stage Summary:
 - Auto-advance timer correctly resets on manual interaction (no click/auto-advance collisions)
 - Only src/app/page.tsx changed — every other section, page, component, API route, and config file is untouched
 - Change pushed to https://github.com/picasocode/credorafin.git on main (commit 9ecbc54)
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix Vercel build error — "useSearchParams() should be wrapped in a suspense boundary at page /admin/login"
+
+Work Log:
+- Diagnosed: /admin/login page uses useSearchParams() at top level of a client component; during static prerendering (next build → "Generating static pages"), Next.js bails out to CSR and requires a <Suspense> boundary or the build fails
+- Searched codebase: only src/app/admin/login/page.tsx uses useSearchParams (no other pages affected)
+- Applied canonical Next.js App Router fix — split the component:
+  * Renamed existing component AdminLoginPage → AdminLoginForm (internal, keeps all form logic + useSearchParams)
+  * Added new default export AdminLoginPage that wraps <AdminLoginForm/> in <Suspense> with a branded spinner fallback (min-h-screen flex center, #F9FAFB bg, #1C1D62 spinner)
+  * Added Suspense to the React import
+- The searchParams logic (?expired=1 and ?redirect=) is unchanged — it still resolves correctly on the client within the Suspense boundary
+- Browser-verified (server kept alive in single Bash session):
+  * /admin/login returns HTTP 200, compiles cleanly
+  * Page title "Sign In — Credora Admin", H1 "Sign in"
+  * Email input, password input, Sign in button all present
+  * ?expired=1 correctly shows "Your session expired. Please sign in again."
+  * Zero console errors, zero dev.log errors
+- Note: pre-existing react-hooks/set-state-in-effect lint warning on setMounted(true) (line 19) is NOT a build blocker — the user's build reached "Generating static pages" (past lint phase), so linting passes or is ignored during builds. Left untouched to keep change minimal.
+- Committed ONLY src/app/admin/login/page.tsx (19 insertions, 2 deletions) as commit 48bd6fa
+- Pushed to origin/main: 9ecbc54..48bd6fa main -> main (success)
+
+Stage Summary:
+- Vercel build error fixed: useSearchParams() now wrapped in <Suspense> boundary
+- /admin/login page still fully functional (form, expired param, redirect param)
+- Only src/app/admin/login/page.tsx changed — all other files untouched
+- Change pushed to https://github.com/picasocode/credorafin.git on main (commit 48bd6fa)
