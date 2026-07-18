@@ -644,42 +644,58 @@ select:focus {
 }
 
 /* ============================================
-   HERO SECTION — Tata Capital Exact Replica
-   Full-width banner + text overlay + carousel dots
+   HERO SECTION — Premium Finance Landing
+   Dark overlay + gradient accent + smooth carousel
    ============================================ */
 #hero {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Heading rendering — Tata Capital uses bold, tight tracking */
+/* Heading — crisp rendering with tight tracking */
 #hero h1 {
   text-rendering: optimizeLegibility;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
-/* Text entrance animations */
+/* Text entrance animations — staggered fade-up */
 .hero-text-enter {
-  animation: heroTextEnter 0.5s ease-out forwards;
+  animation: heroTextEnter 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 .hero-text-enter-delayed {
-  animation: heroTextEnter 0.5s ease-out 0.1s both;
+  animation: heroTextEnter 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
 }
 
 .hero-text-enter-delayed2 {
-  animation: heroTextEnter 0.5s ease-out 0.2s both;
+  animation: heroTextEnter 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both;
 }
 
 @keyframes heroTextEnter {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Progress bar inside active dot — fills over 6s */
+.hero-progress-bar {
+  animation: heroProgress 6s linear forwards;
+  width: 100%;
+}
+
+@keyframes heroProgress {
+  from { transform: scaleX(0); transform-origin: left; }
+  to { transform: scaleX(1); transform-origin: left; }
+}
+
+/* Tabular nums for counter */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Quick links scrollbar hide */
