@@ -23,7 +23,7 @@ import {
   Star,
   Play,
   BadgeCheck,
-  BarChart3,
+  HeartHandshake,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -41,7 +41,7 @@ const slides = [
     cta2: "Speak to an Advisor",
     accent: "#304AC0",
     accentLight: "#5B7FEF",
-    accentBg: "#304AC008",
+    image: "/images/pages/hero-indian-team.png",
   },
   {
     id: 1,
@@ -53,7 +53,7 @@ const slides = [
     cta2: "Learn the Process",
     accent: "#3D9B2F",
     accentLight: "#5BBF4A",
-    accentBg: "#87B73C08",
+    image: "/images/pages/indian-professional.png",
   },
   {
     id: 2,
@@ -65,7 +65,7 @@ const slides = [
     cta2: "See Our Services",
     accent: "#13277E",
     accentLight: "#304AC0",
-    accentBg: "#13277E08",
+    image: "/images/pages/office-india.png",
   },
 ];
 
@@ -119,7 +119,7 @@ function CountUp({ target, suffix = "", prefix = "" }: { target: number; suffix?
 }
 
 /* ────────────────────────────────────────────
-   MAIN HERO — Light Premium Professional
+   MAIN HERO — Warm, Emotional, Human
    ──────────────────────────────────────────── */
 export default function Hero() {
   const [current, setCurrent] = useState(0);
@@ -165,48 +165,42 @@ export default function Hero() {
     exit: (d: number) => ({ opacity: 0, y: d > 0 ? -24 : 24 }),
   };
 
-  const cardV = {
-    enter: (d: number) => ({ opacity: 0, y: d > 0 ? 20 : -20, scale: 0.97 }),
-    center: { opacity: 1, y: 0, scale: 1 },
-    exit: (d: number) => ({ opacity: 0, y: d > 0 ? -20 : 20, scale: 0.97 }),
+  const imgV = {
+    enter: (d: number) => ({ opacity: 0, scale: 1.08, x: d > 0 ? 30 : -30 }),
+    center: { opacity: 1, scale: 1, x: 0 },
+    exit: (d: number) => ({ opacity: 0, scale: 0.95, x: d > 0 ? -30 : 30 }),
   };
 
   return (
     <section
       ref={sectionRef}
       id="hero"
-      className="relative min-h-screen flex items-center overflow-hidden bg-white"
+      className="relative min-h-screen flex items-center overflow-hidden"
     >
-      {/* ═══ BACKGROUND ═══ */}
-      <div className="absolute inset-0">
-        {/* Soft radial glow — top right */}
+      {/* ═══ WARM BACKGROUND ═══ */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#FAFBFF] via-white to-[#F5F0FF]">
+        {/* Soft warm glow blobs */}
         <div
-          className="absolute -top-20 -right-20 w-[60vw] h-[60vh] rounded-full opacity-40"
+          className="absolute top-0 right-0 w-[55vw] h-[55vh] rounded-full opacity-50"
           style={{
-            background: `radial-gradient(circle, ${slide.accentBg} 0%, transparent 70%)`,
+            background: `radial-gradient(circle, ${slide.accent}08 0%, transparent 65%)`,
             filter: "blur(80px)",
           }}
         />
-        {/* Soft glow — bottom left */}
         <div
-          className="absolute -bottom-20 -left-20 w-[40vw] h-[40vh] rounded-full opacity-30"
+          className="absolute bottom-0 left-0 w-[40vw] h-[40vh] rounded-full opacity-40"
           style={{
-            background: "radial-gradient(circle, rgba(135,183,60,0.05) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(135,183,60,0.06) 0%, transparent 65%)",
             filter: "blur(60px)",
           }}
         />
-        {/* Dot grid pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.35]"
+        {/* Warm peach glow for comfort */}
+        <div className="absolute top-1/3 left-1/4 w-[30vw] h-[30vh] rounded-full opacity-30"
           style={{
-            backgroundImage: "radial-gradient(circle, #d1d5db 0.8px, transparent 0.8px)",
-            backgroundSize: "28px 28px",
+            background: "radial-gradient(circle, rgba(255,183,130,0.06) 0%, transparent 65%)",
+            filter: "blur(60px)",
           }}
         />
-        {/* Top gradient fade */}
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white to-transparent" />
-        {/* Bottom gradient fade */}
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white to-transparent" />
       </div>
 
       {/* ═══ CONTENT ═══ */}
@@ -214,7 +208,7 @@ export default function Hero() {
         className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 pt-28 pb-20 sm:pt-32 sm:pb-24"
         style={{ opacity: fadeOut, y: lift }}
       >
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* ─── LEFT: Text Content ─── */}
           <div className="max-w-xl">
             <AnimatePresence mode="wait" custom={direction}>
@@ -252,8 +246,7 @@ export default function Hero() {
 
                 {/* Heading */}
                 <motion.h1
-                  className="text-[2.6rem] sm:text-[3.1rem] lg:text-[3.4rem] xl:text-[3.8rem] font-bold leading-[1.08] tracking-[-0.03em]"
-                  style={{ color: "#0F172A" }}
+                  className="text-[2.6rem] sm:text-[3.1rem] lg:text-[3.4rem] xl:text-[3.8rem] font-bold leading-[1.08] tracking-[-0.03em] text-[#0F172A]"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
@@ -292,7 +285,7 @@ export default function Hero() {
                       const el = document.getElementById("contact");
                       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                     }}
-                    className="relative h-[52px] px-8 rounded-2xl text-[14px] font-semibold overflow-hidden group transition-all duration-300 shadow-lg"
+                    className="relative h-[52px] px-8 rounded-2xl text-[14px] font-semibold overflow-hidden group transition-all duration-300"
                     style={{
                       background: `linear-gradient(135deg, ${slide.accent}, ${slide.accentLight})`,
                       boxShadow: `0 4px 20px ${slide.accent}25`,
@@ -324,23 +317,24 @@ export default function Hero() {
                     className="h-[52px] px-8 rounded-2xl text-[14px] font-semibold border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all duration-300"
                   >
                     <span className="flex items-center gap-2">
-                      <Play className="w-3.5 h-3.5 fill-slate-500" />
                       {slide.cta2}
+                      <ChevronRight className="w-4 h-4" />
                     </span>
                   </Button>
                 </motion.div>
 
-                {/* Trust row */}
+                {/* Trust row — emotional, comforting */}
                 <motion.div
                   className="flex items-center gap-5 pt-3"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.5 }}
                 >
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                     ))}
+                    <span className="text-[12px] text-slate-500 ml-1 font-medium">4.9/5</span>
                   </div>
                   <div className="h-4 w-px bg-slate-200" />
                   <div className="flex items-center gap-2">
@@ -348,7 +342,7 @@ export default function Hero() {
                       {["RK", "SP", "AM"].map((initials, i) => (
                         <div
                           key={i}
-                          className="w-6 h-6 rounded-full flex items-center justify-center text-[7px] font-bold text-white border-2 border-white"
+                          className="w-6 h-6 rounded-full flex items-center justify-center text-[7px] font-bold text-white border-2 border-white shadow-sm"
                           style={{
                             backgroundColor: [slide.accent, "#13277E", "#87B73C"][i],
                           }}
@@ -358,7 +352,7 @@ export default function Hero() {
                       ))}
                     </div>
                     <span className="text-[12px] text-slate-400">
-                      Trusted by <span className="text-slate-600 font-semibold">1,200+</span> businesses
+                      <span className="text-slate-600 font-semibold">1,200+</span> businesses trust us
                     </span>
                   </div>
                 </motion.div>
@@ -419,151 +413,74 @@ export default function Hero() {
             </AnimatePresence>
           </div>
 
-          {/* ─── RIGHT: Dashboard Visual ─── */}
+          {/* ─── RIGHT: Image + Floating Cards ─── */}
           <div className="hidden lg:block">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={slide.id}
                 custom={direction}
-                variants={cardV}
+                variants={imgV}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="relative"
               >
-                {/* Main card */}
-                <div className="relative rounded-3xl border border-slate-200/60 bg-white p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] overflow-hidden">
-                  {/* Subtle gradient top edge */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1 rounded-t-3xl"
-                    style={{
-                      background: `linear-gradient(90deg, ${slide.accent}, ${slide.accentLight}, #87B73C)`,
-                    }}
+                {/* Main image container */}
+                <div className="relative rounded-3xl overflow-hidden shadow-[0_24px_64px_-16px_rgba(0,0,0,0.12)] border border-white/60">
+                  {/* Image */}
+                  <motion.img
+                    src={slide.image}
+                    alt="Credora Finance"
+                    className="w-full h-[480px] object-cover"
+                    initial={{ scale: 1.05 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 8, ease: "easeOut" }}
                   />
 
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-7">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-2xl flex items-center justify-center"
-                        style={{ backgroundColor: `${slide.accent}0A` }}
-                      >
-                        <Building2 className="w-[18px] h-[18px]" style={{ color: slide.accent }} />
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-semibold text-slate-800 leading-tight">Credora Dashboard</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">Real-time overview</p>
-                      </div>
-                    </div>
-                    <span
-                      className="flex items-center gap-2 text-[10px] font-semibold px-3 py-1.5 rounded-full"
-                      style={{
-                        color: "#2E7D32",
-                        backgroundColor: "rgba(46,125,50,0.06)",
-                        border: "1px solid rgba(46,125,50,0.1)",
-                      }}
-                    >
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-40" />
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
-                      </span>
-                      Live
-                    </span>
-                  </div>
+                  {/* Gradient overlay on image — bottom fade */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-transparent to-transparent" />
 
-                  {/* Stat cards */}
-                  <div className="grid grid-cols-3 gap-3 mb-7">
-                    {[
-                      { label: "Approval Rate", value: "92%", icon: Shield, badge: "+4.2%", badgeColor: "#2E7D32" },
-                      { label: "Avg. Disbursal", value: "7 Days", icon: Zap, badge: "Fast", badgeColor: "#304AC0" },
-                      { label: "Lender Network", value: "70+", icon: Landmark, badge: "+8", badgeColor: "#87B73C" },
-                    ].map((c, i) => (
-                      <motion.div
-                        key={i}
-                        className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 hover:bg-slate-50 hover:border-slate-200 hover:shadow-sm transition-all duration-300"
-                        initial={{ opacity: 0, y: 14 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.45, delay: 0.2 + i * 0.08 }}
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div
-                            className="w-8 h-8 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: `${slide.accent}0A` }}
-                          >
-                            <c.icon className="w-4 h-4" style={{ color: slide.accent }} />
-                          </div>
-                          <span
-                            className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md"
-                            style={{ color: c.badgeColor, backgroundColor: `${c.badgeColor}0A` }}
-                          >
-                            {c.badge}
-                          </span>
-                        </div>
-                        <p className="text-[22px] font-bold text-slate-900 tracking-tight leading-none">{c.value}</p>
-                        <p className="text-[9px] text-slate-400 uppercase tracking-[0.1em] mt-1.5">{c.label}</p>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Chart */}
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50/30 p-5 mb-7">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="text-[10px] text-slate-400 uppercase tracking-[0.12em] font-medium">Funding Trend</p>
-                        <p className="text-[8px] text-slate-300 mt-0.5">Last 12 months</p>
-                      </div>
-                      <span className="text-[10px] font-semibold text-green-600 flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />+24.5%
-                      </span>
-                    </div>
-                    <div className="flex items-end gap-[3px] h-14">
-                      {[35, 42, 38, 52, 48, 62, 58, 75, 68, 82, 78, 92].map((v, i) => (
+                  {/* Content overlaid on image bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 p-7">
+                    {/* Mini stat cards */}
+                    <div className="grid grid-cols-3 gap-3 mb-5">
+                      {[
+                        { label: "Approval Rate", value: "92%", icon: Shield, color: slide.accent },
+                        { label: "Disbursal", value: "7 Days", icon: Zap, color: "#87B73C" },
+                        { label: "Lenders", value: "70+", icon: Landmark, color: slide.accent },
+                      ].map((c, i) => (
                         <motion.div
                           key={i}
-                          className="flex-1 rounded-t-sm min-w-0"
-                          style={{
-                            background: `linear-gradient(to top, ${slide.accent}30, ${slide.accentLight}10)`,
-                          }}
-                          initial={{ height: 0 }}
-                          animate={{ height: `${(v / 92) * 100}%` }}
-                          transition={{ duration: 0.45, delay: 0.25 + i * 0.03 }}
-                          whileHover={{
-                            background: `linear-gradient(to top, ${slide.accent}, ${slide.accentLight})`,
-                            transition: { duration: 0.12 },
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Bottom row */}
-                  <div className="flex items-center justify-between pt-5 border-t border-slate-100">
-                    <div className="flex items-center gap-2">
-                      {["RK", "SP", "AM", "VD"].map((initials, i) => (
-                        <div
-                          key={i}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2 border-white shadow-sm"
-                          style={{
-                            backgroundColor: [slide.accent, "#13277E", "#87B73C", "#2E7D32"][i],
-                            marginLeft: i > 0 ? "-8px" : 0,
-                            zIndex: 4 - i,
-                          }}
+                          className="rounded-2xl border border-white/50 bg-white/70 backdrop-blur-xl p-3.5"
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
                         >
-                          {initials}
-                        </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div
+                              className="w-6 h-6 rounded-lg flex items-center justify-center"
+                              style={{ backgroundColor: `${c.color}12` }}
+                            >
+                              <c.icon className="w-3 h-3" style={{ color: c.color }} />
+                            </div>
+                            <span className="text-[8px] text-slate-400 uppercase tracking-wider font-medium">{c.label}</span>
+                          </div>
+                          <p className="text-[18px] font-bold text-slate-900 leading-none">{c.value}</p>
+                        </motion.div>
                       ))}
-                      <span className="text-[10px] text-slate-400 ml-2">1,200+ clients</span>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-[11px] font-semibold text-slate-700">₹5L</p>
-                        <p className="text-[8px] text-slate-300 uppercase tracking-wider">Min</p>
+
+                    {/* Trust line */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <HeartHandshake className="w-4 h-4 text-[#87B73C]" />
+                        <span className="text-[11px] text-slate-500 font-medium">Your growth, our commitment</span>
                       </div>
-                      <div className="h-6 w-px bg-slate-100" />
-                      <div className="text-right">
-                        <p className="text-[11px] font-semibold text-slate-700">₹50Cr</p>
-                        <p className="text-[8px] text-slate-300 uppercase tracking-wider">Max</p>
+                      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-white/40">
+                        <BadgeCheck className="w-3 h-3 text-green-600" />
+                        <span className="text-[10px] font-semibold text-green-700">Verified Partner</span>
                       </div>
                     </div>
                   </div>
@@ -609,7 +526,7 @@ export default function Hero() {
 
                 {/* Right-middle: Approval */}
                 <motion.div
-                  className="absolute top-1/2 -right-5 -translate-y-1/2 rounded-2xl px-4 py-3 shadow-xl border border-slate-200/60 bg-white z-20"
+                  className="absolute top-1/2 -right-5 -translate-y-1/2 rounded-2xl px-4 py-3 shadow-xl border border-slate-100 bg-white z-20"
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 2.5 }}
                 >
@@ -627,14 +544,14 @@ export default function Hero() {
                   </div>
                 </motion.div>
 
-                {/* Decorative badge check */}
+                {/* Top-right: Verified badge */}
                 <motion.div
-                  className="absolute top-6 right-6 z-30"
+                  className="absolute top-5 right-5 z-30"
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 1.2, type: "spring" }}
                 >
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200/60">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-white/60 shadow-sm">
                     <BadgeCheck className="w-3.5 h-3.5 text-green-600" />
                     <span className="text-[10px] font-semibold text-green-700">Verified</span>
                   </div>
@@ -673,7 +590,7 @@ export default function Hero() {
               >
                 <div className="flex items-center justify-center mb-2">
                   <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-slate-50 border border-slate-100 group-hover:border-slate-200 group-hover:shadow-sm transition-all duration-300">
-                    <s.icon className="w-4.5 h-4.5 text-slate-400 group-hover:text-slate-600 transition-colors duration-300" />
+                    <s.icon className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors duration-300" />
                   </div>
                 </div>
                 <p className="text-[1.6rem] sm:text-[1.75rem] font-bold text-slate-900 tracking-tight group-hover:text-slate-800 transition-colors duration-300">
