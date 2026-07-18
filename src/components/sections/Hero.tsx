@@ -12,7 +12,6 @@ import {
   Clock,
   Sparkles,
   ArrowUpRight,
-  TrendingDown,
   Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ const slides = [
     accent: "#304AC0",
     hudLeft: { metric: "+18°", label: "Market Forecast", status: "Optimal Condition" },
     hudRight: { metric: "9.5% p.a.", label: "Average Interest Rate", trend: "Stable" },
-    hudGraph: { value: "₹50 Crores", label: "Max Liquidity Pool Available", type: "success" }
+    hudGraph: { value: "₹50 Crores", label: "Max Liquidity Pool Available" }
   },
   {
     id: 1,
@@ -45,7 +44,7 @@ const slides = [
     accent: "#13277E",
     hudLeft: { metric: "Tier-1", label: "Sourcing Channel", status: "Priority Route" },
     hudRight: { metric: "₹100 Cr", label: "Maximum Allocation Cap", trend: "High Demand" },
-    hudGraph: { value: "Syndicated", label: "Multi-Bank Framework Active", type: "neutral" }
+    hudGraph: { value: "Syndicated", label: "Multi-Bank Framework Active" }
   },
   {
     id: 2,
@@ -58,7 +57,7 @@ const slides = [
     accent: "#76A32B",
     hudLeft: { metric: "92%", label: "Approval Probability", status: "Risk Maintained" },
     hudRight: { metric: "48 Hours", label: "Maximum File Audit Time", trend: "Rapid Track" },
-    hudGraph: { value: "Zero Gaps", label: "Credit Risk Pre-Assessment", type: "success" }
+    hudGraph: { value: "Zero Gaps", label: "Credit Risk Pre-Assessment" }
   },
   {
     id: 3,
@@ -71,7 +70,7 @@ const slides = [
     accent: "#D97706",
     hudLeft: { metric: "+150", label: "CIBIL Score Shift", status: "Engine Optimized" },
     hudRight: { metric: "Rapid", label: "Settlement Cycle Time", trend: "Immediate Plan" },
-    hudGraph: { value: "Restored", label: "Removal of Legacy Default History", type: "alert" }
+    hudGraph: { value: "Restored", label: "Removal of Legacy Default History" }
   }
 ];
 
@@ -85,8 +84,8 @@ export default function Hero() {
   // 3D Parallax Tilt Effects for the Hero Frame Card
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-300, 300], [10, -10]);
-  const rotateY = useTransform(x, [-300, 300], [-10, 10]);
+  const rotateX = useTransform(y, [-300, 300], [8, -8]);
+  const rotateY = useTransform(x, [-300, 300], [-8, 8]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -127,41 +126,41 @@ export default function Hero() {
   return (
     <section 
       id="hero" 
-      className="relative bg-gradient-to-b from-[#FAFBFD] via-[#F4F6FA] to-[#EBF0F6] text-slate-900 w-full min-h-screen h-screen flex flex-col justify-between overflow-hidden font-sans antialiased"
+      className="relative bg-gradient-to-b from-[#FAFBFD] via-[#F4F6FA] to-[#EBF0F6] text-slate-900 w-full min-h-screen h-screen flex flex-col justify-between overflow-hidden font-sans antialiased select-none"
     >
-      {/* Dynamic Ambient Fluid Light Waves */}
+      {/* Background Ambience Overlays */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <motion.div
           animate={{
-            scale: [1, 1.12, 0.93, 1],
-            x: [0, 40, -30, 0],
-            y: [0, -20, 35, 0],
+            scale: [1, 1.08, 0.95, 1],
+            x: [0, 30, -20, 0],
+            y: [0, -15, 25, 0],
           }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-[700px] h-[700px] rounded-full blur-[140px] opacity-[0.25] top-[-10%] left-[25%] transition-colors duration-1000"
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute w-[650px] h-[650px] rounded-full blur-[130px] opacity-[0.22] top-[-5%] left-[30%]"
           style={{
             background: `radial-gradient(circle, ${slide.accent}40 0%, transparent 70%)`,
           }}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(#E2E8F0_1px,transparent_1px)] [background-size:32px_32px] opacity-60" />
+        <div className="absolute inset-0 bg-[radial-gradient(#E2E8F0_1px,transparent_1px)] [background-size:40px_40px] opacity-40" />
       </div>
 
-      {/* 1. TOP NAVBAR BLOCK BUFFER */}
-      <div className="w-full h-14 shrink-0" />
+      {/* 1. TOP SAFE AREA SPACER */}
+      <div className="w-full h-16 shrink-0" />
 
-      {/* 2. CENTERED CINEMATIC LAYOUT CANVAS */}
-      <div className="relative w-full max-w-[1340px] mx-auto flex-1 flex flex-col items-center justify-center z-10 px-4 sm:px-6 text-center gap-5 lg:gap-6 max-h-[calc(100vh-130px)]">
+      {/* 2. PERSPECTIVE CONTENT FRAME CONTAINER */}
+      <div className="relative w-full max-w-[1200px] mx-auto flex-1 flex flex-col items-center justify-center z-10 px-6 text-center gap-8 lg:gap-10 max-h-[calc(100vh-160px)]">
         
-        {/* TEXT CONTENT HUB WITH SPRING ANIMATION */}
-        <div className="flex flex-col items-center max-w-4xl w-full">
+        {/* TEXT REGION HEADLINE ARCHITECTURE */}
+        <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={`badge-${current}`}
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] mb-4 border bg-white/70 backdrop-blur-md shadow-xs text-neutral-600 border-neutral-200/60"
+              initial={{ opacity: 0, scale: 0.95, y: 5 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -5 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] mb-4 border bg-white/80 backdrop-blur-md shadow-xs text-neutral-500 border-neutral-200/50"
             >
               <Sparkles className="w-3.5 h-3.5" style={{ color: slide.accent }} />
               {slide.badge}
@@ -171,11 +170,11 @@ export default function Hero() {
           <AnimatePresence mode="wait" initial={false}>
             <motion.h1
               key={`heading-${current}`}
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[2.4rem] sm:text-[3.4rem] md:text-[4rem] lg:text-[4.4rem] font-black tracking-[-0.04em] leading-[1.05] text-[#0A0A0A] max-w-3xl"
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              className="text-[2.6rem] sm:text-[3.6rem] md:text-[4.2rem] lg:text-[4.5rem] font-black tracking-[-0.04em] leading-[1.08] text-neutral-950 max-w-2xl"
             >
               {slide.heading}
             </motion.h1>
@@ -187,18 +186,18 @@ export default function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="text-[14px] sm:text-[15px] md:text-[16px] text-neutral-500 font-medium leading-[1.5] max-w-2xl mt-4 mb-5 tracking-tight"
+              transition={{ duration: 0.35, delay: 0.08 }}
+              className="text-[14px] sm:text-[15px] md:text-[16px] text-neutral-500 font-medium leading-[1.5] max-w-xl mt-4 mb-6"
             >
               {slide.subtitle}
             </motion.p>
           </AnimatePresence>
 
-          {/* Action Pills */}
+          {/* Centered Minimal Action Buttons Layout */}
           <div className="flex items-center justify-center gap-3 w-full z-20">
             <Button
               onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
-              className="h-11 px-7 rounded-full text-[13px] font-bold text-white transition-all duration-300 bg-neutral-900 hover:bg-neutral-800 shadow-[0_4px_12px_rgba(0,0,0,0.1)] active:scale-[0.97] cursor-pointer"
+              className="h-11 px-7 rounded-full text-[13px] font-bold text-white transition-all duration-300 bg-neutral-950 hover:bg-neutral-800 shadow-[0_4px_14px_rgba(0,0,0,0.08)] active:scale-[0.97] cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
                 {slide.cta1}
@@ -209,7 +208,7 @@ export default function Hero() {
             <Button
               variant="outline"
               onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
-              className="h-11 px-7 rounded-full text-[13px] font-bold border-neutral-200 bg-white/90 text-neutral-700 backdrop-blur-sm hover:bg-neutral-50 transition-all duration-300 active:scale-[0.97] cursor-pointer"
+              className="h-11 px-7 rounded-full text-[13px] font-bold border-neutral-200 bg-white/95 text-neutral-700 backdrop-blur-xs hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300 active:scale-[0.97] cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
                 {slide.cta2}
@@ -219,113 +218,110 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* 3D INTERACTIVE FLUID CARD ENGINE + OVERLAYS */}
-        <div className="relative w-full max-w-[1080px] flex-1 min-h-[240px] sm:min-h-[300px] md:min-h-[360px] lg:max-h-[430px] w-full px-4 sm:px-12 md:px-16 perspective-[1200px]">
+        {/* 3D PARALLAX CANVAS ASPECT LAYER CONTAINER */}
+        <div className="relative w-full max-w-[960px] flex-1 flex items-center justify-center px-4 perspective-[1500px]">
           <motion.div
             style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            className="relative w-full h-full rounded-[32px] overflow-visible border-4 border-white shadow-[0_30px_70px_-10px_rgba(0,0,0,0.08)] bg-neutral-200 transition-all duration-200 ease-out"
+            className="relative w-full aspect-[21/9] rounded-[32px] border-4 border-white shadow-[0_35px_80px_-15px_rgba(0,0,0,0.09)] bg-neutral-100 transition-all duration-300 ease-out"
           >
-            {/* The Cinematic Media Container */}
+            {/* Infinite Curvature Asset Frame */}
             <div className="absolute inset-0 w-full h-full rounded-[28px] overflow-hidden z-10">
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
                   key={`img-${current}`}
-                  initial={{ opacity: 0, scale: 1.05 }}
+                  initial={{ opacity: 0, scale: 1.04 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute inset-0 w-full h-full"
                 >
                   <Image
                     src={slide.image}
                     alt={slide.heading}
                     fill
-                    className="object-cover object-center transform transition-transform duration-1000 brightness-[0.96]"
+                    className="object-cover object-center transform transition-transform duration-1000 brightness-[0.97]"
                     priority
-                    sizes="(max-w-xl) 100vw, 1080px"
+                    sizes="(max-w-xl) 100vw, 960px"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-neutral-900/10 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/5 via-transparent to-transparent" />
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* HUD CARD 1: Left Hanging Data Pod */}
+            {/* HUD COMPONENT 1: Weather/Status Left Float Panel */}
             <AnimatePresence>
               <motion.div
                 key={`hl-${current}`}
-                initial={{ opacity: 0, x: -30, y: -10 }}
-                animate={{ opacity: 1, x: -20, y: 0 }}
+                initial={{ opacity: 0, x: -25, y: -10 }}
+                animate={{ opacity: 1, x: -24, y: 0 }}
                 exit={{ opacity: 0, x: -15 }}
-                transition={{ type: "spring", stiffness: 90, damping: 12, delay: 0.1 }}
+                transition={{ type: "spring", stiffness: 100, damping: 14, delay: 0.08 }}
                 style={{ transform: "translateZ(40px)" }}
-                className="absolute top-[18%] -left-4 sm:left-2 z-20 bg-white/80 backdrop-blur-xl border border-white/70 rounded-2xl p-3.5 shadow-xl flex flex-col gap-1 min-w-[120px] sm:min-w-[140px] text-left"
+                className="absolute top-[15%] -left-6 z-20 bg-white/80 backdrop-blur-xl border border-white/75 rounded-2xl p-3.5 shadow-xl flex flex-col gap-1 min-w-[130px] text-left border-neutral-200/20"
               >
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-neutral-100 text-neutral-500 mb-1">
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-neutral-50 text-neutral-500 mb-0.5">
                   <Activity className="w-3.5 h-3.5" />
                 </div>
                 <span className="text-[20px] font-black text-neutral-900 tracking-tight leading-none">{slide.hudLeft.metric}</span>
                 <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider mt-0.5">{slide.hudLeft.label}</span>
-                <span className="text-[9px] font-medium text-emerald-600 bg-emerald-50 rounded-md px-1 py-0.5 mt-1 block w-max">{slide.hudLeft.status}</span>
+                <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 rounded-md px-1.5 py-0.5 mt-1 block w-max">{slide.hudLeft.status}</span>
               </motion.div>
             </AnimatePresence>
 
-            {/* HUD CARD 2: Right Glass Parameter Block (Dark Theme Accent Layer) */}
+            {/* HUD COMPONENT 2: Top Right Graph Metric Unit Block */}
             <AnimatePresence>
               <motion.div
                 key={`hr-${current}`}
-                initial={{ opacity: 0, x: 30, y: 10 }}
-                animate={{ opacity: 1, x: 20, y: 0 }}
+                initial={{ opacity: 0, x: 25, y: 10 }}
+                animate={{ opacity: 1, x: 24, y: 0 }}
                 exit={{ opacity: 0, x: 15 }}
-                transition={{ type: "spring", stiffness: 95, damping: 13, delay: 0.15 }}
-                style={{ transform: "translateZ(55px)" }}
-                className="absolute top-[25%] -right-4 sm:right-4 z-20 bg-neutral-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-white shadow-2xl min-w-[150px] sm:min-w-[190px] text-left"
+                transition={{ type: "spring", stiffness: 100, damping: 14, delay: 0.12 }}
+                style={{ transform: "translateZ(50px)" }}
+                className="absolute top-[20%] -right-6 z-20 bg-neutral-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-4 text-white shadow-2xl min-w-[170px] text-left"
               >
-                {/* Simulated Chart Wave Header */}
                 <div className="flex items-center justify-between gap-4 mb-2">
                   <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest">{slide.hudRight.label}</span>
                   <div className="flex gap-0.5 items-end h-3">
-                    <span className="w-0.5 h-2 bg-white/40 rounded-full" />
-                    <span className="w-0.5 h-3 bg-white rounded-full" />
-                    <span className="w-0.5 h-1 bg-white/30 rounded-full" />
-                    <span className="w-0.5 h-2.5 bg-white/80 rounded-full" />
+                    <span className="w-0.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
+                    <span className="w-0.5 h-3 bg-white/80 rounded-full" />
+                    <span className="w-0.5 h-2 bg-white rounded-full" />
                   </div>
                 </div>
-                <p className="text-[16px] sm:text-[20px] font-black tracking-tight text-white leading-none">{slide.hudRight.metric}</p>
-                <p className="text-[10px] text-neutral-400 font-bold tracking-wide mt-1">Status: {slide.hudRight.trend}</p>
+                <p className="text-[18px] font-black tracking-tight text-white leading-none">{slide.hudRight.metric}</p>
+                <p className="text-[10px] text-neutral-400 font-medium mt-1">Trend: {slide.hudRight.trend}</p>
               </motion.div>
             </AnimatePresence>
 
-            {/* HUD CARD 3: Bottom Left Premium Transaction Drawer */}
+            {/* HUD COMPONENT 3: Absolute Bottom Action Row (Overlay Pill Cutout) */}
             <AnimatePresence>
               <motion.div
                 key={`hb-${current}`}
-                initial={{ opacity: 0, y: 25 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 15 }}
-                transition={{ type: "spring", stiffness: 100, damping: 14, delay: 0.2 }}
+                transition={{ type: "spring", stiffness: 110, damping: 15, delay: 0.18 }}
                 style={{ transform: "translateZ(30px)" }}
-                className="absolute bottom-5 left-6 sm:left-12 z-20 bg-white/85 backdrop-blur-xl border border-neutral-200/50 rounded-2xl p-3 px-4 shadow-xl max-w-[280px] sm:max-w-[360px] text-left hidden sm:flex items-center gap-3.5"
+                className="absolute bottom-4 left-6 z-20 bg-white/90 backdrop-blur-md border border-neutral-200/40 rounded-xl p-2 px-3.5 shadow-lg max-w-[320px] text-left hidden sm:flex items-center gap-3"
               >
-                <div className="h-10 px-3.5 bg-neutral-900 text-white rounded-xl flex flex-col justify-center items-center font-black tracking-tight shrink-0">
-                  <span className="text-[13px] leading-none">LIVE</span>
-                  <span className="text-[8px] tracking-widest text-emerald-400 mt-0.5">RUN</span>
+                <div className="w-5 h-5 rounded-full flex items-center justify-center bg-neutral-900 text-white shrink-0">
+                  <Clock className="w-3 h-3" />
                 </div>
-                <div className="truncate">
-                  <span className="text-[13px] font-black text-neutral-900 tracking-tight block">{slide.hudGraph.value}</span>
-                  <span className="text-[11px] text-neutral-500 block truncate font-medium mt-0.5">{slide.hudGraph.label}</span>
+                <div className="truncate flex items-center gap-2">
+                  <span className="text-[12px] font-black text-neutral-950 tracking-tight">{slide.hudGraph.value}</span>
+                  <span className="text-neutral-300">|</span>
+                  <span className="text-[11px] text-neutral-500 truncate font-medium">{slide.hudGraph.label}</span>
                 </div>
               </motion.div>
             </AnimatePresence>
-
           </motion.div>
         </div>
       </div>
 
-      {/* 3. FOOTER HORIZONTAL NAV DOCK */}
-      <div className="w-full max-w-[1100px] mx-auto px-4 sm:px-6 pb-5 shrink-0 z-30">
-        <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.01)] border border-neutral-200/60 p-1.5 grid grid-cols-2 md:grid-cols-4 gap-1">
+      {/* 3. FOOTER TAB SYSTEM NAVIGATION STRIP */}
+      <div className="w-full max-w-[1020px] mx-auto px-6 pb-6 shrink-0 z-30">
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.01)] border border-neutral-200/50 p-1.5 grid grid-cols-2 md:grid-cols-4 gap-1.5">
           {[
             { id: 0, label: "Business Loans", icon: Building2 },
             { id: 1, label: "Project Finance", icon: TrendingUp },
@@ -338,15 +334,15 @@ export default function Hero() {
               <button
                 key={tab.id}
                 onClick={() => goTo(tab.id)}
-                className={`relative flex items-center justify-center gap-2.5 px-3 py-3 rounded-xl text-[12px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden ${
-                  isActive ? "text-white shadow-sm" : "text-neutral-500 hover:text-neutral-900"
+                className={`relative flex items-center justify-center gap-2.5 px-3 py-2.5 rounded-xl text-[12px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden ${
+                  isActive ? "text-white shadow-xs" : "text-neutral-500 hover:text-neutral-900"
                 }`}
               >
                 {isActive && (
                   <motion.div
-                    layoutId="impressiveTabIndicator"
+                    layoutId="perfectTabIndicator"
                     className="absolute inset-0 z-0 bg-neutral-950"
-                    transition={{ type: "spring", stiffness: 430, damping: 33 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
                   />
                 )}
                 <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 ${isActive ? "text-white" : "text-neutral-400"}`} />
