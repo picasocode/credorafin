@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
 import {
   ArrowRight,
   ChevronLeft,
@@ -11,15 +18,16 @@ import {
   Shield,
   Building2,
   Landmark,
-  CircleDollarSign,
   Zap,
   CheckCircle2,
   Star,
+  Users,
+  IndianRupee,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /* ────────────────────────────────────────────
-   SLIDE DATA
+   SLIDE DATA — Preserved exactly
    ──────────────────────────────────────────── */
 const slides = [
   {
@@ -27,94 +35,78 @@ const slides = [
     badge: "STRUCTURED FINANCE",
     heading: "Enrich Your",
     headingAccent: "Cashflow",
-    sub:
-      "Funding solutions for MSMEs and growing businesses — 70+ banks, one streamlined process.",
+    sub: "Funding solutions for MSMEs and growing businesses — 70+ banks, one streamlined process.",
     cta1: "Get Funded Now",
     cta2: "Speak to an Advisor",
     accent: "#304AC0",
-    accentLight: "#5B8DEF",
-    chartData: [35, 42, 38, 52, 48, 62, 58, 75, 68, 82, 78, 92],
+    accentLight: "#6B8FFF",
+    accentMuted: "#304AC020",
   },
   {
     id: 1,
     badge: "PRE-UNDERWRITING",
     heading: "Precision That",
     headingAccent: "Gets Approved",
-    sub:
-      "Bank-ready applications before they reach a lender. 92% approval rate, 7–10 day disbursal.",
+    sub: "Bank-ready applications before they reach a lender. 92% approval rate, 7–10 day disbursal.",
     cta1: "Start Pre-Underwriting",
     cta2: "Learn the Process",
     accent: "#87B73C",
-    accentLight: "#A5D64B",
-    chartData: [20, 35, 30, 45, 55, 50, 65, 60, 75, 80, 85, 92],
+    accentLight: "#A8E04A",
+    accentMuted: "#87B73C20",
   },
   {
     id: 2,
     badge: "END-TO-END ADVISORY",
     heading: "From Application",
     headingAccent: "To Disbursal",
-    sub:
-      "Credit repair, EMI structuring, documentation — we handle everything so you stay focused on growth.",
+    sub: "Credit repair, EMI structuring, documentation — we handle everything so you stay focused on growth.",
     cta1: "Get Advisory",
     cta2: "See Our Services",
     accent: "#13277E",
     accentLight: "#304AC0",
-    chartData: [25, 30, 40, 35, 50, 55, 60, 70, 65, 80, 85, 90],
+    accentMuted: "#13277E20",
   },
 ];
 
-/* Stats row data */
 const stats = [
-  { value: "20+", target: 20, suffix: "+", label: "Years Experience" },
-  { value: "70+", target: 70, suffix: "+", label: "Bank Partners" },
-  { value: "1,200+", target: 1200, suffix: "+", label: "Happy Clients" },
-  { value: "₹50Cr", target: 50, suffix: "Cr", prefix: "₹", label: "Max Funding" },
+  { value: "20+", target: 20, suffix: "+", prefix: "", label: "Years Experience", icon: Building2 },
+  { value: "70+", target: 70, suffix: "+", prefix: "", label: "Bank Partners", icon: Landmark },
+  { value: "1,200+", target: 1200, suffix: "+", prefix: "", label: "Happy Clients", icon: Users },
+  { value: "₹50Cr", target: 50, suffix: "Cr", prefix: "₹", label: "Max Funding", icon: IndianRupee },
 ];
 
 /* ────────────────────────────────────────────
-   ANIMATED COUNTER (for stats)
+   ANIMATED COUNTER
    ──────────────────────────────────────────── */
-function CountUp({
-  target,
-  suffix = "",
-  prefix = "",
-}: {
-  target: number;
-  suffix?: string;
-  prefix?: string;
-}) {
+function CountUp({ target, suffix = "", prefix = "" }: { target: number; suffix?: string; prefix?: string }) {
   const [count, setCount] = useState(0);
-  const [hasStarted, setHasStarted] = useState(false);
+  const [started, setStarted] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasStarted) {
-          setHasStarted(true);
-        }
-      },
-      { threshold: 0.5 }
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting && !started) setStarted(true); },
+      { threshold: 0.3 }
     );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hasStarted]);
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [started]);
 
   useEffect(() => {
-    if (!hasStarted) return;
+    if (!started) return;
     let frame = 0;
-    const totalFrames = 70;
-    const timer = setInterval(() => {
+    const total = 60;
+    const t = setInterval(() => {
       frame++;
-      const progress = Math.min(frame / totalFrames, 1);
-      const eased = 1 - Math.pow(1 - progress, 4);
+      const p = Math.min(frame / total, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
       setCount(Math.floor(eased * target));
-      if (progress >= 1) clearInterval(timer);
-    }, 22);
-    return () => clearInterval(timer);
-  }, [target, hasStarted]);
+      if (p >= 1) clearInterval(t);
+    }, 24);
+    return () => clearInterval(t);
+  }, [target, started]);
 
   return (
     <span ref={ref}>
@@ -126,171 +118,134 @@ function CountUp({
 }
 
 /* ────────────────────────────────────────────
-   FLOATING ORB (background decoration)
+   MESH GRADIENT BACKGROUND
    ──────────────────────────────────────────── */
-function FloatingOrb({
-  size,
-  color,
-  x,
-  y,
-  duration,
-  delay,
-}: {
-  size: number;
-  color: string;
-  x: string;
-  y: string;
-  duration: number;
-  delay: number;
-}) {
+function MeshGradient({ accent }: { accent: string }) {
   return (
-    <motion.div
-      className="absolute rounded-full pointer-events-none"
-      style={{
-        width: size,
-        height: size,
-        left: x,
-        top: y,
-        background: `radial-gradient(circle, ${color}18 0%, ${color}08 40%, transparent 70%)`,
-      }}
-      animate={{
-        scale: [1, 1.2, 1],
-        opacity: [0.3, 0.6, 0.3],
-      }}
-      transition={{
-        duration,
-        repeat: Infinity,
-        ease: "easeInOut",
-        delay,
-      }}
-    />
-  );
-}
+    <div className="absolute inset-0 overflow-hidden">
+      {/* Base */}
+      <div className="absolute inset-0 bg-[#09090B]" />
 
-/* ────────────────────────────────────────────
-   MAGNETIC BUTTON WRAPPER
-   ──────────────────────────────────────────── */
-function MagneticButton({ children, className, style, ...props }: any) {
-  const ref = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const springX = useSpring(x, { stiffness: 200, damping: 20 });
-  const springY = useSpring(y, { stiffness: 200, damping: 20 });
-
-  const handleMouse = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const dx = e.clientX - (rect.left + rect.width / 2);
-    const dy = e.clientY - (rect.top + rect.height / 2);
-    x.set(dx * 0.15);
-    y.set(dy * 0.15);
-  };
-
-  const handleLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouse}
-      onMouseLeave={handleLeave}
-      style={{ x: springX, y: springY }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/* ────────────────────────────────────────────
-   ANIMATED BAR CHART
-   ──────────────────────────────────────────── */
-function AnimatedBarChart({ data, color, accent }: { data: number[]; color: string; accent: string }) {
-  const max = Math.max(...data);
-  return (
-    <div className="flex items-end gap-[3px] h-14">
-      {data.map((val, i) => (
-        <motion.div
-          key={i}
-          className="flex-1 rounded-t-sm relative group cursor-pointer"
-          style={{
-            background: `linear-gradient(to top, ${color}60, ${accent}40)`,
-            minWidth: 0,
-          }}
-          initial={{ height: 0 }}
-          animate={{ height: `${(val / max) * 100}%` }}
-          transition={{ duration: 0.6, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-          whileHover={{
-            background: `linear-gradient(to top, ${accent}, ${accent})`,
-            transition: { duration: 0.15 },
-          }}
-        >
-          {/* Tooltip on hover */}
-          <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded text-[8px] font-bold bg-white/10 backdrop-blur-md text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-            {val}%
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────
-   SHIMMER LINE (decorative)
-   ──────────────────────────────────────────── */
-function ShimmerLine({ color, className }: { color: string; className?: string }) {
-  return (
-    <div className={`relative overflow-hidden ${className || ""}`}>
-      <div className="absolute inset-0" style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }} />
+      {/* Primary mesh blob */}
       <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: "80vw",
+          height: "80vh",
+          top: "-20%",
+          left: "-10%",
+          background: `radial-gradient(circle, ${accent}12 0%, transparent 60%)`,
+          filter: "blur(80px)",
+        }}
+        animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      {/* Secondary mesh blob */}
+      <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: "60vw",
+          height: "60vh",
+          bottom: "-20%",
+          right: "-10%",
+          background: "radial-gradient(circle, rgba(135,183,60,0.06) 0%, transparent 60%)",
+          filter: "blur(80px)",
+        }}
+        animate={{ x: [0, -25, 0], y: [0, 15, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 5 }}
+      />
+
+      {/* Subtle center glow */}
+      <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(90deg, transparent 0%, ${color}60 50%, transparent 100%)`,
+          background: `radial-gradient(ellipse 50% 40% at 50% 40%, ${accent}08 0%, transparent 70%)`,
         }}
-        animate={{ x: ["-100%", "200%"] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "linear", delay: 1 }}
       />
     </div>
   );
 }
 
 /* ────────────────────────────────────────────
-   NOISE TEXTURE OVERLAY
+   GRID OVERLAY
    ──────────────────────────────────────────── */
-function NoiseTexture() {
+function GridOverlay() {
   return (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.03]">
-      <filter id="noise">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.65"
-          numOctaves="3"
-          stitchTiles="stitch"
-        />
-        <feColorMatrix type="saturate" values="0" />
-      </filter>
-      <rect width="100%" height="100%" filter="url(#noise)" />
-    </svg>
+    <>
+      {/* Fine grid */}
+      <div
+        className="absolute inset-0 opacity-[0.025]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)
+          `,
+          backgroundSize: "64px 64px",
+        }}
+      />
+      {/* Large grid */}
+      <div
+        className="absolute inset-0 opacity-[0.015]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)
+          `,
+          backgroundSize: "256px 256px",
+        }}
+      />
+    </>
   );
 }
 
 /* ────────────────────────────────────────────
-   MAIN HERO — Premium Show-Off Dark Design
+   FLOATING DOT PARTICLES
+   ──────────────────────────────────────────── */
+function DotParticles() {
+  const dots = useMemo(
+    () =>
+      Array.from({ length: 30 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 1.5 + 0.5,
+        dur: Math.random() * 5 + 4,
+        delay: Math.random() * 4,
+      })),
+    []
+  );
+
+  return (
+    <>
+      {dots.map((d) => (
+        <motion.div
+          key={d.id}
+          className="absolute rounded-full pointer-events-none bg-white/[0.12]"
+          style={{ width: d.size, height: d.size, left: `${d.x}%`, top: `${d.y}%` }}
+          animate={{ opacity: [0.08, 0.3, 0.08] }}
+          transition={{ duration: d.dur, repeat: Infinity, ease: "easeInOut", delay: d.delay }}
+        />
+      ))}
+    </>
+  );
+}
+
+/* ────────────────────────────────────────────
+   MAIN HERO
    ──────────────────────────────────────────── */
 export default function Hero() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const fadeOut = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const lift = useTransform(scrollYProgress, [0, 1], ["0px", "40px"]);
 
   const goNext = useCallback(() => {
     setDirection(1);
@@ -317,116 +272,64 @@ export default function Hero() {
 
   const slide = slides[current];
 
-  /* ── Variants ── */
+  /* ── Animation Variants ── */
   const textV = {
-    enter: (d: number) => ({ x: d > 0 ? 60 : -60, opacity: 0, filter: "blur(4px)" }),
-    center: { x: 0, opacity: 1, filter: "blur(0px)" },
-    exit: (d: number) => ({ x: d > 0 ? -60 : 60, opacity: 0, filter: "blur(4px)" }),
+    enter: (d: number) => ({
+      opacity: 0,
+      y: d > 0 ? 24 : -24,
+      filter: "blur(6px)",
+    }),
+    center: { opacity: 1, y: 0, filter: "blur(0px)" },
+    exit: (d: number) => ({
+      opacity: 0,
+      y: d > 0 ? -24 : 24,
+      filter: "blur(6px)",
+    }),
   };
 
-  const dashV = {
-    enter: (d: number) => ({ x: d > 0 ? 40 : -40, opacity: 0, scale: 0.95, rotateY: d > 0 ? 3 : -3 }),
-    center: { x: 0, opacity: 1, scale: 1, rotateY: 0 },
-    exit: (d: number) => ({ x: d > 0 ? -40 : 40, opacity: 0, scale: 0.95, rotateY: d > 0 ? -3 : 3 }),
+  const cardV = {
+    enter: (d: number) => ({
+      opacity: 0,
+      y: d > 0 ? 20 : -20,
+      scale: 0.97,
+    }),
+    center: { opacity: 1, y: 0, scale: 1 },
+    exit: (d: number) => ({
+      opacity: 0,
+      y: d > 0 ? -20 : 20,
+      scale: 0.97,
+    }),
   };
-
-  /* Generate dot positions for particle field */
-  const particles = useMemo(() => {
-    return Array.from({ length: 40 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 0.5,
-      duration: Math.random() * 4 + 3,
-      delay: Math.random() * 3,
-    }));
-  }, []);
 
   return (
     <section
       ref={sectionRef}
       id="hero"
-      className="relative h-screen min-h-[600px] max-h-[1000px] flex items-center overflow-hidden"
+      className="relative min-h-screen flex items-center overflow-hidden"
     >
-      {/* ═══ BACKGROUND ═══ */}
+      {/* ═══ BACKGROUND LAYERS ═══ */}
       <motion.div className="absolute inset-0" style={{ y: bgY }}>
-        {/* Base gradient - deeper and richer */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#030712] via-[#0A1128] to-[#060B1F]" />
-
-        {/* Secondary gradient layer for depth */}
-        <div
-          className="absolute inset-0 opacity-50"
-          style={{
-            background: `radial-gradient(ellipse 80% 60% at 20% 40%, ${slide.accent}15 0%, transparent 60%),
-                         radial-gradient(ellipse 60% 50% at 80% 30%, ${slide.accentLight}10 0%, transparent 50%)`,
-          }}
-        />
-
-        {/* Grid overlay - refined */}
-        <div
-          className="absolute inset-0 opacity-[0.035]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(91,141,239,0.5) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(91,141,239,0.5) 1px, transparent 1px)
-            `,
-            backgroundSize: "60px 60px",
-          }}
-        />
-
-        {/* Diagonal line accents */}
-        <div
-          className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `linear-gradient(45deg, rgba(91,141,239,0.3) 1px, transparent 1px)`,
-            backgroundSize: "80px 80px",
-          }}
-        />
-
-        {/* Noise texture for premium feel */}
-        <NoiseTexture />
-
-        {/* Gradient orbs - more refined */}
-        <FloatingOrb size={700} color={slide.accent} x="0%" y="-15%" duration={9} delay={0} />
-        <FloatingOrb size={500} color="#87B73C" x="55%" y="45%" duration={11} delay={2} />
-        <FloatingOrb size={450} color={slide.accentLight} x="70%" y="-8%" duration={8} delay={1.5} />
-        <FloatingOrb size={350} color="#13277E" x="-8%" y="55%" duration={10} delay={3} />
-        <FloatingOrb size={300} color={slide.accent} x="40%" y="70%" duration={12} delay={4} />
-
-        {/* Floating particles */}
-        {particles.map((p) => (
-          <motion.div
-            key={p.id}
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              width: p.size,
-              height: p.size,
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              backgroundColor: "rgba(91,141,239,0.3)",
-            }}
-            animate={{
-              opacity: [0.1, 0.5, 0.1],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: p.duration,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: p.delay,
-            }}
-          />
-        ))}
+        <MeshGradient accent={slide.accent} />
+        <GridOverlay />
+        <DotParticles />
       </motion.div>
+
+      {/* Top-edge glow */}
+      <div
+        className="absolute top-0 left-0 right-0 h-px z-10"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${slide.accent}40, transparent)`,
+        }}
+      />
 
       {/* ═══ CONTENT ═══ */}
       <motion.div
-        className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-        style={{ opacity, y: contentY }}
+        className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 pt-24 pb-16 sm:pt-28 sm:pb-20"
+        style={{ opacity: fadeOut, y: lift }}
       >
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-20 items-center">
+        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-16 xl:gap-24 items-center">
           {/* ─── LEFT: Text Content ─── */}
-          <div className="space-y-7">
+          <div className="max-w-xl">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={slide.id}
@@ -436,22 +339,29 @@ export default function Hero() {
                 animate="center"
                 exit="exit"
                 transition={{
-                  x: { type: "spring", stiffness: 150, damping: 20 },
+                  y: { type: "spring", stiffness: 160, damping: 22 },
                   opacity: { duration: 0.35 },
                   filter: { duration: 0.35 },
                 }}
-                className="space-y-7"
+                className="space-y-8"
               >
                 {/* Badge */}
                 <motion.div
-                  initial={{ opacity: 0, y: 14, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.05 }}
                 >
-                  <span className="inline-flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-white/[0.04] backdrop-blur-md px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50 hover:border-white/[0.15] hover:bg-white/[0.06] transition-all duration-300 cursor-default">
+                  <span
+                    className="inline-flex items-center gap-2.5 rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition-all duration-300"
+                    style={{
+                      borderColor: `${slide.accent}20`,
+                      backgroundColor: `${slide.accent}08`,
+                      color: `${slide.accentLight}CC`,
+                    }}
+                  >
                     <span
                       className="w-1.5 h-1.5 rounded-full animate-pulse"
-                      style={{ backgroundColor: slide.accentLight, boxShadow: `0 0 8px ${slide.accent}60` }}
+                      style={{ backgroundColor: slide.accentLight, boxShadow: `0 0 8px ${slide.accent}50` }}
                     />
                     {slide.badge}
                   </span>
@@ -459,21 +369,17 @@ export default function Hero() {
 
                 {/* Heading */}
                 <motion.h1
-                  className="text-[2.5rem] sm:text-[3.2rem] lg:text-[3.6rem] xl:text-[4rem] font-bold text-white leading-[1.05] tracking-[-0.03em]"
-                  initial={{ opacity: 0, y: 20 }}
+                  className="text-[2.75rem] sm:text-5xl lg:text-[3.5rem] xl:text-[3.75rem] font-bold leading-[1.08] tracking-[-0.035em] text-white"
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
                 >
-                  <span className="block">{slide.heading}</span>
+                  {slide.heading}
+                  <br />
                   <span
-                    className="block mt-1"
+                    className="bg-clip-text text-transparent"
                     style={{
-                      background: `linear-gradient(135deg, ${slide.accent}, ${slide.accentLight}, ${slide.accent})`,
-                      backgroundSize: "200% 200%",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                      animation: "gradientShift 4s ease infinite",
+                      backgroundImage: `linear-gradient(135deg, ${slide.accentLight}, ${slide.accent})`,
                     }}
                   >
                     {slide.headingAccent}
@@ -482,85 +388,76 @@ export default function Hero() {
 
                 {/* Subtitle */}
                 <motion.p
-                  className="text-[15px] sm:text-[16px] text-white/40 leading-[1.7] max-w-lg"
-                  initial={{ opacity: 0, y: 14 }}
+                  className="text-base sm:text-[17px] text-white/40 leading-[1.7] max-w-md"
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
                   {slide.sub}
                 </motion.p>
 
-                {/* Buttons */}
+                {/* CTAs */}
                 <motion.div
                   className="flex flex-wrap gap-3 pt-1"
-                  initial={{ opacity: 0, y: 14 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                  <MagneticButton>
-                    <Button
-                      onClick={() => {
-                        const el = document.getElementById("contact");
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }}
-                      className="relative font-semibold text-sm px-8 py-4 rounded-2xl transition-all duration-300 group overflow-hidden"
-                      style={{
-                        background: `linear-gradient(135deg, ${slide.accent}, ${slide.accentLight})`,
-                        boxShadow: `0 4px 25px ${slide.accent}35, 0 0 60px ${slide.accent}15`,
-                      }}
-                    >
-                      {/* Shimmer overlay */}
-                      <span className="absolute inset-0 overflow-hidden rounded-2xl">
-                        <motion.span
-                          className="absolute inset-0"
-                          style={{
-                            background: `linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)`,
-                          }}
-                          animate={{ x: ["-100%", "200%"] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "linear", delay: 1.5 }}
-                        />
-                      </span>
-                      <span className="relative z-10 flex items-center gap-2">
-                        {slide.cta1}
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300" />
-                      </span>
-                    </Button>
-                  </MagneticButton>
+                  <Button
+                    onClick={() => {
+                      const el = document.getElementById("contact");
+                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="relative h-12 px-7 rounded-2xl text-sm font-semibold overflow-hidden group transition-all duration-300"
+                    style={{
+                      background: `linear-gradient(135deg, ${slide.accent}, ${slide.accentLight})`,
+                      boxShadow: `0 2px 20px ${slide.accent}25, 0 0 0 1px ${slide.accent}15`,
+                    }}
+                  >
+                    {/* Shimmer */}
+                    <span className="absolute inset-0 overflow-hidden rounded-2xl">
+                      <motion.span
+                        className="absolute inset-0"
+                        style={{
+                          background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%)",
+                        }}
+                        animate={{ x: ["-100%", "200%"] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear", delay: 2 }}
+                      />
+                    </span>
+                    <span className="relative z-10 flex items-center gap-2 text-white">
+                      {slide.cta1}
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                    </span>
+                  </Button>
 
-                  <MagneticButton>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        const el = document.getElementById("contact");
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }}
-                      className="border-white/[0.1] text-white/50 hover:text-white hover:bg-white/[0.06] hover:border-white/[0.2] font-semibold text-sm px-8 py-4 rounded-2xl backdrop-blur-md transition-all duration-300 group"
-                    >
-                      <span className="flex items-center gap-2">
-                        {slide.cta2}
-                        <ChevronRight className="w-4 h-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
-                      </span>
-                    </Button>
-                  </MagneticButton>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      const el = document.getElementById("contact");
+                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="h-12 px-7 rounded-2xl text-sm font-semibold text-white/50 hover:text-white/80 hover:bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.14] transition-all duration-300 backdrop-blur-sm"
+                  >
+                    {slide.cta2}
+                  </Button>
                 </motion.div>
 
-                {/* Trust indicators */}
+                {/* Trust row */}
                 <motion.div
-                  className="flex items-center gap-4 pt-2"
+                  className="flex items-center gap-5 pt-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.5 }}
                 >
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-3.5 h-3.5 fill-yellow-400/70 text-yellow-400/70"
-                      />
+                  <div className="flex items-center gap-1.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="w-3 h-3 fill-amber-400/60 text-amber-400/60" />
                     ))}
                   </div>
-                  <span className="text-[12px] text-white/30">
-                    Trusted by <span className="text-white/50 font-medium">1,200+</span> businesses
+                  <div className="h-3 w-px bg-white/10" />
+                  <span className="text-xs text-white/25">
+                    Trusted by <span className="text-white/45 font-medium">1,200+</span> businesses
                   </span>
                 </motion.div>
 
@@ -571,48 +468,53 @@ export default function Hero() {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
                 >
-                  <div className="flex items-center gap-2.5">
+                  {/* Dots */}
+                  <div className="flex items-center gap-2">
                     {slides.map((_, i) => (
                       <button
                         key={i}
                         onClick={() => goTo(i)}
-                        className="relative h-[5px] rounded-full transition-all duration-700 cursor-pointer group"
+                        className="relative h-[4px] rounded-full transition-all duration-600 cursor-pointer"
                         style={{
-                          width: i === current ? "36px" : "5px",
-                          backgroundColor:
-                            i === current ? slide.accent : "rgba(255,255,255,0.12)",
+                          width: i === current ? "32px" : "4px",
+                          backgroundColor: i === current ? slide.accent : "rgba(255,255,255,0.12)",
                         }}
                       >
                         {i === current && (
                           <motion.div
                             className="absolute inset-0 rounded-full"
-                            style={{ backgroundColor: slide.accentLight }}
+                            style={{ backgroundColor: slide.accentLight, transformOrigin: "left" }}
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: 1 }}
-                            transition={{ duration: 5.5, ease: "linear" }}
-                            style2={{ transformOrigin: "left" }}
+                            transition={{ duration: 5.8, ease: "linear" }}
                           />
                         )}
                       </button>
                     ))}
                   </div>
-                  <div className="flex gap-1.5">
+
+                  {/* Arrows */}
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={goPrev}
-                      className="w-8 h-8 rounded-xl border border-white/[0.08] flex items-center justify-center text-white/25 hover:text-white/60 hover:border-white/[0.15] hover:bg-white/[0.04] transition-all duration-300"
+                      className="w-8 h-8 rounded-xl border border-white/[0.06] flex items-center justify-center text-white/20 hover:text-white/50 hover:border-white/[0.12] hover:bg-white/[0.03] transition-all duration-200"
+                      aria-label="Previous slide"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={goNext}
-                      className="w-8 h-8 rounded-xl border border-white/[0.08] flex items-center justify-center text-white/25 hover:text-white/60 hover:border-white/[0.15] hover:bg-white/[0.04] transition-all duration-300"
+                      className="w-8 h-8 rounded-xl border border-white/[0.06] flex items-center justify-center text-white/20 hover:text-white/50 hover:border-white/[0.12] hover:bg-white/[0.03] transition-all duration-200"
+                      aria-label="Next slide"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <span className="text-[11px] text-white/20 tabular-nums">
-                    <span className="text-white/40 font-semibold">{String(current + 1).padStart(2, "0")}</span>
-                    {" / "}
+
+                  {/* Counter */}
+                  <span className="text-[11px] text-white/15 tabular-nums tracking-wide">
+                    <span className="text-white/35 font-semibold">{String(current + 1).padStart(2, "0")}</span>
+                    <span className="mx-0.5">/</span>
                     {String(slides.length).padStart(2, "0")}
                   </span>
                 </motion.div>
@@ -626,241 +528,259 @@ export default function Hero() {
               <motion.div
                 key={slide.id}
                 custom={direction}
-                variants={dashV}
+                variants={cardV}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="relative"
               >
-                {/* Main glass card */}
-                <div className="relative rounded-[20px] border border-white/[0.07] bg-white/[0.025] backdrop-blur-2xl p-7 overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.3)]">
-                  {/* Top gradient accent line with shimmer */}
-                  <ShimmerLine color={slide.accent} className="absolute top-0 left-0 right-0 h-[1px]" />
+                {/* Main dashboard card */}
+                <div className="relative rounded-3xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-3xl p-8 overflow-hidden shadow-[0_24px_80px_-12px_rgba(0,0,0,0.5)]">
+                  {/* Inner fill */}
+                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
 
-                  {/* Animated border glow */}
-                  <motion.div
-                    className="absolute -inset-[1px] rounded-[20px] pointer-events-none"
-                    style={{
-                      background: `conic-gradient(from 0deg, transparent, ${slide.accent}30, transparent, ${slide.accentLight}20, transparent)`,
-                    }}
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  />
-                  <div className="absolute inset-[1px] rounded-[20px] bg-gradient-to-br from-[#0A1128] via-[#0C1535] to-[#060B1F]" />
+                  {/* Top accent line */}
+                  <div className="absolute top-0 left-0 right-0 h-px overflow-hidden">
+                    <div
+                      className="h-full"
+                      style={{
+                        background: `linear-gradient(90deg, transparent 10%, ${slide.accent}50 50%, transparent 90%)`,
+                      }}
+                    />
+                    <motion.div
+                      className="absolute top-0 h-full w-1/3"
+                      style={{
+                        background: `linear-gradient(90deg, transparent, ${slide.accentLight}80, transparent)`,
+                      }}
+                      animate={{ x: ["-100%", "300%"] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                    />
+                  </div>
+
                   <div className="relative z-10">
-                    {/* Header row */}
-                    <div className="flex items-center justify-between mb-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-7">
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-9 h-9 rounded-xl flex items-center justify-center"
-                          style={{
-                            backgroundColor: `${slide.accent}15`,
-                            boxShadow: `0 0 20px ${slide.accent}10`,
-                          }}
+                          className="w-10 h-10 rounded-2xl flex items-center justify-center"
+                          style={{ backgroundColor: `${slide.accent}12` }}
                         >
-                          <Building2 className="w-4 h-4" style={{ color: slide.accentLight }} />
+                          <Building2 className="w-[18px] h-[18px]" style={{ color: slide.accentLight }} />
                         </div>
                         <div>
-                          <div className="text-[13px] font-semibold text-white/75">Credora Dashboard</div>
-                          <div className="text-[10px] text-white/25">Real-time overview</div>
+                          <p className="text-[13px] font-semibold text-white/70 leading-tight">Credora Dashboard</p>
+                          <p className="text-[10px] text-white/20 mt-0.5">Real-time overview</p>
                         </div>
                       </div>
                       <span
-                        className="flex items-center gap-2 text-[10px] font-semibold px-3 py-1.5 rounded-full border"
+                        className="flex items-center gap-2 text-[10px] font-semibold px-3.5 py-1.5 rounded-full"
                         style={{
                           color: "#87B73C",
-                          borderColor: "rgba(135,183,60,0.15)",
                           backgroundColor: "rgba(135,183,60,0.06)",
+                          border: "1px solid rgba(135,183,60,0.1)",
                         }}
                       >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full bg-[#87B73C] animate-pulse"
-                          style={{ boxShadow: "0 0 6px rgba(135,183,60,0.5)" }}
-                        />
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#87B73C] opacity-50" />
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#87B73C]" />
+                        </span>
                         Live
                       </span>
                     </div>
 
-                    {/* Stat cards row */}
-                    <div className="grid grid-cols-3 gap-3 mb-6">
+                    {/* Stat cards */}
+                    <div className="grid grid-cols-3 gap-3 mb-7">
                       {[
-                        { label: "Approval Rate", value: "92%", icon: Shield, trend: "+4.2%", up: true },
-                        { label: "Disbursal", value: "7 Days", icon: Zap, trend: "Avg.", up: true },
-                        { label: "Lenders", value: "70+", icon: Landmark, trend: "+8", up: true },
+                        { label: "Approval Rate", value: "92%", icon: Shield, badge: "+4.2%" },
+                        { label: "Avg. Disbursal", value: "7 Days", icon: Zap, badge: "Fast" },
+                        { label: "Lender Network", value: "70+", icon: Landmark, badge: "+8" },
                       ].map((c, i) => (
                         <motion.div
                           key={i}
-                          className="rounded-2xl border border-white/[0.05] bg-white/[0.025] p-4 hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300 cursor-default group"
-                          initial={{ opacity: 0, y: 16, scale: 0.95 }}
+                          className="rounded-2xl border border-white/[0.04] bg-white/[0.015] p-4 hover:bg-white/[0.03] hover:border-white/[0.08] transition-all duration-300"
+                          initial={{ opacity: 0, y: 14, scale: 0.96 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={{ duration: 0.5, delay: 0.25 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                          transition={{ duration: 0.45, delay: 0.2 + i * 0.08 }}
                         >
-                          <div className="flex items-center justify-between mb-2.5">
-                            <c.icon className="w-3.5 h-3.5" style={{ color: slide.accentLight }} />
-                            <span className="text-[9px] text-[#87B73C] font-medium flex items-center gap-0.5">
-                              {c.up && <TrendingUp className="w-2.5 h-2.5" />}
-                              {c.trend}
+                          <div className="flex items-center justify-between mb-3">
+                            <div
+                              className="w-7 h-7 rounded-lg flex items-center justify-center"
+                              style={{ backgroundColor: `${slide.accent}10` }}
+                            >
+                              <c.icon className="w-3.5 h-3.5" style={{ color: slide.accentLight }} />
+                            </div>
+                            <span className="text-[9px] font-semibold text-[#87B73C]/80 bg-[#87B73C]/[0.06] px-1.5 py-0.5 rounded-md">
+                              {c.badge}
                             </span>
                           </div>
-                          <div className="text-xl font-bold text-white tracking-tight">{c.value}</div>
-                          <div className="text-[9px] text-white/25 uppercase tracking-[0.1em] mt-0.5">
-                            {c.label}
-                          </div>
+                          <p className="text-[22px] font-bold text-white tracking-tight leading-none">{c.value}</p>
+                          <p className="text-[9px] text-white/20 uppercase tracking-[0.12em] mt-1.5">{c.label}</p>
                         </motion.div>
                       ))}
                     </div>
 
-                    {/* Animated chart area */}
-                    <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] p-5 mb-6">
+                    {/* Chart area */}
+                    <div className="rounded-2xl border border-white/[0.04] bg-white/[0.015] p-5 mb-7">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <span className="text-[10px] text-white/25 uppercase tracking-[0.12em] font-medium block">
+                          <p className="text-[10px] text-white/20 uppercase tracking-[0.14em] font-medium">
                             Funding Trend
-                          </span>
-                          <span className="text-[9px] text-white/15 mt-0.5 block">Last 12 months</span>
+                          </p>
+                          <p className="text-[8px] text-white/[0.12] mt-0.5">Last 12 months</p>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-[#87B73C] font-semibold flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />
-                            +24.5%
-                          </span>
-                          <span className="text-[10px] text-white/20 font-medium">YoY</span>
-                        </div>
+                        <span className="text-[10px] text-[#87B73C]/70 font-semibold flex items-center gap-1">
+                          <TrendingUp className="w-3 h-3" />+24.5%
+                        </span>
                       </div>
-                      <AnimatedBarChart data={slide.chartData} color={slide.accent} accent={slide.accentLight} />
-                      {/* SVG trend line overlay */}
-                      <svg viewBox="0 0 280 30" className="w-full h-6 -mt-6 relative z-10" preserveAspectRatio="none">
-                        <defs>
-                          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                            <stop offset="0%" stopColor={slide.accent} />
-                            <stop offset="100%" stopColor={slide.accentLight} />
-                          </linearGradient>
-                        </defs>
-                        <motion.path
-                          d="M0 25 C20 22, 40 18, 60 20 C80 22, 100 14, 120 16 C140 18, 160 10, 180 8 C200 6, 220 4, 240 5 C260 6, 270 3, 280 2"
-                          fill="none"
-                          stroke="url(#lineGrad)"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          initial={{ pathLength: 0 }}
-                          animate={{ pathLength: 1 }}
-                          transition={{ duration: 2, delay: 0.5, ease: "easeInOut" }}
-                        />
-                        <motion.circle
-                          cx="280" cy="2" r="2.5" fill={slide.accentLight}
-                          initial={{ scale: 0 }} animate={{ scale: 1 }}
-                          transition={{ duration: 0.3, delay: 2.5 }}
-                        />
-                        <motion.circle
-                          cx="280" cy="2" r="6" fill="none" stroke={slide.accentLight} strokeWidth="0.8"
-                          animate={{ scale: [1, 2.5], opacity: [0.3, 0] }}
-                          transition={{ duration: 2, delay: 2.5, repeat: Infinity }}
-                        />
-                      </svg>
+
+                      {/* Bar chart */}
+                      <div className="flex items-end gap-[3px] h-14">
+                        {slide.id === 0 &&
+                          [35, 42, 38, 52, 48, 62, 58, 75, 68, 82, 78, 92].map((v, i) => (
+                            <motion.div
+                              key={i}
+                              className="flex-1 rounded-t-sm min-w-0"
+                              style={{
+                                background: `linear-gradient(to top, ${slide.accent}50, ${slide.accentLight}20)`,
+                              }}
+                              initial={{ height: 0 }}
+                              animate={{ height: `${(v / 92) * 100}%` }}
+                              transition={{ duration: 0.5, delay: 0.3 + i * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
+                              whileHover={{
+                                background: `linear-gradient(to top, ${slide.accent}, ${slide.accentLight})`,
+                                transition: { duration: 0.15 },
+                              }}
+                            />
+                          ))}
+                        {slide.id === 1 &&
+                          [20, 35, 30, 45, 55, 50, 65, 60, 75, 80, 85, 92].map((v, i) => (
+                            <motion.div
+                              key={i}
+                              className="flex-1 rounded-t-sm min-w-0"
+                              style={{
+                                background: `linear-gradient(to top, ${slide.accent}50, ${slide.accentLight}20)`,
+                              }}
+                              initial={{ height: 0 }}
+                              animate={{ height: `${(v / 92) * 100}%` }}
+                              transition={{ duration: 0.5, delay: 0.3 + i * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
+                              whileHover={{
+                                background: `linear-gradient(to top, ${slide.accent}, ${slide.accentLight})`,
+                                transition: { duration: 0.15 },
+                              }}
+                            />
+                          ))}
+                        {slide.id === 2 &&
+                          [25, 30, 40, 35, 50, 55, 60, 70, 65, 80, 85, 90].map((v, i) => (
+                            <motion.div
+                              key={i}
+                              className="flex-1 rounded-t-sm min-w-0"
+                              style={{
+                                background: `linear-gradient(to top, ${slide.accent}50, ${slide.accentLight}20)`,
+                              }}
+                              initial={{ height: 0 }}
+                              animate={{ height: `${(v / 90) * 100}%` }}
+                              transition={{ duration: 0.5, delay: 0.3 + i * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
+                              whileHover={{
+                                background: `linear-gradient(to top, ${slide.accent}, ${slide.accentLight})`,
+                                transition: { duration: 0.15 },
+                              }}
+                            />
+                          ))}
+                      </div>
                     </div>
 
-                    {/* Bottom bar */}
+                    {/* Bottom row */}
                     <div className="flex items-center justify-between pt-5 border-t border-white/[0.04]">
                       <div className="flex items-center gap-2">
                         {["RK", "SP", "AM", "VD"].map((initials, i) => (
                           <div
                             key={i}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-white/90 border-2 border-[#060B1F]"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold text-white/80 border-2 border-[#09090B]"
                             style={{
                               backgroundColor: [slide.accent, "#13277E", "#87B73C", "#2E7D32"][i],
                               marginLeft: i > 0 ? "-8px" : 0,
                               zIndex: 4 - i,
-                              boxShadow: `0 2px 8px ${[slide.accent, "#13277E", "#87B73C", "#2E7D32"][i]}30`,
                             }}
                           >
                             {initials}
                           </div>
                         ))}
-                        <span className="text-[10px] text-white/25 ml-2">1,200+ clients</span>
+                        <span className="text-[10px] text-white/20 ml-2">1,200+ clients</span>
                       </div>
-                      <div className="flex items-center gap-4">
-                        {[
-                          { v: "₹5L", l: "Min" },
-                          { v: "₹50Cr", l: "Max" },
-                        ].map((s, i) => (
-                          <div key={i} className="text-right">
-                            <div className="text-[12px] font-bold text-white/65">{s.v}</div>
-                            <div className="text-[8px] text-white/20 uppercase tracking-wider">{s.l}</div>
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-5">
+                        <div className="text-right">
+                          <p className="text-[11px] font-semibold text-white/55">₹5L</p>
+                          <p className="text-[8px] text-white/15 uppercase tracking-wider">Min</p>
+                        </div>
+                        <div className="h-6 w-px bg-white/[0.06]" />
+                        <div className="text-right">
+                          <p className="text-[11px] font-semibold text-white/55">₹50Cr</p>
+                          <p className="text-[8px] text-white/15 uppercase tracking-wider">Max</p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Inner glow effects */}
+                  {/* Soft inner glow */}
                   <div
-                    className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[60px] pointer-events-none"
-                    style={{ backgroundColor: slide.accent, opacity: 0.06 }}
-                  />
-                  <div
-                    className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full blur-[60px] pointer-events-none"
-                    style={{ backgroundColor: slide.accentLight, opacity: 0.04 }}
+                    className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] pointer-events-none"
+                    style={{ backgroundColor: slide.accent, opacity: 0.04 }}
                   />
                 </div>
 
-                {/* Floating accent card — top left */}
+                {/* ── FLOATING CARDS ── */}
+
+                {/* Top-left: Quick Disbursal */}
                 <motion.div
-                  className="absolute -top-4 -left-4 rounded-2xl px-4 py-3 shadow-2xl border border-white/[0.08] backdrop-blur-xl z-20"
+                  className="absolute -top-5 -left-5 rounded-2xl px-4 py-3 border border-white/[0.08] backdrop-blur-xl z-20"
                   style={{
-                    backgroundColor: `${slide.accent}E6`,
-                    boxShadow: `0 8px 32px ${slide.accent}40, 0 0 60px ${slide.accent}15`,
+                    background: `linear-gradient(135deg, ${slide.accent}E8, ${slide.accentLight}D0)`,
+                    boxShadow: `0 12px 40px ${slide.accent}30`,
                   }}
                   animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-3.5 h-3.5 text-white/70" />
+                  <div className="flex items-center gap-2.5">
+                    <Zap className="w-4 h-4 text-white/70" />
                     <div>
-                      <div className="text-[8px] font-medium text-white/50 uppercase tracking-[0.15em]">
-                        Quick Disbursal
-                      </div>
-                      <div className="text-[14px] font-bold text-white">7–10 Days</div>
+                      <p className="text-[8px] font-medium text-white/50 uppercase tracking-[0.14em]">Quick Disbursal</p>
+                      <p className="text-[14px] font-bold text-white leading-tight">7–10 Days</p>
                     </div>
                   </div>
                 </motion.div>
 
-                {/* Floating accent card — bottom right */}
+                {/* Bottom-right: Funding Range */}
                 <motion.div
-                  className="absolute -bottom-4 -right-4 rounded-2xl px-4 py-3 shadow-2xl border border-white/[0.08] backdrop-blur-xl z-20 bg-[#87B73C]/90"
-                  style={{
-                    boxShadow: "0 8px 32px rgba(135,183,60,0.3), 0 0 60px rgba(135,183,60,0.1)",
-                  }}
+                  className="absolute -bottom-5 -right-5 rounded-2xl px-4 py-3 border border-white/[0.08] backdrop-blur-xl z-20 bg-[#87B73C]/90"
+                  style={{ boxShadow: "0 12px 40px rgba(135,183,60,0.25)" }}
                   animate={{ y: [0, 8, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                  transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
                 >
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-white/70" />
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-white/70" />
                     <div>
-                      <div className="text-[8px] font-medium text-white/50 uppercase tracking-[0.15em]">
-                        Funding Range
-                      </div>
-                      <div className="text-[14px] font-bold text-white">₹5L – ₹50Cr</div>
+                      <p className="text-[8px] font-medium text-white/50 uppercase tracking-[0.14em]">Funding Range</p>
+                      <p className="text-[14px] font-bold text-white leading-tight">₹5L – ₹50Cr</p>
                     </div>
                   </div>
                 </motion.div>
 
-                {/* Floating accent card — right middle */}
+                {/* Right-middle: Approval */}
                 <motion.div
-                  className="absolute top-1/2 -right-5 -translate-y-1/2 rounded-2xl px-3 py-2.5 shadow-2xl border border-white/[0.08] backdrop-blur-xl z-20 bg-[#0A1128]/90"
+                  className="absolute top-1/2 -right-6 -translate-y-1/2 rounded-2xl px-3.5 py-2.5 border border-white/[0.06] backdrop-blur-xl z-20"
                   style={{
-                    boxShadow: `0 8px 24px rgba(0,0,0,0.3), 0 0 30px ${slide.accent}10`,
+                    background: "rgba(9,9,11,0.85)",
+                    boxShadow: `0 12px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)`,
                   }}
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                  animate={{ x: [0, 6, 0] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2.5 }}
                 >
                   <div className="flex items-center gap-2">
                     <Shield className="w-3.5 h-3.5" style={{ color: slide.accentLight }} />
                     <div>
-                      <div className="text-[8px] font-medium text-white/40 uppercase tracking-[0.12em]">
-                        Approval
-                      </div>
-                      <div className="text-[13px] font-bold text-white">92%</div>
+                      <p className="text-[8px] font-medium text-white/30 uppercase tracking-[0.12em]">Approval</p>
+                      <p className="text-[13px] font-bold text-white leading-tight">92%</p>
                     </div>
                   </div>
                 </motion.div>
@@ -871,65 +791,48 @@ export default function Hero() {
 
         {/* ─── BOTTOM STATS BAR ─── */}
         <motion.div
-          className="mt-10 lg:mt-16"
-          initial={{ opacity: 0, y: 25 }}
+          className="mt-14 lg:mt-20"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, delay: 0.9 }}
         >
-          {/* Divider line with gradient */}
-          <div className="relative mb-6">
-            <div className="h-[1px] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-            <motion.div
-              className="absolute top-0 h-[1px]"
-              style={{
-                background: `linear-gradient(90deg, transparent, ${slide.accent}50, transparent)`,
-              }}
-              animate={{ width: ["0%", "100%", "0%"], left: ["0%", "0%", "100%"] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            />
+          {/* Divider */}
+          <div className="relative mb-8">
+            <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
           </div>
 
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-4">
             {stats.map((s, i) => (
               <motion.div
                 key={i}
-                className="text-center flex-1 min-w-[90px] group cursor-default"
-                initial={{ opacity: 0, y: 15 }}
+                className="group text-center"
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1 + i * 0.1 }}
+                transition={{ duration: 0.5, delay: 1 + i * 0.08 }}
               >
-                <div className="text-2xl sm:text-[1.7rem] font-bold tracking-tight group-hover:scale-105 transition-transform duration-300"
-                  style={{
-                    background: "linear-gradient(135deg, #FFFFFF, #FFFFFF99)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  <CountUp
-                    target={s.target}
-                    suffix={s.suffix}
-                    prefix={s.prefix || ""}
-                  />
+                <div className="flex items-center justify-center gap-2 mb-1.5">
+                  <s.icon className="w-3.5 h-3.5 text-white/[0.12] group-hover:text-white/25 transition-colors duration-300" />
                 </div>
-                <div className="text-[10px] text-white/20 uppercase tracking-[0.14em] mt-1 group-hover:text-white/30 transition-colors duration-300">
+                <p className="text-2xl sm:text-[1.65rem] font-bold text-white tracking-tight group-hover:text-white transition-colors duration-300">
+                  <CountUp target={s.target} suffix={s.suffix} prefix={s.prefix} />
+                </p>
+                <p className="text-[10px] text-white/15 uppercase tracking-[0.16em] mt-1 group-hover:text-white/25 transition-colors duration-300">
                   {s.label}
-                </div>
+                </p>
               </motion.div>
             ))}
           </div>
         </motion.div>
       </motion.div>
 
-      {/* Bottom fade to next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#F0F4FF] to-transparent z-20 pointer-events-none" />
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F0F4FF] to-transparent z-20 pointer-events-none" />
 
-      {/* Vignette overlay for depth */}
+      {/* Side vignette */}
       <div
         className="absolute inset-0 pointer-events-none z-[5]"
         style={{
-          background:
-            "radial-gradient(ellipse 70% 60% at 50% 50%, transparent 50%, rgba(3,7,18,0.4) 100%)",
+          background: "radial-gradient(ellipse 80% 70% at 50% 45%, transparent 40%, rgba(9,9,11,0.5) 100%)",
         }}
       />
     </section>

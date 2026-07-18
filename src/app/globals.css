@@ -644,30 +644,65 @@ select:focus {
 }
 
 /* ============================================
-   HERO SECTION — Premium Full-Screen Dark
+   HERO SECTION — Premium SaaS Design System
    ============================================ */
 #hero {
   isolation: isolate;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Animated gradient text shift for hero heading accent */
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-/* Hero card perspective */
+/* Hero grid perspective for subtle 3D card feel */
 #hero .grid {
-  perspective: 1200px;
+  perspective: 1400px;
 }
 
-/* Subtle text glow for hero headings */
+/* Refined heading rendering */
 #hero h1 {
-  text-shadow: 0 0 80px rgba(48, 74, 192, 0.08);
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.035em;
 }
 
-/* Smooth stat number transitions */
+/* Smooth number transitions */
 #hero .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Card inner glow refinement */
+#hero .rounded-3xl::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Button focus states for accessibility */
+#hero button:focus-visible {
+  outline: 2px solid rgba(48, 74, 192, 0.6);
+  outline-offset: 3px;
+  border-radius: 16px;
+}
+
+/* Stat hover micro-interaction */
+#hero .group:hover .text-white\/15,
+#hero .group:hover .text-white\/20,
+#hero .group:hover .text-white\/25 {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Smooth chart bar transitions */
+#hero .flex-1.rounded-t-sm {
+  transition: background 0.15s ease;
 }
 
