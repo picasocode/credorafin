@@ -2,19 +2,14 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import {
   ArrowRight,
-  Shield,
-  TrendingUp,
-  Building2,
-  Landmark,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
-  CheckCircle2,
   CircleDollarSign,
+  Shield,
   Handshake,
-  Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,137 +19,91 @@ import { Button } from "@/components/ui/button";
 const heroSlides = [
   {
     id: 0,
-    badge: "STRUCTURED FINANCE",
+    badgeDark: "FINANCE",
+    badgeLight: "Structured Funding",
     badgeIcon: CircleDollarSign,
     heading: ["Enrich Your", "Cashflow"],
-    highlight: "Cashflow",
     subtitle:
-      "Structured funding solutions for MSMEs, professionals, and growing businesses across India. We simplify access to capital by bridging the gap between your funding needs and the right financial institutions.",
+      "We bring capital closer by combining years of experience of our expert financial team with 70+ bank and NBFC partnerships across India.",
     primaryCTA: "Get Funded Now",
     secondaryCTA: "Speak to an Advisor",
-    cardHeading: "Funding Made Simple",
+    cardHeading: "Efficiently transform your funding experience.",
     cardText:
-      "With disciplined pre-underwriting, end-to-end advisory, and access to 70+ banks and NBFCs, we prepare your profile for success.",
+      "Modernize your business financing with our platform that streamlines pre-underwriting to perfection, so you stay focused on growth.",
     cardBadge: "92% Approval Rate",
+    cardImage: "/images/pages/indian-professional.png",
     avatars: [
-      { initials: "RK", name: "Rajesh K.", role: "CEO, TechFlow" },
-      { initials: "SP", name: "Sunita P.", role: "Founder, BuildRight" },
-      { initials: "AM", name: "Amit M.", role: "CFO, GreenEdge" },
-      { initials: "VD", name: "Vikram D.", role: "MD, SolarMax" },
+      { initials: "RK", color: "#304AC0" },
+      { initials: "SP", color: "#13277E" },
+      { initials: "AM", color: "#87B73C" },
+      { initials: "VD", color: "#2E7D32" },
+      { initials: "PN", color: "#304AC0" },
+      { initials: "KS", color: "#13277E" },
+      { initials: "RG", color: "#5B8DEF" },
     ],
   },
   {
     id: 1,
-    badge: "PRE-UNDERWRITING",
+    badgeDark: "PRE-UNDERWRITING",
+    badgeLight: "Bank-Ready Applications",
     badgeIcon: Shield,
     heading: ["Precision That", "Gets Approved"],
-    highlight: "Gets Approved",
     subtitle:
-      "Our disciplined pre-underwriting process ensures your loan application is bank-ready before it reaches a single lender. We analyze, structure, and position your financial profile for maximum approval probability.",
+      "Our disciplined pre-underwriting process ensures your loan application is bank-ready before it reaches a single lender. We structure for success.",
     primaryCTA: "Start Pre-Underwriting",
     secondaryCTA: "Learn the Process",
-    cardHeading: "Bank-Ready Applications",
+    cardHeading: "Your profile, perfectly positioned for approval.",
     cardText:
       "From credit repair to loan structuring, we handle the complexity so you can focus on growing your business. Quick disbursal in 7-10 days.",
     cardBadge: "7-10 Days Disbursal",
+    cardImage: "/images/pages/hero-indian-team.png",
     avatars: [
-      { initials: "PN", name: "Priya N.", role: "Co-Founder, FreshMart" },
-      { initials: "KS", name: "Karan S.", role: "Director, IronWorks" },
-      { initials: "RG", name: "Ritu G.", role: "CEO, MediCare Plus" },
-      { initials: "AJ", name: "Arjun J.", role: "Partner, LegalEdge" },
+      { initials: "DT", color: "#304AC0" },
+      { initials: "NK", color: "#13277E" },
+      { initials: "SV", color: "#87B73C" },
+      { initials: "MB", color: "#2E7D32" },
+      { initials: "AJ", color: "#5B8DEF" },
+      { initials: "RK", color: "#13277E" },
+      { initials: "SP", color: "#304AC0" },
     ],
   },
   {
     id: 2,
-    badge: "END-TO-END ADVISORY",
+    badgeDark: "ADVISORY",
+    badgeLight: "End-to-End Support",
     badgeIcon: Handshake,
     heading: ["From Application", "To Disbursal"],
-    highlight: "To Disbursal",
     subtitle:
-      "We walk with you through every step — from choosing the right lender to negotiating the best terms. Our advisory covers credit repair, EMI structuring, documentation, and post-sanction support.",
+      "We walk with you through every step — from choosing the right lender to negotiating the best terms. Credit repair, EMI structuring, and more.",
     primaryCTA: "Get Advisory",
     secondaryCTA: "See Our Services",
-    cardHeading: "Your Finance Partner",
+    cardHeading: "Your complete finance partner for every stage.",
     cardText:
       "Trusted by 1,200+ businesses with 20+ years of expertise in the Indian financial ecosystem. Access 20+ products across 70+ banks.",
     cardBadge: "1,200+ Happy Clients",
+    cardImage: "/images/pages/office-india.png",
     avatars: [
-      { initials: "MB", name: "Meera B.", role: "Owner, TextileHub" },
-      { initials: "DT", name: "Deepak T.", role: "CEO, LogiTrans" },
-      { initials: "NK", name: "Nisha K.", role: "Founder, EduBright" },
-      { initials: "SV", name: "Suresh V.", role: "MD, AgriGrow" },
+      { initials: "AM", color: "#304AC0" },
+      { initials: "VD", color: "#13277E" },
+      { initials: "PN", color: "#87B73C" },
+      { initials: "KS", color: "#2E7D32" },
+      { initials: "RG", color: "#5B8DEF" },
+      { initials: "DT", color: "#13277E" },
+      { initials: "NK", color: "#304AC0" },
     ],
   },
 ];
 
-/* ────────────────────────────────────────────
-   AVATAR CIRCLE
-   ──────────────────────────────────────────── */
-function AvatarCircle({
-  initials,
-  name,
-  role,
-  index,
-  total,
-}: {
-  initials: string;
-  name: string;
-  role: string;
-  index: number;
-  total: number;
-}) {
-  const colors = ["#304AC0", "#13277E", "#87B73C", "#2E7D32"];
-  const bgColor = colors[index % colors.length];
-
-  // Stagger positions — fan out in a grid-like pattern on the image area
-  const positions = [
-    { x: "15%", y: "25%" },
-    { x: "55%", y: "15%" },
-    { x: "35%", y: "55%" },
-    { x: "70%", y: "50%" },
-  ];
-  const pos = positions[index % positions.length];
-
-  return (
-    <motion.div
-      className="absolute flex flex-col items-center gap-1.5"
-      style={{ left: pos.x, top: pos.y }}
-      initial={{ opacity: 0, scale: 0, y: 10 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{
-        duration: 0.5,
-        delay: 1.2 + index * 0.15,
-        type: "spring",
-        stiffness: 200,
-        damping: 18,
-      }}
-    >
-      {/* Circle avatar */}
-      <div className="relative">
-        <motion.div
-          className="w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold border-[3px] border-white shadow-lg"
-          style={{ backgroundColor: bgColor }}
-          whileHover={{ scale: 1.15, y: -4 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        >
-          {initials}
-        </motion.div>
-        {/* Green online dot */}
-        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#87B73C] border-2 border-white" />
-      </div>
-      {/* Name card */}
-      <motion.div
-        className="bg-white rounded-xl px-3 py-2 shadow-md border border-gray-100 text-center min-w-[100px]"
-        whileHover={{ y: -2, shadow: "lg" }}
-      >
-        <div className="text-[11px] font-semibold text-[#1C1D62] leading-tight">
-          {name}
-        </div>
-        <div className="text-[10px] text-[#718096] leading-tight">{role}</div>
-      </motion.div>
-    </motion.div>
-  );
-}
+/* Avatar positions — scattered pattern like the reference */
+const avatarPositions = [
+  { x: "8%", y: "12%" },
+  { x: "42%", y: "6%" },
+  { x: "72%", y: "14%" },
+  { x: "22%", y: "48%" },
+  { x: "58%", y: "44%" },
+  { x: "78%", y: "52%" },
+  { x: "38%", y: "72%" },
+];
 
 /* ────────────────────────────────────────────
    SLIDE INDICATOR DOTS
@@ -223,7 +172,7 @@ export default function Hero() {
     );
   }, []);
 
-  // Auto-advance slides
+  // Auto-advance slides every 6 seconds
   useEffect(() => {
     const timer = setInterval(nextSlide, 6000);
     return () => clearInterval(timer);
@@ -231,38 +180,16 @@ export default function Hero() {
 
   const slide = heroSlides[currentSlide];
 
-  /* Slide animation variants */
   const contentVariants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? 60 : -60,
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-    },
-    exit: (dir: number) => ({
-      x: dir > 0 ? -60 : 60,
-      opacity: 0,
-    }),
+    enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
   };
 
   const cardVariants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? 40 : -40,
-      opacity: 0,
-      scale: 0.98,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-    },
-    exit: (dir: number) => ({
-      x: dir > 0 ? -40 : 40,
-      opacity: 0,
-      scale: 0.98,
-    }),
+    enter: (dir: number) => ({ x: dir > 0 ? 40 : -40, opacity: 0, scale: 0.98 }),
+    center: { x: 0, opacity: 1, scale: 1 },
+    exit: (dir: number) => ({ x: dir > 0 ? -40 : 40, opacity: 0, scale: 0.98 }),
   };
 
   return (
@@ -283,66 +210,40 @@ export default function Hero() {
             }}
             className="flex flex-col items-center"
           >
-            {/* Badge Pill */}
+            {/* Badge Pill — dark left section + lighter right section */}
             <motion.div
-              className="inline-flex items-center gap-2 bg-[#F0F4FF] text-[#304AC0] text-xs font-semibold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full border border-[#304AC0]/10 mb-8"
+              className="inline-flex items-center rounded-full border border-gray-200 overflow-hidden mb-8 shadow-sm"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <slide.badgeIcon className="w-3.5 h-3.5 text-[#87B73C]" />
-              {slide.badge}
-              <ArrowRight className="w-3.5 h-3.5 text-[#304AC0]/50" />
+              {/* Dark left section */}
+              <span className="bg-[#1C1D62] text-white text-[11px] font-semibold uppercase tracking-[0.14em] px-4 py-2 flex items-center gap-1.5">
+                <slide.badgeIcon className="w-3 h-3" />
+                {slide.badgeDark}
+              </span>
+              {/* Lighter right section */}
+              <span className="bg-white text-[#718096] text-[11px] font-medium px-4 py-2 flex items-center gap-1.5">
+                {slide.badgeLight}
+                <ArrowRight className="w-3 h-3 text-[#718096]/50" />
+              </span>
             </motion.div>
 
-            {/* Main Heading — 2 lines */}
+            {/* Main Heading — 2 lines, same color */}
             <motion.h1
               className="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-bold text-[#1C1D62] leading-[1.12] tracking-tight mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.15 }}
             >
-              {slide.heading.map((line, i) => (
-                <span key={i}>
-                  {line === slide.highlight ? (
-                    <span className="relative inline-block">
-                      <span
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #304AC0 0%, #87B73C 100%)",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                          backgroundClip: "text",
-                        }}
-                      >
-                        {line}
-                      </span>
-                      <motion.span
-                        className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full"
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #304AC0, #87B73C)",
-                        }}
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{
-                          duration: 0.7,
-                          delay: 0.9,
-                          ease: [0.22, 1, 0.36, 1],
-                        }}
-                      />
-                    </span>
-                  ) : (
-                    line
-                  )}
-                  {i < slide.heading.length - 1 && <br />}
-                </span>
-              ))}
+              {slide.heading[0]}
+              <br />
+              {slide.heading[1]}
             </motion.h1>
 
-            {/* Subtitle */}
+            {/* Subtitle — gray, centered */}
             <motion.p
-              className="text-base sm:text-lg text-[#718096] leading-relaxed max-w-2xl mx-auto mb-10"
+              className="text-base sm:text-lg text-[#666666] leading-relaxed max-w-2xl mx-auto mb-10"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -350,9 +251,9 @@ export default function Hero() {
               {slide.subtitle}
             </motion.p>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons — slightly rounded corners, dark navy primary */}
             <motion.div
-              className="flex items-center justify-center gap-4 flex-wrap"
+              className="flex items-center justify-center gap-3 flex-wrap"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
@@ -360,10 +261,9 @@ export default function Hero() {
               <Button
                 onClick={() => {
                   const el = document.getElementById("contact");
-                  if (el)
-                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className="bg-[#1C1D62] hover:bg-[#13277E] text-white font-semibold text-sm uppercase tracking-wider px-8 py-3.5 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl group"
+                className="bg-[#1C1D62] hover:bg-[#13277E] text-white font-semibold text-sm px-7 py-3.5 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl group"
               >
                 {slide.primaryCTA}
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -372,10 +272,9 @@ export default function Hero() {
                 variant="outline"
                 onClick={() => {
                   const el = document.getElementById("contact");
-                  if (el)
-                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className="border-[#1C1D62]/20 text-[#1C1D62] hover:bg-[#F0F4FF] font-semibold text-sm uppercase tracking-wider px-8 py-3.5 rounded-xl transition-all duration-300"
+                className="border-gray-200 text-[#666666] hover:text-[#1C1D62] hover:border-[#1C1D62]/20 hover:bg-gray-50 font-semibold text-sm px-7 py-3.5 rounded-lg transition-all duration-300"
               >
                 {slide.secondaryCTA}
               </Button>
@@ -383,29 +282,25 @@ export default function Hero() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Slide Controls — below buttons */}
+        {/* Slide Controls */}
         <motion.div
           className="flex items-center justify-center gap-5 mt-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.7 }}
         >
-          <SlideIndicators
-            current={currentSlide}
-            total={heroSlides.length}
-            onSelect={goToSlide}
-          />
+          <SlideIndicators current={currentSlide} total={heroSlides.length} onSelect={goToSlide} />
           <div className="flex items-center gap-1.5">
             <button
               onClick={prevSlide}
-              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-[#718096] hover:text-[#304AC0] hover:border-[#304AC0]/30 hover:bg-[#F0F4FF] transition-all duration-200"
+              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-[#999999] hover:text-[#1C1D62] hover:border-[#1C1D62]/20 hover:bg-gray-50 transition-all duration-200"
               aria-label="Previous slide"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={nextSlide}
-              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-[#718096] hover:text-[#304AC0] hover:border-[#304AC0]/30 hover:bg-[#F0F4FF] transition-all duration-200"
+              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-[#999999] hover:text-[#1C1D62] hover:border-[#1C1D62]/20 hover:bg-gray-50 transition-all duration-200"
               aria-label="Next slide"
             >
               <ChevronRight className="w-4 h-4" />
@@ -414,7 +309,7 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* ===== BOTTOM SECTION — Split Content Card ===== */}
+      {/* ===== BOTTOM SECTION — Split Content Card with Photo ===== */}
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pb-20 md:pb-28">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
@@ -424,23 +319,19 @@ export default function Hero() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{
-              duration: 0.6,
-              ease: [0.22, 1, 0.36, 1],
-            }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="relative rounded-2xl overflow-hidden border border-gray-100 bg-gradient-to-br from-[#F8F9FC] to-[#EEF1F8] shadow-sm">
+            <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-[#F5F5F5] shadow-sm">
               <div className="grid md:grid-cols-2 gap-0">
-                {/* Left — Text Content */}
+                {/* Left — Text Content (60%) */}
                 <div className="p-8 md:p-12 flex flex-col justify-center">
-                  {/* Card badge */}
+                  {/* Small label */}
                   <motion.span
-                    className="inline-flex items-center gap-2 bg-white text-[#87B73C] text-xs font-semibold uppercase tracking-[0.1em] px-4 py-2 rounded-full border border-[#87B73C]/15 shadow-sm w-fit mb-6"
+                    className="inline-flex items-center gap-2 bg-white text-[#87B73C] text-[11px] font-semibold uppercase tracking-[0.1em] px-4 py-2 rounded-full border border-[#87B73C]/15 shadow-sm w-fit mb-6"
                     initial={{ opacity: 0, x: -16 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
                     {slide.cardBadge}
                   </motion.span>
 
@@ -454,7 +345,7 @@ export default function Hero() {
                   </motion.h3>
 
                   <motion.p
-                    className="text-base text-[#718096] leading-relaxed mb-8"
+                    className="text-base text-[#666666] leading-relaxed mb-8"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
@@ -474,202 +365,87 @@ export default function Hero() {
                       { val: "70+", lab: "Banks" },
                       { val: "20+", lab: "Products" },
                     ].map((s, i) => (
-                      <div key={i} className="text-center">
-                        <div className="text-xl font-bold text-[#304AC0]">
-                          {s.val}
-                        </div>
-                        <div className="text-[11px] text-[#718096] uppercase tracking-wider">
-                          {s.lab}
-                        </div>
+                      <div key={i}>
+                        <div className="text-xl font-bold text-[#1C1D62]">{s.val}</div>
+                        <div className="text-[11px] text-[#999999] uppercase tracking-wider">{s.lab}</div>
                       </div>
                     ))}
                   </motion.div>
                 </div>
 
-                {/* Right — Image Area with Floating Avatars */}
-                <div className="relative min-h-[320px] md:min-h-[400px] bg-gradient-to-br from-[#304AC0]/5 via-[#5B8DEF]/5 to-[#87B73C]/5 overflow-hidden">
-                  {/* Decorative background pattern */}
-                  <div className="absolute inset-0 opacity-[0.03]">
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        backgroundImage: `
-                          radial-gradient(circle at 25% 25%, #304AC0 1px, transparent 1px),
-                          radial-gradient(circle at 75% 75%, #87B73C 1px, transparent 1px)
-                        `,
-                        backgroundSize: "30px 30px",
-                      }}
-                    />
-                  </div>
+                {/* Right — Photo with Floating Avatar Circles */}
+                <div className="relative min-h-[320px] md:min-h-[420px] overflow-hidden">
+                  {/* Background Photo */}
+                  <Image
+                    src={slide.cardImage}
+                    alt="Credora Finance Professional"
+                    fill
+                    className="object-cover object-center"
+                    priority
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
 
-                  {/* Abstract finance illustration */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <svg
-                      viewBox="0 0 400 300"
-                      className="w-3/4 h-3/4 opacity-10"
-                      preserveAspectRatio="xMidYMid meet"
-                    >
-                      <defs>
-                        <linearGradient
-                          id="heroIllGrad"
-                          x1="0"
-                          y1="0"
-                          x2="1"
-                          y2="1"
-                        >
-                          <stop offset="0%" stopColor="#304AC0" />
-                          <stop offset="100%" stopColor="#87B73C" />
-                        </linearGradient>
-                      </defs>
-                      {/* Bar chart */}
-                      <rect
-                        x="60"
-                        y="180"
-                        width="30"
-                        height="80"
-                        rx="4"
-                        fill="url(#heroIllGrad)"
-                        opacity="0.4"
-                      />
-                      <rect
-                        x="110"
-                        y="140"
-                        width="30"
-                        height="120"
-                        rx="4"
-                        fill="url(#heroIllGrad)"
-                        opacity="0.5"
-                      />
-                      <rect
-                        x="160"
-                        y="100"
-                        width="30"
-                        height="160"
-                        rx="4"
-                        fill="url(#heroIllGrad)"
-                        opacity="0.6"
-                      />
-                      <rect
-                        x="210"
-                        y="60"
-                        width="30"
-                        height="200"
-                        rx="4"
-                        fill="url(#heroIllGrad)"
-                        opacity="0.7"
-                      />
-                      <rect
-                        x="260"
-                        y="30"
-                        width="30"
-                        height="230"
-                        rx="4"
-                        fill="url(#heroIllGrad)"
-                        opacity="0.8"
-                      />
-                      <rect
-                        x="310"
-                        y="10"
-                        width="30"
-                        height="250"
-                        rx="4"
-                        fill="url(#heroIllGrad)"
-                        opacity="0.9"
-                      />
-                      {/* Trend line */}
-                      <motion.path
-                        d="M75 220 L125 180 L175 140 L225 100 L275 70 L325 40"
-                        fill="none"
-                        stroke="#304AC0"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{
-                          duration: 2,
-                          delay: 0.8,
-                          ease: "easeInOut",
-                        }}
-                      />
-                      {/* Data points */}
-                      {[
-                        [75, 220],
-                        [125, 180],
-                        [175, 140],
-                        [225, 100],
-                        [275, 70],
-                        [325, 40],
-                      ].map(([cx, cy], i) => (
-                        <motion.circle
-                          key={i}
-                          cx={cx}
-                          cy={cy}
-                          r="4"
-                          fill="#304AC0"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{
-                            duration: 0.3,
-                            delay: 1 + i * 0.15,
-                          }}
-                        />
-                      ))}
-                    </svg>
-                  </div>
+                  {/* Subtle dark overlay for avatar readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10" />
 
-                  {/* Floating Avatar Circles */}
+                  {/* Floating Avatar Circles — scattered pattern, circles only with initials, NO name cards */}
                   {slide.avatars.map((avatar, i) => (
-                    <AvatarCircle
+                    <motion.div
                       key={`${slide.id}-${i}`}
-                      initials={avatar.initials}
-                      name={avatar.name}
-                      role={avatar.role}
-                      index={i}
-                      total={slide.avatars.length}
-                    />
+                      className="absolute"
+                      style={{ left: avatarPositions[i].x, top: avatarPositions[i].y }}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: 1 + i * 0.1,
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 18,
+                      }}
+                      whileHover={{ scale: 1.15, y: -4 }}
+                    >
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold border-[2.5px] border-white shadow-lg"
+                        style={{ backgroundColor: avatar.color }}
+                      >
+                        {avatar.initials}
+                      </div>
+                    </motion.div>
                   ))}
 
-                  {/* Floating accent card — top right */}
+                  {/* Small floating info card — top right */}
                   <motion.div
-                    className="absolute top-4 right-4 bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100"
+                    className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl px-3.5 py-2.5 shadow-lg"
                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 1.6 }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#87B73C]/10 flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-[#87B73C]" />
-                      </div>
-                      <div>
-                        <div className="text-[10px] text-[#718096] uppercase tracking-wider">
-                          Quick Disbursal
-                        </div>
-                        <div className="text-sm font-bold text-[#1C1D62]">
-                          7-10 Days
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Floating accent card — bottom left */}
-                  <motion.div
-                    className="absolute bottom-4 left-4 bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100"
-                    initial={{ opacity: 0, y: -10, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.5, delay: 1.8 }}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#304AC0]/10 flex items-center justify-center">
-                        <Briefcase className="w-4 h-4 text-[#304AC0]" />
+                      <div className="w-7 h-7 rounded-lg bg-[#87B73C]/10 flex items-center justify-center">
+                        <CircleDollarSign className="w-3.5 h-3.5 text-[#87B73C]" />
                       </div>
                       <div>
-                        <div className="text-[10px] text-[#718096] uppercase tracking-wider">
-                          Funding Range
-                        </div>
-                        <div className="text-sm font-bold text-[#1C1D62]">
-                          ₹5L - ₹50Cr
-                        </div>
+                        <div className="text-[9px] text-[#999999] uppercase tracking-wider">Quick Disbursal</div>
+                        <div className="text-xs font-bold text-[#1C1D62]">7-10 Days</div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Small floating info card — bottom left */}
+                  <motion.div
+                    className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl px-3.5 py-2.5 shadow-lg"
+                    initial={{ opacity: 0, y: -10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 2 }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-[#304AC0]/10 flex items-center justify-center">
+                        <Shield className="w-3.5 h-3.5 text-[#304AC0]" />
+                      </div>
+                      <div>
+                        <div className="text-[9px] text-[#999999] uppercase tracking-wider">Funding Range</div>
+                        <div className="text-xs font-bold text-[#1C1D62]">₹5L - ₹50Cr</div>
                       </div>
                     </div>
                   </motion.div>
