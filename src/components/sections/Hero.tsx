@@ -2,95 +2,77 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   Shield,
   Building2,
-  Landmark,
   Zap,
-  Users,
   BadgeCheck,
   TrendingUp,
   Clock,
   Sparkles,
   CheckCircle2,
-  Phone
+  Phone,
+  ArrowUpRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /* ────────────────────────────────────────────
-   SLIDE DATA (Clean Light Corporate Theme)
+   SLIDE DATA (Centered Minimalist Theme)
    ──────────────────────────────────────────── */
 const slides = [
   {
     id: 0,
     badge: "Empowering Enterprises",
-    heading: "Accelerate Your",
-    headingAccent: "MSME Growth",
-    subtitle: "Customized collateral-free funding solutions syndicated across 70+ banking partners.",
-    cta1: "Check Eligibility",
-    cta2: "Talk to Advisor",
+    heading: "Accelerate Your MSME Growth",
+    subtitle: "Customized collateral-free funding solutions syndicated across 70+ banking partners globally.",
+    cta1: "Build Finance",
+    cta2: "Contact us",
     image: "/images/pages/hero-indian-team.png",
     accent: "#304AC0",
-    features: ["Funding up to ₹50 Crores", "Collateral-free options", "Rates from 9.5% p.a."],
-    hudData: {
-      rate: "9.5% p.a.",
-      time: "7-10 Days",
-      metric: "Instant Vetting"
-    }
+    hudLeft: { title: "Instant Vetting", desc: "Funding up to ₹50 Crores" },
+    hudRight: { title: "9.5% p.a.", desc: "Collateral-free options" },
+    hudBottom: { title: "7-10 Days Turnaround", desc: "Priority processing channel active" }
   },
   {
     id: 1,
     badge: "Infrastructure & Scale",
-    heading: "Raise Capital for",
-    headingAccent: "Large Projects",
+    heading: "Raise Capital for Large Projects",
     subtitle: "Specialized debt structuring, liquidity sourcing, and structured corporate finance built for industrial expansion.",
     cta1: "Raise Capital",
-    cta2: "Explore Advisory",
+    cta2: "Contact us",
     image: "/images/pages/office-india.png",
     accent: "#13277E",
-    features: ["Structured syndicate finance", "PSU & Private bank networks", "Flexible milestone matrices"],
-    hudData: {
-      rate: "₹5Cr - ₹100Cr",
-      time: "Custom Terms",
-      metric: "Top Tier Priority"
-    }
+    hudLeft: { title: "Top Tier Priority", desc: "Structured syndicate finance" },
+    hudRight: { title: "₹5Cr - ₹100Cr", desc: "PSU & Private networks" },
+    hudBottom: { title: "Custom Terms", desc: "Flexible milestone disbursement matrices" }
   },
   {
     id: 2,
     badge: "Risk & Compliance Vetting",
-    heading: "Guarantee Success with",
-    headingAccent: "Pre-Underwriting",
+    heading: "Guarantee Success via Pre-Underwriting",
     subtitle: "Pre-vet commercial loan files prior to bank submission to secure unmatched structural credibility.",
-    cta1: "Apply Pre-Underwriting",
-    cta2: "View Process",
+    cta1: "Apply Vetting",
+    cta2: "Contact us",
     image: "/images/pages/indian-professional.png",
     accent: "#76A32B",
-    features: ["92% Approval rating", "Credit risk pre-assessment", "Zero process gaps"],
-    hudData: {
-      rate: "92% Rate",
-      time: "48 Hours",
-      metric: "Risk Protected"
-    }
+    hudLeft: { title: "Risk Protected", desc: "92% Approval rating metrics" },
+    hudRight: { title: "92% Rate", desc: "Credit risk pre-assessment" },
+    hudBottom: { title: "48 Hours Window", desc: "Zero process structural gaps found" }
   },
   {
     id: 3,
     badge: "Financial Reconstruction",
-    heading: "Resolve Defaults &",
-    headingAccent: "Repair Credit",
-    subtitle: "Struggling with historical settlement records or complex CIBIL positions? Restore leverage now.",
+    heading: "Resolve Defaults & Repair Credit",
+    subtitle: "Struggling with historical settlement records or complex CIBIL positions? Restore corporate leverage now.",
     cta1: "Fix Credit Score",
-    cta2: "Get Consulted",
+    cta2: "Contact us",
     image: "/images/pages/handshake-india.png",
     accent: "#D97706",
-    features: ["CIBIL optimization", "Removal of default records", "Strategic settlements"],
-    hudData: {
-      rate: "+150 Points",
-      time: "Rapid Action",
-      metric: "Score Restored"
-    }
+    hudLeft: { title: "Score Restored", desc: "Strategic bank settlements" },
+    hudRight: { title: "+150 Points", desc: "CIBIL optimization engine" },
+    hudBottom: { title: "Rapid Action Plan", desc: "Removal of legacy default history markers" }
   }
 ];
 
@@ -116,7 +98,7 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    timerRef.current = setInterval(goNext, 8000);
+    timerRef.current = setInterval(goNext, 9000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -125,229 +107,160 @@ export default function Hero() {
   return (
     <section 
       id="hero" 
-      className="relative bg-gradient-to-br from-[#F8FAFC] via-[#F1F5F9] to-[#E2E8F0] text-slate-900 w-full min-h-screen xl:h-screen flex flex-col justify-between overflow-hidden font-sans antialiased"
+      className="relative bg-[#FAFAFA] text-slate-900 w-full min-h-screen h-screen flex flex-col justify-between overflow-hidden font-sans antialiased"
     >
-      {/* Ambient Moving Gradient Backdrop */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <motion.div
-          animate={{
-            scale: [1, 1.08, 0.95, 1],
-            x: [0, 20, -15, 0],
-            y: [0, -30, 15, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute w-[800px] h-[800px] rounded-full blur-[160px] opacity-[0.4] -right-20 -top-40 mix-blend-multiply transition-colors duration-1000"
-          style={{
-            background: `radial-gradient(circle, ${slide.accent}20 0%, transparent 70%)`,
-          }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.008)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.008)_1px,transparent_1px)] bg-[size:40px_40px]" />
+      {/* Subtle organic cloud gradient overlay for the clean theme */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] bg-gradient-to-br from-slate-200 to-transparent" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full blur-[140px] bg-gradient-to-tl from-slate-100 to-transparent" />
       </div>
 
-      {/* Top Header Spacing Area */}
-      <div className="w-full h-16 shrink-0" />
+      {/* 1. TOP HEADER APP SPACE BUFFER */}
+      <div className="w-full h-14 shrink-0" />
 
-      {/* Viewport Dynamic Content Frame */}
-      <div className="relative w-full max-w-[1440px] mx-auto flex-1 flex items-center z-10 px-4 sm:px-8 lg:px-16 py-4 lg:py-0">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 xl:gap-8 items-center">
-          
-          {/* Left Column Copy */}
-          <div className="lg:col-span-5 flex flex-col items-start text-left order-2 lg:order-1">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={`content-${current}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full"
+      {/* 2. CORE CENTERED CONTENT FRAME */}
+      <div className="relative w-full max-w-[1280px] mx-auto flex-1 flex flex-col items-center justify-center z-10 px-4 sm:px-8 text-center gap-6 lg:gap-8 max-h-[calc(100vh-140px)]">
+        
+        {/* TEXT & CTA WRAPPER */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`text-${current}`}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-center max-w-3xl w-full"
+          >
+            {/* Minimalist Header Text */}
+            <h1 className="text-[2.25rem] sm:text-[3.2rem] md:text-[3.6rem] lg:text-[4rem] font-bold tracking-[-0.03em] leading-[1.1] text-[#111111] mb-4">
+              {slide.heading}
+            </h1>
+
+            {/* Sub-description Text */}
+            <p className="text-[14px] sm:text-[15px] md:text-[16px] text-[#666666] font-normal leading-[1.5] max-w-2xl mb-5 tracking-tight">
+              {slide.subtitle}
+            </p>
+
+            {/* Pill Shape Call-to-Actions (Matches Reference 2 Perfectly) */}
+            <div className="flex items-center justify-center gap-3 w-full">
+              <Button
+                onClick={() => {
+                  const el = document.getElementById("contact");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="h-11 px-6 rounded-full text-[13px] font-semibold text-white transition-all duration-300 bg-black hover:bg-neutral-800 active:scale-[0.98] cursor-pointer"
               >
-                {/* Section Badge */}
-                <div
-                  className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] mb-4 border bg-white/60 backdrop-blur-md shadow-xs transition-all duration-500"
-                  style={{
-                    color: slide.accent,
-                    borderColor: `${slide.accent}30`
-                  }}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  {slide.badge}
-                </div>
+                <span className="flex items-center gap-1">
+                  {slide.cta1}
+                  <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+                </span>
+              </Button>
 
-                {/* Main Heading Text */}
-                <h1 className="text-[2.2rem] sm:text-[2.8rem] md:text-[3.2rem] lg:text-[2.8rem] xl:text-[3.5rem] font-black leading-[1.1] tracking-tight text-slate-900 mb-4">
-                  {slide.heading}{" "}
-                  <span
-                    className="block font-black tracking-tight mt-1"
-                    style={{ color: slide.accent }}
-                  >
-                    {slide.headingAccent}
-                  </span>
-                </h1>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const el = document.getElementById("contact");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="h-11 px-6 rounded-full text-[13px] font-semibold border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300 active:scale-[0.98] cursor-pointer"
+              >
+                <span className="flex items-center gap-1">
+                  {slide.cta2}
+                  <ArrowUpRight className="w-4 h-4 text-neutral-400 stroke-[2.5]" />
+                </span>
+              </Button>
+            </div>
+          </motion.div>
+        </AnimatePresence>
 
-                {/* Subtitle */}
-                <p className="text-[14px] xl:text-[16px] text-slate-600 font-medium leading-[1.6] max-w-md mb-6">
-                  {slide.subtitle}
-                </p>
-
-                {/* Features Checkmarks */}
-                <div className="flex flex-col gap-2.5 mb-6 w-full">
-                  {slide.features.map((feature, fIdx) => (
-                    <div key={fIdx} className="flex items-center gap-2.5">
-                      <div 
-                        className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 border"
-                        style={{ 
-                          backgroundColor: `${slide.accent}10`, 
-                          borderColor: `${slide.accent}30`,
-                          color: slide.accent 
-                        }}
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="text-[13px] xl:text-[14px] font-bold text-slate-700 tracking-wide">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA Action Block */}
-                <div className="flex flex-wrap gap-3.5 items-center">
-                  <Button
-                    onClick={() => {
-                      const el = document.getElementById("contact");
-                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className="h-12 px-6 rounded-xl text-[13px] font-bold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                    style={{
-                      background: `linear-gradient(135deg, ${slide.accent}, ${slide.accent}dd)`,
-                      boxShadow: `0 8px 20px ${slide.accent}30`,
-                    }}
-                  >
-                    <span className="flex items-center gap-2">
-                      {slide.cta1}
-                      <ArrowRight className="w-4 h-4" />
-                    </span>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      const el = document.getElementById("contact");
-                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className="h-12 px-6 rounded-xl text-[13px] font-bold border-slate-200 bg-white/80 text-slate-700 backdrop-blur-md hover:bg-slate-50 transition-all duration-300 active:scale-[0.98] cursor-pointer"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      {slide.cta2}
-                    </span>
-                  </Button>
-                </div>
+        {/* MASSIVE SINGLE BANNED IMAGE VIEW WITH HUD OVERLAYS */}
+        <div className="relative w-full max-w-[1100px] flex-1 min-h-[220px] sm:min-h-[280px] md:min-h-[340px] lg:max-h-[420px] w-full px-2 sm:px-6 md:px-12">
+          <div className="relative w-full h-full rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.06)] border border-neutral-200/50 bg-neutral-100">
+            
+            {/* Animated Asset Transition Core */}
+            <AnimatePresence initial={false} mode="popLayout">
+              <motion.div
+                key={`img-${current}`}
+                initial={{ opacity: 0, scale: 1.02 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 w-full h-full"
+              >
+                <Image
+                  src={slide.image}
+                  alt={slide.heading}
+                  fill
+                  className="object-cover object-center transform transition-transform duration-1000 ease-out brightness-[0.98]"
+                  priority
+                  sizes="(max-w-xl) 100vw, 1100px"
+                />
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Right Column Showcase Asset with Interactive HUD HUD Layers */}
-          <div className="lg:col-span-7 flex justify-center items-center order-1 lg:order-2 w-full h-full min-h-[300px] sm:min-h-[400px] lg:min-h-[unset]">
-            <div className="relative w-full max-w-[640px] aspect-[16/10.5] sm:aspect-[16/10] lg:h-full lg:max-h-[460px] xl:max-h-[520px]">
-              
-              {/* Core Presentation Mask Frame */}
-              <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.08)] border-4 border-white bg-slate-200 z-10">
-                <AnimatePresence initial={false} mode="popLayout">
-                  <motion.div
-                    key={`image-${current}`}
-                    initial={{ opacity: 0, scale: 1.04, x: direction * 30 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.96, x: direction * -30 }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute inset-0 w-full h-full"
-                  >
-                    <Image
-                      src={slide.image}
-                      alt={slide.heading}
-                      fill
-                      className="object-cover object-center transform transition-transform duration-700 hover:scale-[1.02]"
-                      priority
-                      sizes="(max-w-lg) 100vw, 640px"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/10 via-transparent to-transparent" />
-                  </motion.div>
-                </AnimatePresence>
+          {/* HUD GLASS ELEMENT 1: Left-Floating Badge (Overlapping Image Rim) */}
+          <AnimatePresence>
+            <motion.div
+              key={`hleft-${current}`}
+              initial={{ opacity: 0, x: -15, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ type: "spring", stiffness: 100, damping: 15, delay: 0.1 }}
+              className="absolute top-[20%] left-0 sm:left-2 md:left-6 z-20 bg-white/80 backdrop-blur-md border border-white/60 rounded-xl px-3.5 py-2.5 shadow-md flex items-center gap-3 max-w-[180px] sm:max-w-[220px] text-left"
+            >
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${slide.accent}15`, color: slide.accent }}>
+                <Zap className="w-3.5 h-3.5 fill-current" />
               </div>
+              <div className="truncate">
+                <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider leading-none">{slide.hudLeft.title}</p>
+                <p className="text-[12px] font-bold text-neutral-800 mt-1 truncate">{slide.hudLeft.desc}</p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
 
-              {/* HUD OVERLAY 1: Top-Left Plate */}
-              <AnimatePresence>
-                <motion.div
-                  key={`hud1-${current}`}
-                  initial={{ opacity: 0, scale: 0.9, x: -10 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 120, damping: 14, delay: 0.1 }}
-                  className="absolute -top-3 -left-3 sm:-left-6 z-20 bg-white/85 backdrop-blur-md border border-white/60 rounded-xl p-3 shadow-lg flex items-center gap-3"
-                >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-50 text-emerald-600">
-                    <Zap className="w-4 h-4 text-emerald-500 fill-emerald-500" />
-                  </div>
-                  <div>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">Status Metrics</p>
-                    <p className="text-[13px] font-black text-slate-800 mt-1">{slide.hudData.metric}</p>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+          {/* HUD GLASS ELEMENT 2: Right-Floating Parameter Block */}
+          <AnimatePresence>
+            <motion.div
+              key={`hright-${current}`}
+              initial={{ opacity: 0, x: 15, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ type: "spring", stiffness: 100, damping: 15, delay: 0.15 }}
+              className="absolute top-[45%] right-0 sm:right-2 md:right-6 z-20 bg-neutral-900/85 backdrop-blur-md border border-white/10 rounded-xl px-4 py-2.5 text-white shadow-xl min-w-[130px] sm:min-w-[160px] text-left"
+            >
+              <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-widest leading-none">Parameters</p>
+              <p className="text-[14px] sm:text-[16px] font-extrabold mt-1 tracking-tight text-white">{slide.hudRight.title}</p>
+              <p className="text-[11px] text-neutral-300 mt-0.5 font-medium tracking-wide truncate">{slide.hudRight.desc}</p>
+            </motion.div>
+          </AnimatePresence>
 
-              {/* HUD OVERLAY 2: Top-Right Glass Panel */}
-              <AnimatePresence>
-                <motion.div
-                  key={`hud2-${current}`}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ type: "spring", stiffness: 100, damping: 12, delay: 0.15 }}
-                  className="absolute top-4 right-4 z-20 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-xl p-3.5 text-white shadow-xl min-w-[130px] sm:min-w-[160px]"
-                >
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Parameters</p>
-                  <p className="text-[15px] sm:text-[18px] font-black mt-1.5 tracking-tight text-white">{slide.hudData.rate}</p>
-                  <div className="w-full bg-white/20 h-[2px] rounded-full mt-2 overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: "75%" }}
-                      transition={{ duration: 1, delay: 0.3 }}
-                      className="h-full bg-white" 
-                    />
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* HUD OVERLAY 3: Bottom-Left Time Panel */}
-              <AnimatePresence>
-                <motion.div
-                  key={`hud3-${current}`}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 15 }}
-                  transition={{ type: "spring", stiffness: 110, damping: 14, delay: 0.2 }}
-                  className="absolute bottom-4 left-4 z-20 bg-white/70 backdrop-blur-lg border border-white/80 rounded-2xl p-3 shadow-xl max-w-[200px] sm:max-w-[240px] hidden sm:block"
-                >
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Clock className="w-3.5 h-3.5 text-slate-500" />
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Processing window</span>
-                  </div>
-                  <p className="text-[13px] sm:text-[14px] font-extrabold text-slate-800 leading-tight">{slide.hudData.time} Turnaround</p>
-                </motion.div>
-              </AnimatePresence>
-
-            </div>
-          </div>
+          {/* HUD GLASS ELEMENT 3: Bottom-Left Extended Activity Overlay */}
+          <AnimatePresence>
+            <motion.div
+              key={`hbottom-${current}`}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ type: "spring", stiffness: 95, damping: 14, delay: 0.2 }}
+              className="absolute bottom-4 left-6 sm:left-12 md:left-20 z-20 bg-white/75 backdrop-blur-lg border border-neutral-200/40 rounded-xl p-2.5 px-4 shadow-lg max-w-[260px] sm:max-w-[340px] text-left hidden sm:flex items-center gap-3"
+            >
+              <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${slide.accent}10`, color: slide.accent }}>
+                <Clock className="w-3 h-3" />
+              </div>
+              <div className="truncate">
+                <span className="text-[12px] font-bold text-neutral-800 tracking-tight block">{slide.hudBottom.title}</span>
+                <span className="text-[11px] text-neutral-500 block truncate font-medium">{slide.hudBottom.desc}</span>
+              </div>
+            </motion.div>
+          </AnimatePresence>
 
         </div>
       </div>
 
-      {/* Dock Segment Control Navigation Strip */}
-      <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-8 lg:px-16 pb-6 shrink-0 z-30">
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.04)] border border-slate-200/60 p-1.5 grid grid-cols-2 md:grid-cols-4 gap-1.5">
+      {/* 3. HORIZONTAL NAVIGATOR DESK STRIP */}
+      <div className="w-full max-w-[1140px] mx-auto px-4 sm:px-8 pb-5 shrink-0 z-30">
+        <div className="bg-white/70 backdrop-blur-md rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] border border-neutral-200/50 p-1 grid grid-cols-2 md:grid-cols-4 gap-1">
           {[
             { id: 0, label: "Business Loans", icon: Building2 },
             { id: 1, label: "Project Finance", icon: TrendingUp },
@@ -360,28 +273,19 @@ export default function Hero() {
               <button
                 key={tab.id}
                 onClick={() => goTo(tab.id)}
-                className={`relative flex items-center gap-3 px-4 py-2.5 xl:py-3.5 rounded-xl text-[12px] xl:text-[13px] font-bold transition-all duration-300 cursor-pointer border border-transparent overflow-hidden ${
-                  isActive ? "text-white" : "text-slate-600 hover:text-slate-950 hover:bg-slate-50/50"
+                className={`relative flex items-center justify-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-semibold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden ${
+                  isActive ? "text-white" : "text-neutral-500 hover:text-neutral-900"
                 }`}
               >
                 {isActive && (
                   <motion.div
-                    layoutId="lightDockTabIndicator"
-                    className="absolute inset-0 z-0"
-                    style={{
-                      background: `linear-gradient(135deg, ${slide.accent}, ${slide.accent}dd)`,
-                    }}
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    layoutId="centeredTabIndicator"
+                    className="absolute inset-0 z-0 bg-black"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
-                <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 shrink-0 z-10 ${
-                    isActive ? "bg-white/20 text-white shadow-sm" : "bg-slate-100/80 text-slate-400"
-                  }`}
-                >
-                  <TabIcon className="w-3.5 h-3.5" />
-                </div>
-                <span className="whitespace-nowrap truncate z-10 tracking-wide">{tab.label}</span>
+                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 ${isActive ? "text-white" : "text-neutral-400"}`} />
+                <span className="whitespace-nowrap truncate z-10">{tab.label}</span>
               </button>
             );
           })}
