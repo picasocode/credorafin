@@ -8,310 +8,151 @@ import {
   TrendingUp,
   Building2,
   Landmark,
-  BarChart3,
-  Wallet,
   ChevronLeft,
   ChevronRight,
-  Zap,
+  Sparkles,
   CheckCircle2,
-  IndianRupee,
+  CircleDollarSign,
+  Handshake,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /* ────────────────────────────────────────────
-   SLIDE DATA
+   SLIDE DATA — 3 rotating slides
    ──────────────────────────────────────────── */
 const heroSlides = [
   {
     id: 0,
-    badge: "Structured Finance",
+    badge: "STRUCTURED FINANCE",
+    badgeIcon: CircleDollarSign,
     heading: ["Enrich Your", "Cashflow"],
     highlight: "Cashflow",
-    description:
+    subtitle:
       "Structured funding solutions for MSMEs, professionals, and growing businesses across India. We simplify access to capital by bridging the gap between your funding needs and the right financial institutions.",
-    subDescription:
-      "With disciplined pre-underwriting, end-to-end advisory, and access to 70+ banks and NBFCs, we prepare your profile for success.",
     primaryCTA: "Get Funded Now",
     secondaryCTA: "Speak to an Advisor",
-    statCards: [
-      { label: "Loan Approval", value: "92%", color: "#304AC0" },
-      { label: "Client Satisfaction", value: "98%", color: "#87B73C" },
-      { label: "Lender Network", value: "70+", color: "#5B8DEF" },
+    cardHeading: "Funding Made Simple",
+    cardText:
+      "With disciplined pre-underwriting, end-to-end advisory, and access to 70+ banks and NBFCs, we prepare your profile for success.",
+    cardBadge: "92% Approval Rate",
+    avatars: [
+      { initials: "RK", name: "Rajesh K.", role: "CEO, TechFlow" },
+      { initials: "SP", name: "Sunita P.", role: "Founder, BuildRight" },
+      { initials: "AM", name: "Amit M.", role: "CFO, GreenEdge" },
+      { initials: "VD", name: "Vikram D.", role: "MD, SolarMax" },
     ],
-    accentIcon: TrendingUp,
   },
   {
     id: 1,
-    badge: "Pre-Underwriting",
+    badge: "PRE-UNDERWRITING",
+    badgeIcon: Shield,
     heading: ["Precision That", "Gets Approved"],
     highlight: "Gets Approved",
-    description:
+    subtitle:
       "Our disciplined pre-underwriting process ensures your loan application is bank-ready before it reaches a single lender. We analyze, structure, and position your financial profile for maximum approval probability.",
-    subDescription:
-      "From credit repair to loan structuring, we handle the complexity so you can focus on growing your business.",
     primaryCTA: "Start Pre-Underwriting",
     secondaryCTA: "Learn the Process",
-    statCards: [
-      { label: "Avg. Disbursal", value: "7-10 Days", color: "#87B73C" },
-      { label: "Funding Range", value: "₹5L–₹50Cr", color: "#304AC0" },
-      { label: "Success Rate", value: "92%", color: "#5B8DEF" },
+    cardHeading: "Bank-Ready Applications",
+    cardText:
+      "From credit repair to loan structuring, we handle the complexity so you can focus on growing your business. Quick disbursal in 7-10 days.",
+    cardBadge: "7-10 Days Disbursal",
+    avatars: [
+      { initials: "PN", name: "Priya N.", role: "Co-Founder, FreshMart" },
+      { initials: "KS", name: "Karan S.", role: "Director, IronWorks" },
+      { initials: "RG", name: "Ritu G.", role: "CEO, MediCare Plus" },
+      { initials: "AJ", name: "Arjun J.", role: "Partner, LegalEdge" },
     ],
-    accentIcon: Shield,
   },
   {
     id: 2,
-    badge: "End-to-End Advisory",
+    badge: "END-TO-END ADVISORY",
+    badgeIcon: Handshake,
     heading: ["From Application", "To Disbursal"],
     highlight: "To Disbursal",
-    description:
+    subtitle:
       "We walk with you through every step — from choosing the right lender to negotiating the best terms. Our advisory covers credit repair, EMI structuring, documentation, and post-sanction support.",
-    subDescription:
-      "Trusted by 1,200+ businesses with 20+ years of expertise in the Indian financial ecosystem.",
     primaryCTA: "Get Advisory",
     secondaryCTA: "See Our Services",
-    statCards: [
-      { label: "Years Experience", value: "20+", color: "#304AC0" },
-      { label: "Products", value: "20+", color: "#87B73C" },
-      { label: "Happy Clients", value: "1,200+", color: "#5B8DEF" },
+    cardHeading: "Your Finance Partner",
+    cardText:
+      "Trusted by 1,200+ businesses with 20+ years of expertise in the Indian financial ecosystem. Access 20+ products across 70+ banks.",
+    cardBadge: "1,200+ Happy Clients",
+    avatars: [
+      { initials: "MB", name: "Meera B.", role: "Owner, TextileHub" },
+      { initials: "DT", name: "Deepak T.", role: "CEO, LogiTrans" },
+      { initials: "NK", name: "Nisha K.", role: "Founder, EduBright" },
+      { initials: "SV", name: "Suresh V.", role: "MD, AgriGrow" },
     ],
-    accentIcon: Landmark,
   },
 ];
 
 /* ────────────────────────────────────────────
-   ANIMATED CHART LINE SVG
+   AVATAR CIRCLE
    ──────────────────────────────────────────── */
-function AnimatedChartLine() {
-  const pathData =
-    "M0 80 C40 80, 60 40, 100 50 C140 60, 160 20, 200 30 C240 40, 260 60, 300 20 C340 -10, 360 40, 400 10 C440 -20, 460 30, 500 5";
-  const areaPath =
-    "M0 80 C40 80, 60 40, 100 50 C140 60, 160 20, 200 30 C240 40, 260 60, 300 20 C340 -10, 360 40, 400 10 C440 -20, 460 30, 500 5 L500 120 L0 120 Z";
-
-  return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.07]">
-      <svg
-        viewBox="-20 -20 540 160"
-        className="w-[140%] h-[60%]"
-        preserveAspectRatio="none"
-      >
-        <defs>
-          <linearGradient id="chartGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#304AC0" />
-            <stop offset="50%" stopColor="#5B8DEF" />
-            <stop offset="100%" stopColor="#87B73C" />
-          </linearGradient>
-          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#304AC0" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#304AC0" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <motion.path
-          d={areaPath}
-          fill="url(#areaGrad)"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2, delay: 1 }}
-        />
-        <motion.path
-          d={pathData}
-          fill="none"
-          stroke="url(#chartGrad)"
-          strokeWidth="3"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 2.5, delay: 0.5, ease: "easeInOut" }}
-        />
-        {/* Endpoint glow dot */}
-        <motion.circle
-          cx="500"
-          cy="5"
-          r="6"
-          fill="#87B73C"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 3 }}
-        />
-        <motion.circle
-          cx="500"
-          cy="5"
-          r="12"
-          fill="none"
-          stroke="#87B73C"
-          strokeWidth="2"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
-          transition={{ duration: 2, delay: 3, repeat: Infinity }}
-        />
-      </svg>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────
-   GRID BACKGROUND
-   ──────────────────────────────────────────── */
-function GridBackground() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Gradient mesh */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0B1026] via-[#0F1A3E] to-[#0A0E1A]" />
-      {/* Grid pattern */}
-      <div
-        className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(91,141,239,0.5) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(91,141,239,0.5) 1px, transparent 1px)
-          `,
-          backgroundSize: "60px 60px",
-        }}
-      />
-      {/* Radial glow center-left */}
-      <div className="absolute top-1/3 left-1/4 w-[800px] h-[600px] rounded-full bg-[#304AC0]/10 blur-[150px]" />
-      {/* Radial glow bottom-right */}
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[400px] rounded-full bg-[#87B73C]/[0.06] blur-[120px]" />
-      {/* Top-right subtle blue glow */}
-      <div className="absolute -top-20 right-0 w-[500px] h-[500px] rounded-full bg-[#5B8DEF]/[0.05] blur-[100px]" />
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────
-   TICKER TAPE / MARQUEE
-   ──────────────────────────────────────────── */
-const tickerItems = [
-  { label: "MSME Loans", icon: Building2 },
-  { label: "Supply Chain Finance", icon: BarChart3 },
-  { label: "Project Finance", icon: Landmark },
-  { label: "Cross-Border", icon: Wallet },
-  { label: "Credit Repair", icon: Shield },
-  { label: "Pre-Underwriting", icon: CheckCircle2 },
-  { label: "Fund Raising", icon: TrendingUp },
-  { label: "EMI Structuring", icon: IndianRupee },
-];
-
-function TickerTape() {
-  const doubled = [...tickerItems, ...tickerItems];
-  return (
-    <div className="absolute top-0 left-0 right-0 z-10 overflow-hidden border-b border-white/[0.06] bg-white/[0.02] backdrop-blur-sm">
-      <motion.div
-        className="flex items-center gap-10 py-3 px-5 whitespace-nowrap"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{
-          x: {
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: 30,
-            ease: "linear",
-          },
-        }}
-      >
-        {doubled.map((item, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-2 text-white/40 text-xs font-medium tracking-wider uppercase"
-          >
-            <item.icon className="w-3.5 h-3.5 text-[#5B8DEF]/60" />
-            <span>{item.label}</span>
-            <span className="ml-4 text-white/10">|</span>
-          </div>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────
-   GLASS STAT CARD
-   ──────────────────────────────────────────── */
-function GlassStatCard({
-  label,
-  value,
-  color,
-  delay,
+function AvatarCircle({
+  initials,
+  name,
+  role,
+  index,
+  total,
 }: {
-  label: string;
-  value: string;
-  color: string;
-  delay: number;
+  initials: string;
+  name: string;
+  role: string;
+  index: number;
+  total: number;
 }) {
+  const colors = ["#304AC0", "#13277E", "#87B73C", "#2E7D32"];
+  const bgColor = colors[index % colors.length];
+
+  // Stagger positions — fan out in a grid-like pattern on the image area
+  const positions = [
+    { x: "15%", y: "25%" },
+    { x: "55%", y: "15%" },
+    { x: "35%", y: "55%" },
+    { x: "70%", y: "50%" },
+  ];
+  const pos = positions[index % positions.length];
+
   return (
     <motion.div
-      className="relative group"
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute flex flex-col items-center gap-1.5"
+      style={{ left: pos.x, top: pos.y }}
+      initial={{ opacity: 0, scale: 0, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{
+        duration: 0.5,
+        delay: 1.2 + index * 0.15,
+        type: "spring",
+        stiffness: 200,
+        damping: 18,
+      }}
     >
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl p-5 transition-all duration-300 hover:bg-white/[0.07] hover:border-white/[0.12]">
-        {/* Top accent line */}
-        <div
-          className="absolute top-0 left-0 right-0 h-[2px] opacity-60"
-          style={{
-            background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
-          }}
-        />
-        <div className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2">
-          {label}
-        </div>
-        <div
-          className="text-2xl sm:text-3xl font-bold tracking-tight"
-          style={{ color }}
+      {/* Circle avatar */}
+      <div className="relative">
+        <motion.div
+          className="w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold border-[3px] border-white shadow-lg"
+          style={{ backgroundColor: bgColor }}
+          whileHover={{ scale: 1.15, y: -4 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          {value}
-        </div>
-        {/* Subtle glow on hover */}
-        <div
-          className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl"
-          style={{ backgroundColor: color, opacity: 0.15 }}
-        />
+          {initials}
+        </motion.div>
+        {/* Green online dot */}
+        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#87B73C] border-2 border-white" />
       </div>
+      {/* Name card */}
+      <motion.div
+        className="bg-white rounded-xl px-3 py-2 shadow-md border border-gray-100 text-center min-w-[100px]"
+        whileHover={{ y: -2, shadow: "lg" }}
+      >
+        <div className="text-[11px] font-semibold text-[#1C1D62] leading-tight">
+          {name}
+        </div>
+        <div className="text-[10px] text-[#718096] leading-tight">{role}</div>
+      </motion.div>
     </motion.div>
-  );
-}
-
-/* ────────────────────────────────────────────
-   FLOATING ORB DECORATIONS
-   ──────────────────────────────────────────── */
-function FloatingOrbs() {
-  return (
-    <>
-      <motion.div
-        className="absolute top-[15%] right-[10%] w-3 h-3 rounded-full bg-[#5B8DEF]/30"
-        animate={{ y: [0, -20, 0], opacity: [0.3, 0.7, 0.3] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute top-[60%] right-[25%] w-2 h-2 rounded-full bg-[#87B73C]/40"
-        animate={{ y: [0, 15, 0], opacity: [0.4, 0.8, 0.4] }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1,
-        }}
-      />
-      <motion.div
-        className="absolute top-[30%] left-[5%] w-2.5 h-2.5 rounded-full bg-[#304AC0]/30"
-        animate={{ y: [0, -12, 0], opacity: [0.2, 0.5, 0.2] }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 2,
-        }}
-      />
-      <motion.div
-        className="absolute bottom-[20%] left-[15%] w-2 h-2 rounded-full bg-white/20"
-        animate={{ y: [0, 10, 0], opacity: [0.1, 0.3, 0.1] }}
-        transition={{
-          duration: 4.5,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 0.5,
-        }}
-      />
-    </>
   );
 }
 
@@ -328,7 +169,7 @@ function SlideIndicators({
   onSelect: (i: number) => void;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       {Array.from({ length: total }).map((_, i) => (
         <button
           key={i}
@@ -336,14 +177,13 @@ function SlideIndicators({
           className="relative h-2 rounded-full transition-all duration-500 cursor-pointer"
           style={{
             width: i === current ? "32px" : "8px",
-            backgroundColor:
-              i === current ? "#5B8DEF" : "rgba(255,255,255,0.2)",
+            backgroundColor: i === current ? "#304AC0" : "#D1D5DB",
           }}
         >
           {i === current && (
             <motion.div
               className="absolute inset-0 rounded-full"
-              layoutId="activeSlide"
+              layoutId="activeHeroSlide"
               style={{
                 background: "linear-gradient(90deg, #304AC0, #5B8DEF)",
               }}
@@ -392,9 +232,24 @@ export default function Hero() {
   const slide = heroSlides[currentSlide];
 
   /* Slide animation variants */
-  const slideVariants = {
+  const contentVariants = {
     enter: (dir: number) => ({
-      x: dir > 0 ? 80 : -80,
+      x: dir > 0 ? 60 : -60,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (dir: number) => ({
+      x: dir > 0 ? -60 : 60,
+      opacity: 0,
+    }),
+  };
+
+  const cardVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? 40 : -40,
       opacity: 0,
       scale: 0.98,
     }),
@@ -404,410 +259,426 @@ export default function Hero() {
       scale: 1,
     },
     exit: (dir: number) => ({
-      x: dir > 0 ? -80 : 80,
+      x: dir > 0 ? -40 : 40,
       opacity: 0,
       scale: 0.98,
     }),
   };
 
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen flex items-center overflow-hidden"
-    >
-      {/* Background layers */}
-      <GridBackground />
-      <AnimatedChartLine />
-      <FloatingOrbs />
-      <TickerTape />
+    <section id="hero" className="relative bg-white overflow-hidden">
+      {/* ===== TOP SECTION — Centered Text ===== */}
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-20 md:pt-28 pb-12 text-center">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={`top-${slide.id}`}
+            custom={direction}
+            variants={contentVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 200, damping: 25 },
+              opacity: { duration: 0.35 },
+            }}
+            className="flex flex-col items-center"
+          >
+            {/* Badge Pill */}
+            <motion.div
+              className="inline-flex items-center gap-2 bg-[#F0F4FF] text-[#304AC0] text-xs font-semibold uppercase tracking-[0.12em] px-5 py-2.5 rounded-full border border-[#304AC0]/10 mb-8"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <slide.badgeIcon className="w-3.5 h-3.5 text-[#87B73C]" />
+              {slide.badge}
+              <ArrowRight className="w-3.5 h-3.5 text-[#304AC0]/50" />
+            </motion.div>
 
-      {/* Main content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24 md:py-32 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left: Content */}
-          <div className="space-y-8">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={slide.id}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{
-                  x: { type: "spring", stiffness: 200, damping: 25 },
-                  opacity: { duration: 0.4 },
-                  scale: { duration: 0.4 },
-                }}
-                className="space-y-8"
-              >
-                {/* Badge */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                >
-                  <span className="inline-flex items-center gap-2.5 bg-white/[0.06] text-[#5B8DEF] text-xs font-semibold uppercase tracking-[0.15em] px-5 py-2.5 rounded-full border border-white/[0.08] backdrop-blur-sm">
-                    <Zap className="w-3.5 h-3.5 text-[#87B73C]" />
-                    {slide.badge}
-                  </span>
-                </motion.div>
-
-                {/* Heading */}
-                <motion.h1
-                  className="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-bold text-white leading-[1.08] tracking-tight"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.15 }}
-                >
-                  {slide.heading.map((word, i) => (
-                    <span key={i}>
-                      {word === slide.highlight ? (
-                        <span className="relative inline-block">
-                          <span
-                            className="relative z-10"
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #5B8DEF 0%, #87B73C 100%)",
-                              WebkitBackgroundClip: "text",
-                              WebkitTextFillColor: "transparent",
-                              backgroundClip: "text",
-                            }}
-                          >
-                            {word}
-                          </span>
-                          <motion.span
-                            className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full"
-                            style={{
-                              background:
-                                "linear-gradient(90deg, #304AC0, #87B73C)",
-                            }}
-                            initial={{ scaleX: 0 }}
-                            animate={{ scaleX: 1 }}
-                            transition={{
-                              duration: 0.8,
-                              delay: 0.8,
-                              ease: [0.22, 1, 0.36, 1],
-                            }}
-                            style-origin="left"
-                          />
-                        </span>
-                      ) : (
-                        word
-                      )}
-                      {i < slide.heading.length - 1 && " "}
-                    </span>
-                  ))}
-                </motion.h1>
-
-                {/* Description */}
-                <motion.p
-                  className="text-base sm:text-lg text-white/50 leading-relaxed max-w-xl"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.25 }}
-                >
-                  {slide.description}
-                </motion.p>
-
-                {/* Sub description */}
-                <motion.p
-                  className="text-sm text-white/35 leading-relaxed max-w-xl"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.35 }}
-                >
-                  {slide.subDescription}
-                </motion.p>
-
-                {/* CTA Buttons */}
-                <motion.div
-                  className="flex flex-wrap gap-4"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.45 }}
-                >
-                  <Button
-                    onClick={() => {
-                      const el = document.getElementById("contact");
-                      if (el)
-                        el.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className="relative overflow-hidden bg-[#304AC0] hover:bg-[#3E5BD4] text-white font-semibold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-all duration-300 shadow-[0_0_30px_rgba(48,74,192,0.3)] hover:shadow-[0_0_40px_rgba(48,74,192,0.5)] group"
-                  >
-                    {/* Shine sweep effect */}
-                    <span className="absolute inset-0 overflow-hidden rounded-xl">
+            {/* Main Heading — 2 lines */}
+            <motion.h1
+              className="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-bold text-[#1C1D62] leading-[1.12] tracking-tight mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+            >
+              {slide.heading.map((line, i) => (
+                <span key={i}>
+                  {line === slide.highlight ? (
+                    <span className="relative inline-block">
+                      <span
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #304AC0 0%, #87B73C 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                        }}
+                      >
+                        {line}
+                      </span>
                       <motion.span
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                        initial={{ x: "-100%" }}
-                        animate={{ x: "200%" }}
+                        className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, #304AC0, #87B73C)",
+                        }}
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
                         transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          repeatDelay: 3,
-                          ease: "easeInOut",
+                          duration: 0.7,
+                          delay: 0.9,
+                          ease: [0.22, 1, 0.36, 1],
                         }}
                       />
                     </span>
-                    <span className="relative flex items-center gap-2">
-                      {slide.primaryCTA}
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                    </span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      const el = document.getElementById("contact");
-                      if (el)
-                        el.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className="border-white/[0.12] text-white/70 hover:text-white hover:bg-white/[0.06] hover:border-white/20 font-semibold text-sm uppercase tracking-wider px-8 py-4 rounded-xl backdrop-blur-sm transition-all duration-300"
-                  >
-                    {slide.secondaryCTA}
-                  </Button>
-                </motion.div>
+                  ) : (
+                    line
+                  )}
+                  {i < slide.heading.length - 1 && <br />}
+                </span>
+              ))}
+            </motion.h1>
 
-                {/* Slide navigation */}
-                <motion.div
-                  className="flex items-center gap-6 pt-4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                >
-                  <SlideIndicators
-                    current={currentSlide}
-                    total={heroSlides.length}
-                    onSelect={goToSlide}
-                  />
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={prevSlide}
-                      className="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/25 hover:bg-white/[0.06] transition-all duration-300"
-                      aria-label="Previous slide"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={nextSlide}
-                      className="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/25 hover:bg-white/[0.06] transition-all duration-300"
-                      aria-label="Next slide"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+            {/* Subtitle */}
+            <motion.p
+              className="text-base sm:text-lg text-[#718096] leading-relaxed max-w-2xl mx-auto mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              {slide.subtitle}
+            </motion.p>
 
-          {/* Right: Glass Stats + Visual */}
-          <div className="relative hidden lg:block">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={slide.id}
-                initial={{ opacity: 0, x: 40, scale: 0.96 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: -40, scale: 0.96 }}
-                transition={{
-                  duration: 0.6,
-                  ease: [0.22, 1, 0.36, 1],
+            {/* CTA Buttons */}
+            <motion.div
+              className="flex items-center justify-center gap-4 flex-wrap"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <Button
+                onClick={() => {
+                  const el = document.getElementById("contact");
+                  if (el)
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className="relative"
+                className="bg-[#1C1D62] hover:bg-[#13277E] text-white font-semibold text-sm uppercase tracking-wider px-8 py-3.5 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl group"
               >
-                {/* Main glass panel */}
-                <div className="relative rounded-3xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-2xl p-8 overflow-hidden">
-                  {/* Top accent gradient line */}
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#5B8DEF]/40 to-transparent" />
+                {slide.primaryCTA}
+                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const el = document.getElementById("contact");
+                  if (el)
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="border-[#1C1D62]/20 text-[#1C1D62] hover:bg-[#F0F4FF] font-semibold text-sm uppercase tracking-wider px-8 py-3.5 rounded-xl transition-all duration-300"
+              >
+                {slide.secondaryCTA}
+              </Button>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
 
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#304AC0]/20 flex items-center justify-center">
-                        <slide.accentIcon className="w-5 h-5 text-[#5B8DEF]" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-white/80">
-                          Credora Financial
-                        </div>
-                        <div className="text-xs text-white/30">
-                          Dashboard Overview
-                        </div>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#87B73C] bg-[#87B73C]/10 px-3 py-1.5 rounded-full border border-[#87B73C]/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#87B73C] animate-pulse" />
-                      Live
-                    </span>
-                  </div>
+        {/* Slide Controls — below buttons */}
+        <motion.div
+          className="flex items-center justify-center gap-5 mt-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+        >
+          <SlideIndicators
+            current={currentSlide}
+            total={heroSlides.length}
+            onSelect={goToSlide}
+          />
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={prevSlide}
+              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-[#718096] hover:text-[#304AC0] hover:border-[#304AC0]/30 hover:bg-[#F0F4FF] transition-all duration-200"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-[#718096] hover:text-[#304AC0] hover:border-[#304AC0]/30 hover:bg-[#F0F4FF] transition-all duration-200"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+      </div>
 
-                  {/* Stat cards grid */}
-                  <div className="grid grid-cols-3 gap-4 mb-8">
-                    {slide.statCards.map((card, i) => (
-                      <GlassStatCard
-                        key={`${slide.id}-${i}`}
-                        label={card.label}
-                        value={card.value}
-                        color={card.color}
-                        delay={0.3 + i * 0.15}
-                      />
-                    ))}
-                  </div>
+      {/* ===== BOTTOM SECTION — Split Content Card ===== */}
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pb-20 md:pb-28">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={`card-${slide.id}`}
+            custom={direction}
+            variants={cardVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              duration: 0.6,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <div className="relative rounded-2xl overflow-hidden border border-gray-100 bg-gradient-to-br from-[#F8F9FC] to-[#EEF1F8] shadow-sm">
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Left — Text Content */}
+                <div className="p-8 md:p-12 flex flex-col justify-center">
+                  {/* Card badge */}
+                  <motion.span
+                    className="inline-flex items-center gap-2 bg-white text-[#87B73C] text-xs font-semibold uppercase tracking-[0.1em] px-4 py-2 rounded-full border border-[#87B73C]/15 shadow-sm w-fit mb-6"
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {slide.cardBadge}
+                  </motion.span>
 
-                  {/* Mini chart visualization */}
-                  <div className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 overflow-hidden">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-medium text-white/40 uppercase tracking-wider">
-                        Funding Trend
-                      </span>
-                      <span className="text-xs text-[#87B73C] font-medium flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" />
-                        +24.5%
-                      </span>
-                    </div>
-                    <svg
-                      viewBox="0 0 300 60"
-                      className="w-full h-16"
-                      preserveAspectRatio="none"
-                    >
-                      <defs>
-                        <linearGradient
-                          id="miniChartGrad"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="0%"
-                            stopColor="#304AC0"
-                            stopOpacity="0.3"
-                          />
-                          <stop
-                            offset="100%"
-                            stopColor="#304AC0"
-                            stopOpacity="0"
-                          />
-                        </linearGradient>
-                      </defs>
-                      <motion.path
-                        d="M0 50 C30 45, 50 35, 80 38 C110 41, 130 25, 160 28 C190 31, 210 15, 240 18 C270 21, 280 10, 300 5 L300 60 L0 60 Z"
-                        fill="url(#miniChartGrad)"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1.5, delay: 0.8 }}
-                      />
-                      <motion.path
-                        d="M0 50 C30 45, 50 35, 80 38 C110 41, 130 25, 160 28 C190 31, 210 15, 240 18 C270 21, 280 10, 300 5"
-                        fill="none"
-                        stroke="#5B8DEF"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{
-                          duration: 2,
-                          delay: 0.5,
-                          ease: "easeInOut",
-                        }}
-                      />
-                      <motion.circle
-                        cx="300"
-                        cy="5"
-                        r="4"
-                        fill="#5B8DEF"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 0.4, delay: 2.5 }}
-                      />
-                      <motion.circle
-                        cx="300"
-                        cy="5"
-                        r="8"
-                        fill="none"
-                        stroke="#5B8DEF"
-                        strokeWidth="1"
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{
-                          scale: [1, 2],
-                          opacity: [0.5, 0],
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          delay: 2.5,
-                          repeat: Infinity,
-                        }}
-                      />
-                    </svg>
-                  </div>
+                  <motion.h3
+                    className="text-2xl sm:text-3xl font-bold text-[#1C1D62] leading-tight mb-4"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.5 }}
+                  >
+                    {slide.cardHeading}
+                  </motion.h3>
 
-                  {/* Bottom stats row */}
-                  <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/[0.06]">
+                  <motion.p
+                    className="text-base text-[#718096] leading-relaxed mb-8"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                  >
+                    {slide.cardText}
+                  </motion.p>
+
+                  {/* Quick stats row */}
+                  <motion.div
+                    className="flex items-center gap-6"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.7 }}
+                  >
                     {[
-                      { val: "20+", lab: "Years Exp.", c: "#5B8DEF" },
-                      { val: "70+", lab: "Banks", c: "#87B73C" },
-                      { val: "20+", lab: "Products", c: "#5B8DEF" },
+                      { val: "20+", lab: "Years" },
+                      { val: "70+", lab: "Banks" },
+                      { val: "20+", lab: "Products" },
                     ].map((s, i) => (
                       <div key={i} className="text-center">
-                        <div
-                          className="text-xl font-bold tracking-tight"
-                          style={{ color: s.c }}
-                        >
+                        <div className="text-xl font-bold text-[#304AC0]">
                           {s.val}
                         </div>
-                        <div className="text-[10px] text-white/30 uppercase tracking-wider mt-0.5">
+                        <div className="text-[11px] text-[#718096] uppercase tracking-wider">
                           {s.lab}
                         </div>
                       </div>
                     ))}
-                  </div>
-
-                  {/* Inner glow effect */}
-                  <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#304AC0]/10 rounded-full blur-3xl pointer-events-none" />
-                  <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-[#87B73C]/5 rounded-full blur-3xl pointer-events-none" />
+                  </motion.div>
                 </div>
 
-                {/* Floating accent card — top-left */}
-                <motion.div
-                  className="absolute -top-5 -left-5 rounded-xl border border-white/[0.1] bg-[#304AC0]/90 backdrop-blur-xl px-4 py-3 shadow-[0_8px_32px_rgba(48,74,192,0.3)]"
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <div className="text-[10px] font-medium text-white/60 uppercase tracking-wider">
-                    Quick Disbursal
+                {/* Right — Image Area with Floating Avatars */}
+                <div className="relative min-h-[320px] md:min-h-[400px] bg-gradient-to-br from-[#304AC0]/5 via-[#5B8DEF]/5 to-[#87B73C]/5 overflow-hidden">
+                  {/* Decorative background pattern */}
+                  <div className="absolute inset-0 opacity-[0.03]">
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        backgroundImage: `
+                          radial-gradient(circle at 25% 25%, #304AC0 1px, transparent 1px),
+                          radial-gradient(circle at 75% 75%, #87B73C 1px, transparent 1px)
+                        `,
+                        backgroundSize: "30px 30px",
+                      }}
+                    />
                   </div>
-                  <div className="text-sm font-bold text-white">7-10 Days</div>
-                </motion.div>
 
-                {/* Floating accent card — bottom-right */}
-                <motion.div
-                  className="absolute -bottom-5 -right-5 rounded-xl border border-white/[0.1] bg-[#87B73C]/90 backdrop-blur-xl px-4 py-3 shadow-[0_8px_32px_rgba(135,183,60,0.25)]"
-                  animate={{ y: [0, 8, 0] }}
-                  transition={{
-                    duration: 4.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 1,
-                  }}
-                >
-                  <div className="text-[10px] font-medium text-white/60 uppercase tracking-wider">
-                    Funding Range
+                  {/* Abstract finance illustration */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg
+                      viewBox="0 0 400 300"
+                      className="w-3/4 h-3/4 opacity-10"
+                      preserveAspectRatio="xMidYMid meet"
+                    >
+                      <defs>
+                        <linearGradient
+                          id="heroIllGrad"
+                          x1="0"
+                          y1="0"
+                          x2="1"
+                          y2="1"
+                        >
+                          <stop offset="0%" stopColor="#304AC0" />
+                          <stop offset="100%" stopColor="#87B73C" />
+                        </linearGradient>
+                      </defs>
+                      {/* Bar chart */}
+                      <rect
+                        x="60"
+                        y="180"
+                        width="30"
+                        height="80"
+                        rx="4"
+                        fill="url(#heroIllGrad)"
+                        opacity="0.4"
+                      />
+                      <rect
+                        x="110"
+                        y="140"
+                        width="30"
+                        height="120"
+                        rx="4"
+                        fill="url(#heroIllGrad)"
+                        opacity="0.5"
+                      />
+                      <rect
+                        x="160"
+                        y="100"
+                        width="30"
+                        height="160"
+                        rx="4"
+                        fill="url(#heroIllGrad)"
+                        opacity="0.6"
+                      />
+                      <rect
+                        x="210"
+                        y="60"
+                        width="30"
+                        height="200"
+                        rx="4"
+                        fill="url(#heroIllGrad)"
+                        opacity="0.7"
+                      />
+                      <rect
+                        x="260"
+                        y="30"
+                        width="30"
+                        height="230"
+                        rx="4"
+                        fill="url(#heroIllGrad)"
+                        opacity="0.8"
+                      />
+                      <rect
+                        x="310"
+                        y="10"
+                        width="30"
+                        height="250"
+                        rx="4"
+                        fill="url(#heroIllGrad)"
+                        opacity="0.9"
+                      />
+                      {/* Trend line */}
+                      <motion.path
+                        d="M75 220 L125 180 L175 140 L225 100 L275 70 L325 40"
+                        fill="none"
+                        stroke="#304AC0"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{
+                          duration: 2,
+                          delay: 0.8,
+                          ease: "easeInOut",
+                        }}
+                      />
+                      {/* Data points */}
+                      {[
+                        [75, 220],
+                        [125, 180],
+                        [175, 140],
+                        [225, 100],
+                        [275, 70],
+                        [325, 40],
+                      ].map(([cx, cy], i) => (
+                        <motion.circle
+                          key={i}
+                          cx={cx}
+                          cy={cy}
+                          r="4"
+                          fill="#304AC0"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{
+                            duration: 0.3,
+                            delay: 1 + i * 0.15,
+                          }}
+                        />
+                      ))}
+                    </svg>
                   </div>
-                  <div className="text-sm font-bold text-white">
-                    ₹5L - ₹50Cr
-                  </div>
-                </motion.div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
+
+                  {/* Floating Avatar Circles */}
+                  {slide.avatars.map((avatar, i) => (
+                    <AvatarCircle
+                      key={`${slide.id}-${i}`}
+                      initials={avatar.initials}
+                      name={avatar.name}
+                      role={avatar.role}
+                      index={i}
+                      total={slide.avatars.length}
+                    />
+                  ))}
+
+                  {/* Floating accent card — top right */}
+                  <motion.div
+                    className="absolute top-4 right-4 bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100"
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 1.6 }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#87B73C]/10 flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-[#87B73C]" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-[#718096] uppercase tracking-wider">
+                          Quick Disbursal
+                        </div>
+                        <div className="text-sm font-bold text-[#1C1D62]">
+                          7-10 Days
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Floating accent card — bottom left */}
+                  <motion.div
+                    className="absolute bottom-4 left-4 bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100"
+                    initial={{ opacity: 0, y: -10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 1.8 }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#304AC0]/10 flex items-center justify-center">
+                        <Briefcase className="w-4 h-4 text-[#304AC0]" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-[#718096] uppercase tracking-wider">
+                          Funding Range
+                        </div>
+                        <div className="text-sm font-bold text-[#1C1D62]">
+                          ₹5L - ₹50Cr
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
-
-      {/* Bottom gradient fade to next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#F0F4FF] to-transparent z-20 pointer-events-none" />
     </section>
   );
 }

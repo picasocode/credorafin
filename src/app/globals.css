@@ -644,38 +644,31 @@ select:focus {
 }
 
 /* ============================================
-   HERO SECTION — Premium Dark Finance
+   HERO SECTION — Clean Modern Finance
    ============================================ */
 #hero {
   isolation: isolate;
 }
 
-/* Smooth gradient transition at hero bottom */
+/* Smooth transition from hero white to next section */
 #hero::after {
   content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 80px;
-  background: linear-gradient(to top, #F0F4FF, transparent);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #E8ECF0, transparent);
   pointer-events: none;
-  z-index: 20;
 }
 
-/* Glass card hover glow */
-#hero [class*="backdrop-blur"] {
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+/* Avatar circle hover lift */
+#hero .avatar-hover {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* CTA button shine animation */
-@keyframes shineSweep {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
-}
-
-/* Ticker tape smooth scroll */
-#hero .ticker-track {
-  will-change: transform;
+#hero .avatar-hover:hover {
+  box-shadow: 0 8px 24px -4px rgba(48, 74, 192, 0.15);
 }
 
