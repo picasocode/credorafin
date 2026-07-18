@@ -644,31 +644,9 @@ select:focus {
 }
 
 /* ============================================
-   HERO SECTION — Clean Modern Finance
+   HERO SECTION — Premium Full-Screen Dark
    ============================================ */
 #hero {
   isolation: isolate;
-}
-
-/* Smooth transition from hero white to next section */
-#hero::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #E8ECF0, transparent);
-  pointer-events: none;
-}
-
-/* Avatar circle hover lift */
-#hero .avatar-hover {
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-#hero .avatar-hover:hover {
-  box-shadow: 0 8px 24px -4px rgba(48, 74, 192, 0.15);
 }
 
