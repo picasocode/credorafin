@@ -644,7 +644,7 @@ select:focus {
 }
 
 /* ============================================
-   HERO SECTION — Aurora Dark Design System
+   HERO SECTION — Light Premium Design System
    ============================================ */
 #hero {
   isolation: isolate;
@@ -663,37 +663,13 @@ select:focus {
   font-variant-numeric: tabular-nums;
 }
 
-/* Floating card glass effect */
-#hero .backdrop-blur-xl {
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  backdrop-filter: blur(20px) saturate(1.2);
+/* Card hover lift */
+#hero .rounded-3xl {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-/* Card top-edge gradient border */
-#hero .rounded-\[28px\]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    rgba(255, 255, 255, 0.005) 100%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Button focus states */
-#hero button:focus-visible {
-  outline: 2px solid rgba(48, 74, 192, 0.5);
-  outline-offset: 3px;
-  border-radius: 16px;
+#hero .rounded-3xl:hover {
+  box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.12);
 }
 
 /* Chart bar hover transitions */
@@ -702,10 +678,25 @@ select:focus {
 }
 
 /* Stat hover micro-interactions */
-#hero .group:hover .text-white\/15,
-#hero .group:hover .text-white\/18,
-#hero .group:hover .text-white\/20,
-#hero .group:hover .text-white\/25 {
-  color: rgba(255, 255, 255, 0.35);
+#hero .group:hover .text-slate-300,
+#hero .group:hover .text-slate-400 {
+  color: #64748b;
+}
+
+/* Smooth floating card shadows */
+#hero .shadow-xl {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* Dot grid pattern animation */
+@keyframes dotFade {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.2; }
+}
+
+/* Badge shimmer */
+@keyframes badgeShimmer {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
 }
 
