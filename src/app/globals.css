@@ -644,7 +644,7 @@ select:focus {
 }
 
 /* ============================================
-   HERO SECTION — Premium SaaS Design System
+   HERO SECTION — Aurora Dark Design System
    ============================================ */
 #hero {
   isolation: isolate;
@@ -652,15 +652,10 @@ select:focus {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Hero grid perspective for subtle 3D card feel */
-#hero .grid {
-  perspective: 1400px;
-}
-
-/* Refined heading rendering */
+/* Heading rendering */
 #hero h1 {
   text-rendering: optimizeLegibility;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
 }
 
 /* Smooth number transitions */
@@ -668,8 +663,14 @@ select:focus {
   font-variant-numeric: tabular-nums;
 }
 
-/* Card inner glow refinement */
-#hero .rounded-3xl::before {
+/* Floating card glass effect */
+#hero .backdrop-blur-xl {
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  backdrop-filter: blur(20px) saturate(1.2);
+}
+
+/* Card top-edge gradient border */
+#hero .rounded-\[28px\]::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -678,31 +679,33 @@ select:focus {
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.06) 0%,
-    rgba(255, 255, 255, 0.01) 100%
+    rgba(255, 255, 255, 0.005) 100%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
+  z-index: 1;
 }
 
-/* Button focus states for accessibility */
+/* Button focus states */
 #hero button:focus-visible {
-  outline: 2px solid rgba(48, 74, 192, 0.6);
+  outline: 2px solid rgba(48, 74, 192, 0.5);
   outline-offset: 3px;
   border-radius: 16px;
 }
 
-/* Stat hover micro-interaction */
+/* Chart bar hover transitions */
+#hero .flex-1.rounded-t-sm {
+  transition: background 0.12s ease;
+}
+
+/* Stat hover micro-interactions */
 #hero .group:hover .text-white\/15,
+#hero .group:hover .text-white\/18,
 #hero .group:hover .text-white\/20,
 #hero .group:hover .text-white\/25 {
   color: rgba(255, 255, 255, 0.35);
-}
-
-/* Smooth chart bar transitions */
-#hero .flex-1.rounded-t-sm {
-  transition: background 0.15s ease;
 }
 
