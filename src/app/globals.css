@@ -650,3 +650,24 @@ select:focus {
   isolation: isolate;
 }
 
+/* Animated gradient text shift for hero heading accent */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Hero card perspective */
+#hero .grid {
+  perspective: 1200px;
+}
+
+/* Subtle text glow for hero headings */
+#hero h1 {
+  text-shadow: 0 0 80px rgba(48, 74, 192, 0.08);
+}
+
+/* Smooth stat number transitions */
+#hero .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
