@@ -42,6 +42,7 @@ import {
   Quote,
   ChevronLeft,
   ChevronRight,
+  Calculator,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────
@@ -143,6 +144,10 @@ const heroSlides = [
     accentDark: "#13277E",
     floatTop: { label: "Quick Disbursal", value: "7-10 Days" },
     floatBottom: { label: "Funding Range", value: "₹5L - ₹50Cr" },
+    calcType: "MSME Loan",
+    calcPrincipal: 2500000,
+    calcRate: 11,
+    calcTenure: 60,
   },
   {
     badge: "₹5L - ₹50Cr Funding Range",
@@ -156,13 +161,17 @@ const heroSlides = [
     imageAlt: "Project finance infrastructure development",
     backgroundImage: "/images/products/project-indian.png",
     ctaPrimary: "Explore Project Finance",
-    ctaSecondary: "Talk to an Expert",
+    ctaSecondary: "Talk to an expert",
     ctaLink: "/products/project-finance",
     cardLabel: "Project Finance",
     accent: "#87B73C",
     accentDark: "#2E7D32",
     floatTop: { label: "Tenure", value: "Up to 20 yrs" },
     floatBottom: { label: "Ticket Size", value: "₹1Cr - ₹500Cr" },
+    calcType: "Project Loan",
+    calcPrincipal: 100000000,
+    calcRate: 9.5,
+    calcTenure: 120,
   },
   {
     badge: "Global Trade Ready",
@@ -183,12 +192,41 @@ const heroSlides = [
     accentDark: "#1C1D62",
     floatTop: { label: "Trade Finance", value: "LC & BG" },
     floatBottom: { label: "Global Reach", value: "40+ Countries" },
+    calcType: "Working Capital",
+    calcPrincipal: 5000000,
+    calcRate: 12,
+    calcTenure: 36,
   },
 ];
 
+/* ── Loan type quick-pills (Tata-Capital-style category tabs) ── */
+const loanTypePills = [
+  { label: "MSME Loans", href: "/products/msme-loans", icon: Building2 },
+  { label: "Project Finance", href: "/products/project-finance", icon: HardHat },
+  { label: "Supply Chain", href: "/products/supply-chain-finance", icon: Link2 },
+  { label: "Cross Border", href: "/products/cross-border-finance", icon: Globe },
+];
+
+/* ── Partner bank strip (text logos for trust) ── */
+const partnerBanks = ["HDFC Bank", "ICICI Bank", "Axis Bank", "Kotak", "Yes Bank", "SBI", "IDFC First", "Punjab National"];
+
+/* ── EMI calc helper (client-side, matches EMICalculator.tsx logic) ── */
+function calcEMI(principal: number, annualRate: number, tenureMonths: number): number {
+  if (principal <= 0 || annualRate <= 0 || tenureMonths <= 0) return 0;
+  const r = annualRate / 12 / 100;
+  return (principal * r * Math.pow(1 + r, tenureMonths)) / (Math.pow(1 + r, tenureMonths) - 1);
+}
+
+function formatINR(n: number): string {
+  if (!isFinite(n)) return "₹0";
+  if (n >= 10000000) return `₹${(n / 10000000).toFixed(2)} Cr`;
+  if (n >= 100000) return `₹${(n / 100000).toFixed(2)} L`;
+  return `₹${Math.round(n).toLocaleString("en-IN")}`;
+}
+
 /* ────────────────────────────────────────────
-   HERO SECTION — creative slider with accent theming, 3D tilt,
-   progress bar, keyboard + swipe navigation, word-by-word headline
+   HERO SECTION — Tata-Capital-inspired but better:
+   cinematic bg slideshow + sliding headline + EMI Quick Calculator
    ──────────────────────────────────────────── */
 function HeroSection() {
   const heroRef = useRef(null);
@@ -201,25 +239,33 @@ function HeroSection() {
   });
   const circleY1 = useTransform(scrollYProgress, [0, 1], [0, -60]);
   const circleY2 = useTransform(scrollYProgress, [0, 1], [0, 40]);
-  // Background image parallax — moves slower than scroll for depth (AOS-style)
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
   const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
 
-  // ── 3D tilt motion values for the funding card ──
+  // ── EMI calculator state (synced with the active slide) ──
+  const slide = heroSlides[currentSlide];
+  const [loanAmount, setLoanAmount] = useState(slide.calcPrincipal);
+  const [interestRate, setInterestRate] = useState(slide.calcRate);
+  const [tenure, setTenure] = useState(slide.calcTenure);
+
+  // Re-seed calculator inputs when slide changes
+  useEffect(() => {
+    setLoanAmount(slide.calcPrincipal);
+    setInterestRate(slide.calcRate);
+    setTenure(slide.calcTenure);
+  }, [currentSlide, slide.calcPrincipal, slide.calcRate, slide.calcTenure]);
+
+  const emi = calcEMI(loanAmount, interestRate, tenure);
+  const totalPayable = emi * tenure;
+  const totalInterest = totalPayable - loanAmount;
+
+  // ── 3D tilt motion values for the calculator card ──
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [6, -6]), {
-    stiffness: 150,
-    damping: 20,
-  });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-6, 6]), {
-    stiffness: 150,
-    damping: 20,
-  });
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [4, -4]), { stiffness: 150, damping: 20 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-4, 4]), { stiffness: 150, damping: 20 });
 
-  // ── Swipe tracking ──
   const touchStartX = useRef(0);
-
   const totalSlides = heroSlides.length;
 
   const paginate = useCallback(
@@ -259,7 +305,6 @@ function HeroSection() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [paginate]);
 
-  const slide = heroSlides[currentSlide];
   const accentVar = {
     "--hero-accent": slide.accent,
     "--hero-accent-dark": slide.accentDark,
@@ -270,15 +315,9 @@ function HeroSection() {
   const headlineWords = slide.titlePrefix.split(" ");
 
   const slideVariants = {
-    enter: (dir: number) => ({
-      opacity: 0,
-      x: dir > 0 ? 50 : -50,
-    }),
+    enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 50 : -50 }),
     center: { opacity: 1, x: 0 },
-    exit: (dir: number) => ({
-      opacity: 0,
-      x: dir > 0 ? -50 : 50,
-    }),
+    exit: (dir: number) => ({ opacity: 0, x: dir > 0 ? -50 : 50 }),
   };
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -286,19 +325,12 @@ function HeroSection() {
     mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
     mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
   };
-  const handleCardMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
+  const handleCardMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e: React.TouchEvent) => {
     const delta = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(delta) > 50) {
-      paginate(delta > 0 ? -1 : 1);
-    }
+    if (Math.abs(delta) > 50) paginate(delta > 0 ? -1 : 1);
   };
 
   return (
@@ -310,7 +342,7 @@ function HeroSection() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Scoped CSS for accent-themed hover states (CSS vars cascade from section) */}
+      {/* Scoped CSS for accent-themed hover states */}
       <style>{`
         .hero-cta-primary { background-color: var(--hero-accent); }
         .hero-cta-primary:hover { background-color: var(--hero-accent-dark); }
@@ -319,15 +351,12 @@ function HeroSection() {
         .hero-arrow { border: 1px solid var(--hero-accent-20); color: var(--hero-accent); }
         .hero-arrow:hover { background-color: var(--hero-accent); color: #fff; border-color: var(--hero-accent); }
         .hero-focus:focus-visible { outline: 2px solid var(--hero-accent-20); outline-offset: 2px; }
+        .hero-pill:hover { border-color: var(--hero-accent); color: var(--hero-accent); background-color: #fff; }
+        .hero-slider-track::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; }
       `}</style>
 
-      {/* ══ BACKGROUND IMAGE SLIDESHOW ══
-          Full-bleed images that crossfade + Ken Burns zoom per slide,
-          with a layered gradient overlay keeping text readable. */}
-      <motion.div
-        className="absolute inset-0 z-0 overflow-hidden"
-        style={{ y: bgY, scale: bgScale }}
-      >
+      {/* ══ BACKGROUND IMAGE SLIDESHOW ══ */}
+      <motion.div className="absolute inset-0 z-0 overflow-hidden" style={{ y: bgY, scale: bgScale }}>
         <AnimatePresence>
           <motion.div
             key={slide.backgroundImage}
@@ -340,23 +369,14 @@ function HeroSection() {
               scale: { duration: 6, ease: "easeOut" },
             }}
           >
-            <Image
-              src={slide.backgroundImage}
-              alt=""
-              aria-hidden="true"
-              fill
-              sizes="100vw"
-              className="object-cover"
-            />
+            <Image src={slide.backgroundImage} alt="" aria-hidden="true" fill sizes="100vw" className="object-cover" />
           </motion.div>
         </AnimatePresence>
-        {/* Readability overlay — strong on the left where text sits,
-            lighter on the right so the picture shows through */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#F0F4FF] via-[#F0F4FF]/90 to-[#F0F4FF]/40" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#F0F4FF]/80 via-[#F0F4FF]/10 to-[#F0F4FF]/50" />
       </motion.div>
 
-      {/* Accent-tinted ambient glow that shifts with the slide */}
+      {/* Accent-tinted ambient glow */}
       <motion.div
         className="absolute top-1/2 right-0 w-[700px] h-[700px] rounded-full pointer-events-none blur-3xl"
         style={{ backgroundColor: slide.accent }}
@@ -378,37 +398,29 @@ function HeroSection() {
           animate={{ scale: [1, 1.08, 1], rotate: [0, -5, 0] }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
         />
-        {/* Dot patterns — top-left */}
-        <div className="absolute top-20 left-[10%] grid grid-cols-5 gap-4 opacity-10">
-          {Array.from({ length: 25 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="w-2 h-2 rounded-full bg-[#304AC0]"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.2, 0.1] }}
-              transition={{ duration: 3, delay: i * 0.1, repeat: Infinity }}
-            />
-          ))}
-        </div>
-        {/* Dot patterns — bottom-right */}
-        <div className="absolute bottom-20 right-[8%] grid grid-cols-5 gap-4 opacity-10">
-          {Array.from({ length: 25 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="w-2 h-2 rounded-full bg-[#13277E]"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.18, 0.1] }}
-              transition={{ duration: 3.5, delay: i * 0.12, repeat: Infinity }}
-            />
-          ))}
-        </div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left content — SLIDER */}
-          <div className="space-y-8 relative">
-            <div className="relative min-h-[440px] sm:min-h-[400px] flex flex-col justify-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-20 w-full z-10">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+          {/* ════════════════════════════════════
+              LEFT — Headline + CTAs + pills + partners
+              ════════════════════════════════════ */}
+          <div className="space-y-7 relative">
+            {/* Badge */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <span
+                className="inline-flex items-center gap-2 bg-white text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full border shadow-sm"
+                style={{ color: slide.accent, borderColor: slide.accent + "1A" }}
+              >
+                <span className="w-2 h-2 rounded-full bg-[#87B73C] animate-pulse" />
+                {slide.badge}
+              </span>
+            </motion.div>
+
+            {/* Headline — slider with word-by-word reveal */}
+            <div className="relative min-h-[180px] sm:min-h-[150px]">
               <AnimatePresence mode="wait" custom={direction}>
-                <motion.div
+                <motion.h1
                   key={currentSlide}
                   custom={direction}
                   variants={slideVariants}
@@ -416,347 +428,298 @@ function HeroSection() {
                   animate="center"
                   exit="exit"
                   transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="space-y-8"
+                  className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-[#1C1D62] leading-[1.1] tracking-tight"
                 >
-                  {/* Badge */}
-                  <div>
-                    <span
-                      className="inline-flex items-center gap-2 bg-white text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full border shadow-sm"
-                      style={{ color: slide.accent, borderColor: slide.accent + "1A" }}
-                    >
-                      <span className="w-2 h-2 rounded-full bg-[#87B73C] animate-pulse" />
-                      {slide.badge}
-                    </span>
-                  </div>
-
-                  {/* Headline — word-by-word reveal */}
-                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-[#1C1D62] leading-[1.1] tracking-tight">
-                    {headlineWords.map((word, i) => (
-                      <React.Fragment key={i}>
-                        <motion.span
-                          className="inline-block"
-                          initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
-                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                          transition={{ duration: 0.5, delay: 0.1 + i * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        >
-                          {word}
-                        </motion.span>{" "}
-                      </React.Fragment>
-                    ))}
-                    <span className="relative inline-block">
+                  {headlineWords.map((word, i) => (
+                    <React.Fragment key={i}>
                       <motion.span
-                        className="relative z-10 inline-block"
-                        style={{ color: slide.accent }}
+                        className="inline-block"
                         initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
                         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                        transition={{ duration: 0.5, delay: 0.1 + headlineWords.length * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        transition={{ duration: 0.5, delay: 0.1 + i * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
                       >
-                        {slide.titleHighlight}
-                      </motion.span>
-                      <motion.span
-                        className="absolute bottom-1 left-0 right-0 h-3 -skew-x-3 rounded"
-                        style={{ transformOrigin: "left", backgroundColor: slide.accent + "20" }}
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{ duration: 0.6, delay: 0.4 + headlineWords.length * 0.08, type: "spring", stiffness: 60 }}
-                      />
-                    </span>
-                  </h1>
-
-                  {/* Description 1 */}
-                  <motion.p
-                    className="text-lg sm:text-xl text-[#718096] leading-relaxed max-w-xl"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                  >
-                    {slide.desc1}
-                  </motion.p>
-
-                  {/* Description 2 */}
-                  <motion.p
-                    className="text-base text-[#2D3748] leading-relaxed max-w-xl"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                  >
-                    {slide.desc2Pre}
-                    <strong style={{ color: slide.accent }}>{slide.desc2Highlight}</strong>
-                    {slide.desc2Post}
-                  </motion.p>
-
-                  {/* CTAs */}
-                  <motion.div
-                    className="flex flex-wrap gap-4"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.5 }}
-                  >
-                    <Link href={slide.ctaLink}>
-                      <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}>
-                        <Button className="hero-cta-primary text-white font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300 shadow-lg hover:shadow-xl group">
-                          {slide.ctaPrimary}
-                          <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                        </Button>
-                      </motion.div>
-                    </Link>
-                    <Link href="/contact">
-                      <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}>
-                        <Button
-                          variant="outline"
-                          className="hero-cta-secondary font-medium text-sm uppercase tracking-wider px-8 py-3.5 rounded-md transition-all duration-300"
-                        >
-                          {slide.ctaSecondary}
-                        </Button>
-                      </motion.div>
-                    </Link>
-                  </motion.div>
-                </motion.div>
+                        {word}
+                      </motion.span>{" "}
+                    </React.Fragment>
+                  ))}
+                  <span className="relative inline-block">
+                    <motion.span
+                      className="relative z-10 inline-block"
+                      style={{ color: slide.accent }}
+                      initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      transition={{ duration: 0.5, delay: 0.1 + headlineWords.length * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    >
+                      {slide.titleHighlight}
+                    </motion.span>
+                    <motion.span
+                      className="absolute bottom-1 left-0 right-0 h-3 -skew-x-3 rounded"
+                      style={{ transformOrigin: "left", backgroundColor: slide.accent + "20" }}
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ duration: 0.6, delay: 0.4 + headlineWords.length * 0.08, type: "spring", stiffness: 60 }}
+                    />
+                  </span>
+                </motion.h1>
               </AnimatePresence>
             </div>
 
-            {/* Trust indicators — fixed across slides */}
-            <motion.div
-              className="flex items-center gap-6 pt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
+            {/* Description */}
+            <motion.p
+              className="text-base sm:text-lg text-[#2D3748] leading-relaxed max-w-xl"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  {["M", "S", "R", "K"].map((letter, i) => (
-                    <motion.div
-                      key={i}
-                      className="w-8 h-8 rounded-full bg-[#304AC0]/10 border-2 border-white flex items-center justify-center text-[10px] font-semibold text-[#304AC0]"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.9 + i * 0.1, type: "spring" }}
-                    >
-                      {letter}
-                    </motion.div>
-                  ))}
-                </div>
-                <span className="text-sm text-[#718096]">
-                  1,200+ Happy Clients
-                </span>
-              </div>
+              {slide.desc1}
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              className="flex flex-wrap gap-4"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <Link href={slide.ctaLink}>
+                <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}>
+                  <Button className="hero-cta-primary text-white font-medium text-sm uppercase tracking-wider px-7 py-3.5 rounded-md transition-all duration-300 shadow-lg hover:shadow-xl group">
+                    {slide.ctaPrimary}
+                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  </Button>
+                </motion.div>
+              </Link>
+              <Link href="/contact">
+                <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}>
+                  <Button variant="outline" className="hero-cta-secondary font-medium text-sm uppercase tracking-wider px-7 py-3.5 rounded-md transition-all duration-300">
+                    {slide.ctaSecondary}
+                  </Button>
+                </motion.div>
+              </Link>
+            </motion.div>
+
+            {/* Loan-type quick pills */}
+            <motion.div
+              className="flex flex-wrap gap-2 pt-2"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              {loanTypePills.map((pill, i) => (
+                <Link key={i} href={pill.href}>
+                  <motion.span
+                    whileHover={{ y: -2, scale: 1.03 }}
+                    className="hero-pill inline-flex items-center gap-1.5 bg-white/70 backdrop-blur border border-[#304AC0]/15 text-[#2D3748] text-xs font-medium px-3 py-2 rounded-full cursor-pointer transition-all duration-200"
+                  >
+                    <pill.icon className="w-3.5 h-3.5" />
+                    {pill.label}
+                  </motion.span>
+                </Link>
+              ))}
             </motion.div>
 
             {/* Slider controls — prev / dots / next / counter */}
             <div className="flex items-center gap-3 pt-2">
               <button
-                type="button"
-                onClick={() => paginate(-1)}
-                aria-label="Previous slide"
+                type="button" onClick={() => paginate(-1)} aria-label="Previous slide"
                 className="hero-arrow hero-focus w-10 h-10 shrink-0 rounded-full bg-white/80 backdrop-blur flex items-center justify-center transition-all duration-200 shadow-sm focus:outline-none"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-
               <div className="flex items-center gap-2">
                 {heroSlides.map((s, i) => (
                   <button
-                    key={i}
-                    type="button"
-                    onClick={() => goToSlide(i)}
+                    key={i} type="button" onClick={() => goToSlide(i)}
                     aria-label={`Go to slide ${i + 1}: ${s.titlePrefix} ${s.titleHighlight}`}
                     className="hero-focus group relative py-2 px-1 focus:outline-none rounded"
                   >
                     <span
                       className={cn(
                         "block h-2 rounded-full transition-all duration-300",
-                        i === currentSlide
-                          ? "w-8"
-                          : "w-2 bg-[#304AC0]/30 group-hover:bg-[#304AC0]/50"
+                        i === currentSlide ? "w-8" : "w-2 bg-[#304AC0]/30 group-hover:bg-[#304AC0]/50"
                       )}
                       style={i === currentSlide ? { backgroundColor: slide.accent } : undefined}
                     />
                   </button>
                 ))}
               </div>
-
               <button
-                type="button"
-                onClick={() => paginate(1)}
-                aria-label="Next slide"
+                type="button" onClick={() => paginate(1)} aria-label="Next slide"
                 className="hero-arrow hero-focus w-10 h-10 shrink-0 rounded-full bg-white/80 backdrop-blur flex items-center justify-center transition-all duration-200 shadow-sm focus:outline-none"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
-
               <span className="ml-1 text-xs font-medium text-[#718096] tabular-nums">
                 {String(currentSlide + 1).padStart(2, "0")} / {String(totalSlides).padStart(2, "0")}
               </span>
             </div>
 
-            {/* Keyboard hint */}
-            <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-[#718096]/70">
-              <kbd className="px-1.5 py-0.5 rounded border border-[#E8ECF0] bg-white/60 text-[10px] font-medium text-[#718096]">←</kbd>
-              <kbd className="px-1.5 py-0.5 rounded border border-[#E8ECF0] bg-white/60 text-[10px] font-medium text-[#718096]">→</kbd>
-              <span>to navigate</span>
-            </div>
+            {/* Partner bank strip */}
+            <motion.div
+              className="pt-4 border-t border-[#304AC0]/10"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.8 }}
+            >
+              <p className="text-[11px] uppercase tracking-widest text-[#718096] mb-2.5">Our Lender Network</p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                {partnerBanks.map((bank, i) => (
+                  <span key={i} className="text-sm font-semibold text-[#1C1D62]/60 hover:text-[#1C1D62] transition-colors">
+                    {bank}
+                  </span>
+                ))}
+                <span className="text-xs font-bold px-2 py-1 rounded-full bg-[#304AC0]/10 text-[#304AC0]">70+ total</span>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Right side — Funding Overview Card with 3D tilt + synced image */}
+          {/* ════════════════════════════════════
+              RIGHT — EMI Quick Calculator card (Tata-Capital-style but better)
+              ════════════════════════════════════ */}
           <motion.div
-            className="relative hidden lg:block"
+            className="relative"
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3, type: "spring", stiffness: 60 }}
             style={{ perspective: 1200 }}
           >
             <div className="relative" onMouseMove={handleCardMouseMove} onMouseLeave={handleCardMouseLeave}>
-              {/* Main card with 3D tilt */}
               <motion.div
-                className="bg-white rounded-3xl shadow-2xl p-8 border border-[#E8ECF0] overflow-hidden"
+                className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border border-[#E8ECF0] overflow-hidden"
                 style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               >
-                {/* Hero image strip at top — crossfades with slide */}
-                <div className="relative -mx-8 -mt-8 mb-6 h-40 overflow-hidden rounded-t-3xl" style={{ transform: "translateZ(40px)", transformStyle: "preserve-3d" }}>
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={slide.image}
-                      initial={{ opacity: 0, scale: 1.06 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-                      className="absolute inset-0"
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6" style={{ transform: "translateZ(20px)" }}>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: slide.accent + "15" }}>
+                      <Calculator className="w-5 h-5" style={{ color: slide.accent }} />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-[#1C1D62] leading-tight">EMI Calculator</h3>
+                      <p className="text-[11px] text-[#718096]">{slide.calcType}</p>
+                    </div>
+                  </div>
+                  <span className="text-xs px-3 py-1 rounded-full font-medium" style={{ backgroundColor: slide.accent + "15", color: slide.accentDark }}>
+                    Live
+                  </span>
+                </div>
+
+                {/* Big EMI result */}
+                <div className="mb-6" style={{ transform: "translateZ(30px)" }}>
+                  <p className="text-xs uppercase tracking-wider text-[#718096] mb-1">Your Monthly EMI</p>
+                  <div className="flex items-baseline gap-2">
+                    <motion.span
+                      key={`emi-${Math.round(emi)}`}
+                      className="text-4xl sm:text-5xl font-bold tracking-tight"
+                      style={{ color: slide.accent }}
+                      initial={{ opacity: 0.6, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <Image
-                        src={slide.image}
-                        alt={slide.imageAlt}
-                        fill
-                        sizes="100vw"
-                        className="object-cover"
-                        priority
-                      />
-                    </motion.div>
-                  </AnimatePresence>
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/80" />
-                  <div className="absolute bottom-3 left-6 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" style={{ color: slide.accent }} />
-                    <span className="text-sm font-medium text-[#1C1D62]">{slide.cardLabel}</span>
+                      {formatINR(emi)}
+                    </motion.span>
+                    <span className="text-sm text-[#718096]">/month</span>
                   </div>
                 </div>
 
-                <div className="space-y-6" style={{ transform: "translateZ(20px)" }}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-[#718096]">
-                      Funding Overview
-                    </span>
-                    <span className="text-xs px-3 py-1 rounded-full font-medium" style={{ backgroundColor: slide.accent + "15", color: slide.accentDark }}>
-                      Active
-                    </span>
+                {/* Sliders */}
+                <div className="space-y-5" style={{ transform: "translateZ(15px)" }}>
+                  {/* Loan amount */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-xs font-medium text-[#2D3748]">Loan Amount</label>
+                      <span className="text-sm font-bold text-[#1C1D62] tabular-nums">{formatINR(loanAmount)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={100000} max={500000000} step={100000}
+                      value={loanAmount}
+                      onChange={(e) => setLoanAmount(Number(e.target.value))}
+                      className="hero-slider-track w-full h-2 rounded-full appearance-none cursor-pointer outline-none"
+                      style={{
+                        background: `linear-gradient(to right, ${slide.accent} 0%, ${slide.accent} ${((loanAmount - 100000) / (500000000 - 100000)) * 100}%, #E8ECF0 ${((loanAmount - 100000) / (500000000 - 100000)) * 100}%, #E8ECF0 100%)`,
+                        accentColor: slide.accent,
+                      }}
+                    />
                   </div>
 
-                  {/* Animated progress bars */}
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1.5">
-                        <span className="text-[#2D3748]">
-                          Loan Approval Rate
-                        </span>
-                        <span className="font-semibold text-[#304AC0]">
-                          92%
-                        </span>
-                      </div>
-                      <div className="h-2 bg-[#F0F4FF] rounded-full overflow-hidden">
-                        <motion.div
-                          className="h-full bg-[#304AC0] rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: "92%" }}
-                          transition={{
-                            duration: 1.8,
-                            delay: 1,
-                            ease: [0.25, 0.46, 0.45, 0.94],
-                          }}
-                        />
-                      </div>
+                  {/* Interest rate */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-xs font-medium text-[#2D3748]">Interest Rate</label>
+                      <span className="text-sm font-bold text-[#1C1D62] tabular-nums">{interestRate.toFixed(1)}% p.a.</span>
                     </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1.5">
-                        <span className="text-[#2D3748]">
-                          Client Satisfaction
-                        </span>
-                        <span className="font-semibold text-[#87B73C]">
-                          98%
-                        </span>
-                      </div>
-                      <div className="h-2 bg-[#F0F4FF] rounded-full overflow-hidden">
-                        <motion.div
-                          className="h-full bg-[#87B73C] rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: "98%" }}
-                          transition={{
-                            duration: 1.8,
-                            delay: 1.2,
-                            ease: [0.25, 0.46, 0.45, 0.94],
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1.5">
-                        <span className="text-[#2D3748]">Lender Network</span>
-                        <span className="font-semibold text-[#13277E]">
-                          70+
-                        </span>
-                      </div>
-                      <div className="h-2 bg-[#F0F4FF] rounded-full overflow-hidden">
-                        <motion.div
-                          className="h-full bg-[#13277E] rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: "85%" }}
-                          transition={{
-                            duration: 1.8,
-                            delay: 1.4,
-                            ease: [0.25, 0.46, 0.45, 0.94],
-                          }}
-                        />
-                      </div>
-                    </div>
+                    <input
+                      type="range"
+                      min={4} max={24} step={0.1}
+                      value={interestRate}
+                      onChange={(e) => setInterestRate(Number(e.target.value))}
+                      className="hero-slider-track w-full h-2 rounded-full appearance-none cursor-pointer outline-none"
+                      style={{
+                        background: `linear-gradient(to right, ${slide.accent} 0%, ${slide.accent} ${((interestRate - 4) / (24 - 4)) * 100}%, #E8ECF0 ${((interestRate - 4) / (24 - 4)) * 100}%, #E8ECF0 100%)`,
+                        accentColor: slide.accent,
+                      }}
+                    />
                   </div>
 
-                  {/* Mini stats */}
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[#E8ECF0]">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-[#1C1D62]">
-                        20+
-                      </div>
-                      <div className="text-xs text-[#718096]">Years Exp.</div>
+                  {/* Tenure */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-xs font-medium text-[#2D3748]">Tenure</label>
+                      <span className="text-sm font-bold text-[#1C1D62] tabular-nums">{tenure} months ({(tenure / 12).toFixed(1)} yrs)</span>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-[#304AC0]">
-                        70+
-                      </div>
-                      <div className="text-xs text-[#718096]">Banks</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-[#87B73C]">
-                        20+
-                      </div>
-                      <div className="text-xs text-[#718096]">Products</div>
-                    </div>
+                    <input
+                      type="range"
+                      min={6} max={240} step={6}
+                      value={tenure}
+                      onChange={(e) => setTenure(Number(e.target.value))}
+                      className="hero-slider-track w-full h-2 rounded-full appearance-none cursor-pointer outline-none"
+                      style={{
+                        background: `linear-gradient(to right, ${slide.accent} 0%, ${slide.accent} ${((tenure - 6) / (240 - 6)) * 100}%, #E8ECF0 ${((tenure - 6) / (240 - 6)) * 100}%, #E8ECF0 100%)`,
+                        accentColor: slide.accent,
+                      }}
+                    />
                   </div>
                 </div>
+
+                {/* Breakdown */}
+                <div className="grid grid-cols-2 gap-3 mt-6 pt-5 border-t border-[#E8ECF0]" style={{ transform: "translateZ(20px)" }}>
+                  <div className="bg-[#F7F9FC] rounded-xl p-3">
+                    <p className="text-[11px] text-[#718096] mb-0.5">Principal</p>
+                    <p className="text-sm font-bold text-[#1C1D62]">{formatINR(loanAmount)}</p>
+                  </div>
+                  <div className="bg-[#F7F9FC] rounded-xl p-3">
+                    <p className="text-[11px] text-[#718096] mb-0.5">Total Interest</p>
+                    <p className="text-sm font-bold" style={{ color: slide.accentDark }}>{formatINR(totalInterest)}</p>
+                  </div>
+                  <div className="col-span-2 bg-[#1C1D62] rounded-xl p-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] text-white/60 mb-0.5">Total Payable</p>
+                      <p className="text-base font-bold text-white">{formatINR(totalPayable)}</p>
+                    </div>
+                    <Link href="/emi-calculator">
+                      <span className="text-xs font-medium text-white/80 hover:text-white inline-flex items-center gap-1 cursor-pointer transition-colors">
+                        Full calculator <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Apply CTA */}
+                <Link href={slide.ctaLink}>
+                  <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="mt-4">
+                    <Button className="hero-cta-primary w-full text-white font-medium text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all duration-300 shadow-lg group">
+                      Apply for {slide.calcType}
+                      <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                    </Button>
+                  </motion.div>
+                </Link>
               </motion.div>
 
-              {/* Floating accent card — top (per-slide, accent-themed) */}
-              <FloatingElement amplitude={8} duration={3} className="absolute -top-4 -left-4">
+              {/* Floating accent card — top */}
+              <FloatingElement amplitude={8} duration={3} className="absolute -top-4 -left-4 hidden sm:block">
                 <div className="text-white rounded-xl px-4 py-3 shadow-lg" style={{ backgroundColor: slide.accent }}>
-                  <div className="text-xs font-medium opacity-80">
-                    {slide.floatTop.label}
-                  </div>
+                  <div className="text-xs font-medium opacity-80">{slide.floatTop.label}</div>
                   <div className="text-sm font-bold">{slide.floatTop.value}</div>
                 </div>
               </FloatingElement>
 
-              {/* Floating accent card — bottom (per-slide, accent-dark-themed) */}
-              <FloatingElement amplitude={8} duration={3.5} className="absolute -bottom-4 -right-4">
+              {/* Floating accent card — bottom */}
+              <FloatingElement amplitude={8} duration={3.5} className="absolute -bottom-4 -right-4 hidden sm:block">
                 <div className="text-white rounded-xl px-4 py-3 shadow-lg" style={{ backgroundColor: slide.accentDark }}>
-                  <div className="text-xs font-medium opacity-80">
-                    {slide.floatBottom.label}
-                  </div>
+                  <div className="text-xs font-medium opacity-80">{slide.floatBottom.label}</div>
                   <div className="text-sm font-bold">{slide.floatBottom.value}</div>
                 </div>
               </FloatingElement>
@@ -765,8 +728,8 @@ function HeroSection() {
         </div>
       </div>
 
-      {/* Auto-advance progress bar — resets on slide change */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#304AC0]/10">
+      {/* Auto-advance progress bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#304AC0]/10 z-20">
         <motion.div
           key={currentSlide}
           className="h-full rounded-r-full"
