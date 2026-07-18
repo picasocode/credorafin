@@ -18,6 +18,7 @@ import {
 import FluidTimeline from "@/components/FluidTimeline";
 import AnimatedIllustration from "@/components/AnimatedIllustration";
 import EMICalculator from "@/components/EMICalculator";
+import Hero from "@/components/sections/Hero";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -1764,7 +1765,7 @@ function BlogPreviewSection() {
 export default function Home() {
   return (
     <>
-      <HeroSection />
+      <Hero />
       <WhyChooseUsSection />
       <WhatWeDoSection />
       <KeyNumbersSection />
