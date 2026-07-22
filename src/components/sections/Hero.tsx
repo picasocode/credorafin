@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Fallback high-quality Unsplash financial/business images in case local assets aren't in /public/
 const slides = [
   {
     id: 0,
@@ -24,6 +25,7 @@ const slides = [
     cta1: "Build Finance",
     cta2: "Contact us",
     image: "/images/pages/hero-indian-team.png",
+    fallbackImage: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1600&q=80",
     hudLeft: { metric: "+18%", label: "Market Forecast", status: "Optimal Condition" },
     hudRight: { metric: "9.5% p.a.", label: "Average Interest Rate", trend: "Stable" },
     hudGraph: { value: "₹50 Crores", label: "Max Liquidity Pool Available" }
@@ -36,6 +38,7 @@ const slides = [
     cta1: "Raise Capital",
     cta2: "Contact us",
     image: "/images/pages/office-india.png",
+    fallbackImage: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80",
     hudLeft: { metric: "Tier-1", label: "Sourcing Channel", status: "Priority Route" },
     hudRight: { metric: "₹100 Cr", label: "Maximum Allocation Cap", trend: "High Demand" },
     hudGraph: { value: "Syndicated", label: "Multi-Bank Framework Active" }
@@ -48,6 +51,7 @@ const slides = [
     cta1: "Apply Vetting",
     cta2: "Contact us",
     image: "/images/pages/indian-professional.png",
+    fallbackImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1600&q=80",
     hudLeft: { metric: "92%", label: "Approval Probability", status: "Risk Maintained" },
     hudRight: { metric: "48 Hours", label: "Maximum File Audit Time", trend: "Rapid Track" },
     hudGraph: { value: "Zero Gaps", label: "Credit Risk Pre-Assessment" }
@@ -60,6 +64,7 @@ const slides = [
     cta1: "Fix Credit Score",
     cta2: "Contact us",
     image: "/images/pages/handshake-india.png",
+    fallbackImage: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80",
     hudLeft: { metric: "+150", label: "CIBIL Score Shift", status: "Engine Optimized" },
     hudRight: { metric: "Rapid", label: "Settlement Cycle Time", trend: "Immediate Plan" },
     hudGraph: { value: "Restored", label: "Removal of Legacy Default History" }
@@ -79,9 +84,15 @@ const itemVariants = {
 export default function Hero() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [imgSrc, setImgSrc] = useState<string>(slides[0].image);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const slide = slides[current];
+
+  // Update image source when current slide changes
+  useEffect(() => {
+    setImgSrc(slides[current].image);
+  }, [current]);
 
   // Interactive 3D Tilt Setup
   const x = useMotionValue(0);
@@ -223,7 +234,7 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* EXPANDED FULL-WIDTH IMAGE CANVAS */}
+          {/* EXPANDED FULL-WIDTH IMAGE CANVAS WITH AUTOMATIC FALLBACK */}
           <motion.div 
             variants={itemVariants} 
             className="relative w-full max-w-[1100px] flex-1 min-h-[300px] sm:min-h-[380px] md:min-h-[440px] lg:min-h-[480px] flex items-center justify-center perspective-[1200px] my-2"
@@ -242,12 +253,14 @@ export default function Hero() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute inset-0 w-full h-full"
+                    className="absolute inset-0 w-full h-full bg-neutral-200"
                   >
                     <Image
-                      src={slide.image}
+                      src={imgSrc}
                       alt="Credora Enterprise Funding Platform"
                       fill
+                      unoptimized
+                      onError={() => setImgSrc(slide.fallbackImage)}
                       className="object-cover object-center transform transition-transform duration-1000 brightness-[0.97]"
                       priority
                     />
