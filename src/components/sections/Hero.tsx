@@ -93,8 +93,8 @@ export default function Hero() {
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-300, 300], [4, -4]);
-  const rotateY = useTransform(x, [-300, 300], [-4, 4]);
+  const rotateX = useTransform(y, [-300, 300], [3, -3]);
+  const rotateY = useTransform(x, [-300, 300], [-3, 3]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -126,7 +126,7 @@ export default function Hero() {
   return (
     <section 
       id="hero" 
-      className="relative bg-[#FAFBFD] w-full min-h-screen flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-10 py-6 font-sans antialiased"
+      className="relative bg-[#FAFBFD] w-full min-h-screen flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       {/* BACKGROUND GLOW */}
@@ -145,16 +145,16 @@ export default function Hero() {
         />
       </div>
 
-      {/* MAIN CONTAINER */}
-      <div className="relative w-full max-w-[1280px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto">
+      {/* MAIN CONTENT AREA */}
+      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto">
         <motion.div 
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="flex flex-col items-center text-center gap-4 w-full"
+          className="flex flex-col items-center text-center gap-3 w-full"
         >
           {/* HEADER TYPOGRAPHY */}
-          <div className="flex flex-col items-center max-w-2xl w-full tracking-tight shrink-0">
+          <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             <motion.div
               variants={itemVariants}
               className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] mb-2 border bg-white text-[#1A2255] border-[#1A2255]/15 shadow-xs"
@@ -228,10 +228,10 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* IMAGE CANVAS */}
+          {/* WIDER & SHORTER IMAGE CANVAS */}
           <motion.div 
             variants={itemVariants} 
-            className="relative w-full max-w-[1050px] h-[280px] sm:h-[380px] md:h-[450px] lg:h-[500px] perspective-[1200px] my-4"
+            className="relative w-full max-w-[1280px] h-[220px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
           >
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
@@ -269,7 +269,7 @@ export default function Hero() {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ type: "spring", stiffness: 100, damping: 14 }}
-                  className="absolute top-[10%] left-6 z-20 bg-white/95 backdrop-blur-xl border border-neutral-200/50 rounded-xl p-3 shadow-lg flex flex-col gap-0.5 min-w-[130px] text-left"
+                  className="absolute top-[8%] left-6 z-20 bg-white/95 backdrop-blur-xl border border-neutral-200/50 rounded-xl p-3 shadow-lg flex flex-col gap-0.5 min-w-[130px] text-left"
                 >
                   <div className="w-6 h-6 rounded-md flex items-center justify-center bg-[#1A2255]/5 text-[#1A2255] mb-0.5">
                     <Percent className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -288,7 +288,7 @@ export default function Hero() {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 0 }}
                   transition={{ type: "spring", stiffness: 100, damping: 14 }}
-                  className="absolute top-[12%] right-6 z-20 bg-[#1A2255]/95 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 text-white shadow-xl min-w-[160px] text-left"
+                  className="absolute top-[8%] right-6 z-20 bg-[#1A2255]/95 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 text-white shadow-xl min-w-[160px] text-left"
                 >
                   <span className="text-[8px] text-neutral-300 font-bold uppercase tracking-widest block mb-1">{slide.hudRight.label}</span>
                   <p className="text-[16px] font-black tracking-tight text-white leading-none">{slide.hudRight.metric}</p>
@@ -303,7 +303,7 @@ export default function Hero() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="absolute bottom-5 left-6 z-20 bg-white/95 backdrop-blur-md border border-neutral-200/50 rounded-xl p-2 px-3.5 shadow-md max-w-[320px] text-left hidden sm:flex items-center gap-2.5"
+                  className="absolute bottom-4 left-6 z-20 bg-white/95 backdrop-blur-md border border-neutral-200/50 rounded-xl p-2 px-3.5 shadow-md max-w-[320px] text-left hidden sm:flex items-center gap-2.5"
                 >
                   <div className="w-5 h-5 rounded-full flex items-center justify-center bg-[#1A2255] text-white shrink-0">
                     <Clock className="w-3 h-3" />
@@ -320,8 +320,8 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* TABS NAVIGATION */}
-      <div className="w-full max-w-[900px] mx-auto shrink-0 z-30 pt-2">
+      {/* TABS NAVIGATION DOCK STRIP */}
+      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
         <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.03)] border border-neutral-200/50 p-1.5 grid grid-cols-2 md:grid-cols-4 gap-1">
           {[
             { id: 0, label: "Business Loans", icon: Building2 },
