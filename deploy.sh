@@ -1,25 +1,27 @@
 #!/usr/bin/env bash
 # ============================================================================
-# CredoraFin — One-command deployment script (SQLite + Nginx edition)
+# CredoraFin — One-command deployment script (SQLite + Nginx + DEV-mode edition)
 # ----------------------------------------------------------------------------
 # SQLite needs NO server process, NO Docker, and NO external services — the
 # database is just a file on disk (db/app.db). Nginx is auto-installed and
-# configured as a reverse proxy for the production domain.
+# configured as a reverse proxy. The Next.js DEV server is started directly
+# (NO production build) so the box doesn't need enough RAM/time to compile a
+# standalone bundle — `next dev` compiles routes on-demand and hot-reloads.
+#
+# Steps:
 #   0. Verify prerequisites (bun, curl, nginx — auto-install missing)
 #   1. Ensure .env exists (create from .env.example, force correct values)
-#   2. Install npm deps (if node_modules missing)
+#   2. Install npm deps (ALWAYS — refreshes stale Prisma client)
 #   3. Generate Prisma client
 #   4. Push DB schema (creates the SQLite file + all tables)
 #   5. Seed DB (admin user + 6 positions + 5 hero slides + 6 blog posts)
-#   6. Build Next.js standalone production bundle
-#   7. Clear port 3000
-#   8. Start the production server on port 3000
-#   9. Configure Nginx reverse proxy for the domain + reload
+#   6. Clear port 3000
+#   7. Start the Next.js DEV server on port 3000 (no production build)
+#   8. Configure Nginx reverse proxy for the domain + reload
 #
 # Usage:
 #   ./deploy.sh                       # full deploy (domain: credorafin.com)
 #   ./deploy.sh --domain=example.com  # use a custom domain
-#   ./deploy.sh --no-build            # skip the build step (reuse existing .next)
 #   ./deploy.sh --no-seed             # skip DB seed (keep existing data)
 #   ./deploy.sh --no-nginx            # skip nginx configuration
 #   ./deploy.sh --help
@@ -34,12 +36,11 @@ set -euo pipefail
 APP_NAME="credorafin"
 APP_PORT="3000"
 HEALTH_URL="http://127.0.0.1:${APP_PORT}/api/health"
-MAX_WAIT_SECS=120         # max time to wait for the app to come up
+MAX_WAIT_SECS=180         # max time to wait for the dev server to come up
 DB_FILE="db/app.db"       # relative to project root
 DOMAIN="credorafin.com"   # production domain (override with --domain=)
 
 # Flags from argv
-DO_BUILD=1
 DO_SEED=1
 DO_NGINX=1
 
@@ -61,11 +62,11 @@ die()  { err "$*"; exit 1; }
 # ── Parse args ──────────────────────────────────────────────────────────────
 for arg in "$@"; do
   case "$arg" in
-    --no-build) DO_BUILD=0 ;;
     --no-seed)  DO_SEED=0 ;;
     --no-nginx) DO_NGINX=0 ;;
     --domain=*) DOMAIN="${arg#*=}" ;;
     --restart)  ;;  # accepted for backwards compat (now the default behavior)
+    --no-build) ;;  # accepted for backwards compat (build step was removed)
     --help|-h)
       sed -n '2,30p' "$0"
       exit 0
@@ -138,7 +139,7 @@ as_root() {
 # ============================================================================
 # STEP 0 — Prerequisites (bun, curl, nginx — auto-install missing)
 # ============================================================================
-step "Step 0/9 — Checking prerequisites"
+step "Step 0/8 — Checking prerequisites"
 
 # Heads-up: nginx + apt installs need root. The app itself (port 3000) does
 # not. Running with sudo is recommended so nginx can be installed/configured.
@@ -189,11 +190,12 @@ ok "nginx daemon is running"
 cd "$(dirname "$0")"
 ok "working dir: $(pwd)"
 ok "domain: ${DOMAIN}"
+ok "mode: DEV (no production build)"
 
 # ============================================================================
 # STEP 1 — Environment file
 # ============================================================================
-step "Step 1/9 — Ensuring .env exists"
+step "Step 1/8 — Ensuring .env exists"
 
 if [[ ! -f .env ]]; then
   if [[ -f .env.example ]]; then
@@ -233,21 +235,27 @@ ok "db directory ready: $(dirname "$DB_FILE")/"
 set -a; source .env 2>/dev/null || true; set +a
 
 # ============================================================================
-# STEP 2 — Install dependencies
+# STEP 2 — Install dependencies (ALWAYS — refresh stale Prisma client)
 # ============================================================================
-step "Step 2/9 — Installing dependencies"
+step "Step 2/8 — Installing dependencies"
 
-if [[ ! -d node_modules ]]; then
-  bun install --frozen-lockfile 2>/dev/null || bun install
+# Always run `bun install`. A stale node_modules from the old postgresql setup
+# (or a partial install) can leave the Prisma client without the SQLite engine
+# binary, which makes `prisma generate` fail with confusing errors. `bun install`
+# is fast when nothing changed and guarantees a clean, consistent dep tree.
+log "running bun install (refreshes Prisma client for SQLite)..."
+if bun install --frozen-lockfile 2>/dev/null || bun install; then
   ok "dependencies installed"
 else
-  ok "node_modules present (skipping install)"
+  err "bun install failed. Re-running with output:"
+  bun install 2>&1 | tail -n 30 >&2 || true
+  die "bun install failed — see output above"
 fi
 
 # ============================================================================
 # STEP 3 — Generate Prisma client
 # ============================================================================
-step "Step 3/9 — Generating Prisma client"
+step "Step 3/8 — Generating Prisma client"
 
 # Try generate; if it fails, show the real error and retry with a fresh install
 # (a stale node_modules/.prisma from the old postgresql setup can cause this).
@@ -270,7 +278,7 @@ fi
 # ============================================================================
 # STEP 4 — Push schema to database (creates the SQLite file + tables)
 # ============================================================================
-step "Step 4/9 — Pushing DB schema (creating all tables)"
+step "Step 4/8 — Pushing DB schema (creating all tables)"
 
 # shellcheck disable=SC1091
 set -a; source .env 2>/dev/null || true; set +a
@@ -288,7 +296,7 @@ fi
 # STEP 5 — Seed the database
 # ============================================================================
 if [[ $DO_SEED -eq 1 ]]; then
-  step "Step 5/9 — Seeding database (admin + positions + hero slides + blog posts)"
+  step "Step 5/8 — Seeding database (admin + positions + hero slides + blog posts)"
   if bun run scripts/seed.ts >/dev/null 2>&1; then
     ok "seed complete (idempotent — existing data preserved)"
     ok "admin login: admin@credora.in / credora@admin123"
@@ -298,29 +306,13 @@ if [[ $DO_SEED -eq 1 ]]; then
     die "db seed failed — see output above"
   fi
 else
-  step "Step 5/9 — (skipped: --no-seed)"
+  step "Step 5/8 — (skipped: --no-seed)"
 fi
 
 # ============================================================================
-# STEP 6 — Build Next.js production bundle
+# STEP 6 — Stop any existing server (so re-runs don't serve stale processes)
 # ============================================================================
-if [[ $DO_BUILD -eq 1 ]]; then
-  step "Step 6/9 — Building Next.js standalone production bundle"
-  if bun run build >/dev/null 2>&1; then
-    ok "standalone build ready at .next/standalone/"
-  else
-    err "next build failed. Re-running with output:"
-    bun run build 2>&1 | tail -n 40 >&2 || true
-    die "next build failed — see output above"
-  fi
-else
-  step "Step 6/9 — (skipped: --no-build)"
-fi
-
-# ============================================================================
-# STEP 7 — Stop any existing server (so re-runs don't serve stale builds)
-# ============================================================================
-step "Step 7/9 — Clearing port ${APP_PORT}"
+step "Step 6/8 — Clearing port ${APP_PORT}"
 
 kill_port "$APP_PORT"
 sleep 1
@@ -331,25 +323,32 @@ else
 fi
 
 # ============================================================================
-# STEP 8 — Start the production server
+# STEP 7 — Start the Next.js DEV server (NO production build needed)
 # ============================================================================
-step "Step 8/9 — Starting production server"
+step "Step 7/8 — Starting Next.js dev server"
 
-log "starting standalone server (background, logs → server.log)..."
-NODE_ENV=production nohup node .next/standalone/server.js > server.log 2>&1 &
+log "starting dev server in background (logs → server.log)..."
+# Dev mode: NO build step. `next dev` compiles routes on-demand and hot-reloads
+# on file changes. This avoids the memory/time cost of `next build` on small EC2
+# instances. We invoke `next dev` via bunx directly (instead of `bun run dev`)
+# so this script fully owns logging — `bun run dev` pipes through `tee dev.log`
+# which is handy for local dev but would double-log when stdout is redirected.
+NODE_ENV=development nohup bunx next dev -p 3000 > server.log 2>&1 &
 echo $! > .server.pid
-ok "server PID: $(cat .server.pid)"
+ok "dev server PID: $(cat .server.pid)"
 
-# Wait for the app health endpoint to respond
-log "waiting for app to respond at ${HEALTH_URL}..."
-wait_for "$HEALTH_URL" "Production server"
-ok "production server is healthy"
+# Wait for the app health endpoint to respond. The dev server takes longer to
+# boot than a prod server because it compiles the first route on-demand.
+MAX_WAIT_SECS=180
+log "waiting for app to respond at ${HEALTH_URL} (dev server compiles on-demand, this can take ~1-3 min)..."
+wait_for "$HEALTH_URL" "Dev server"
+ok "dev server is healthy"
 
 # ============================================================================
-# STEP 9 — Configure Nginx reverse proxy for the domain
+# STEP 8 — Configure Nginx reverse proxy for the domain
 # ============================================================================
 if [[ $DO_NGINX -eq 1 ]]; then
-  step "Step 9/9 — Configuring Nginx for ${DOMAIN}"
+  step "Step 8/8 — Configuring Nginx for ${DOMAIN}"
 
   NGINX_SITE_FILE="/etc/nginx/sites-available/${DOMAIN}"
   NGINX_ENABLED_LINK="/etc/nginx/sites-enabled/${DOMAIN}"
@@ -368,7 +367,7 @@ server {
     # Client body size for file uploads (brochures, resumes)
     client_max_body_size 20M;
 
-    # Reverse proxy to the Next.js standalone server (port 3000)
+    # Reverse proxy to the Next.js dev server (port 3000)
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -384,17 +383,20 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
 
-        # Timeouts for long-running requests
-        proxy_read_timeout 90s;
-        proxy_send_timeout 90s;
+        # Timeouts for long-running requests (dev server can be slow on first compile)
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
     }
 
-    # Cache static assets aggressively (Next.js /_next/static is immutable)
-    location /_next/static/ {
+    # Dev-mode HMR websocket path (Next.js uses /_next/webpack-hmr)
+    location /_next/webpack-hmr {
         proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
-        expires 365d;
-        add_header Cache-Control "public, immutable";
+        proxy_read_timeout 300s;
     }
 }
 NGINX_CONF
@@ -428,7 +430,7 @@ NGINX_CONF
   fi
   ok "nginx is proxying ${DOMAIN} → 127.0.0.1:${APP_PORT}"
 else
-  step "Step 9/9 — (skipped: --no-nginx)"
+  step "Step 8/8 — (skipped: --no-nginx)"
 fi
 
 # ============================================================================
@@ -436,7 +438,7 @@ fi
 # ============================================================================
 echo ""
 echo -e "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-echo -e "${C_BOLD}${C_GREEN}  ✓ CredoraFin deployed successfully${C_RESET}"
+echo -e "${C_BOLD}${C_GREEN}  ✓ CredoraFin dev server is running${C_RESET}"
 echo -e "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
 echo ""
 if [[ $DO_NGINX -eq 1 ]]; then
@@ -445,10 +447,12 @@ if [[ $DO_NGINX -eq 1 ]]; then
 else
   echo -e "  App URL:        ${C_BOLD}http://localhost:${APP_PORT}${C_RESET}"
 fi
+echo -e "  Mode:           ${C_BOLD}DEV (next dev — no production build)${C_RESET}"
 echo -e "  Database:       ${C_BOLD}SQLite at ${DB_FILE}${C_RESET}"
 echo -e "  Admin login:    ${C_BOLD}admin@credora.in / credora@admin123${C_RESET}"
 echo -e "  Health:         ${C_BOLD}${HEALTH_URL}${C_RESET}"
 echo -e "  Logs:           ${C_BOLD}server.log${C_RESET}"
+echo -e "  PID file:       ${C_BOLD}.server.pid${C_RESET}"
 if [[ $DO_NGINX -eq 1 ]]; then
   echo -e "  Nginx logs:     ${C_BOLD}/var/log/nginx/access.log & /var/log/nginx/error.log${C_RESET}"
   echo ""
@@ -456,6 +460,11 @@ if [[ $DO_NGINX -eq 1 ]]; then
   echo -e "    1. Point DNS: create an A record for ${C_BOLD}${DOMAIN}${C_RESET} → this server's public IP"
   echo -e "    2. Open firewall: sudo ufw allow 80/tcp  (and 443 for HTTPS)"
   echo -e "    3. Add HTTPS:    sudo apt-get install -y certbot python3-certbot-nginx && sudo certbot --nginx -d ${DOMAIN} -d www.${DOMAIN}"
+  echo ""
+  echo -e "  ${C_YELLOW}Manage the dev server:${C_RESET}"
+  echo -e "    Stop:   ${C_BOLD}kill \$(cat .server.pid)${C_RESET}"
+  echo -e "    Logs:   ${C_BOLD}tail -f server.log${C_RESET}"
+  echo -e "    Restart:${C_BOLD} ./deploy.sh${C_RESET}"
 fi
 echo ""
 exit 0
