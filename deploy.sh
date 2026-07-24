@@ -71,6 +71,31 @@ for arg in "$@"; do
   esac
 done
 
+# ── Discover user-installed tools (bun, supabase, etc.) when run via sudo ───
+# bun & supabase CLI are typically installed per-user (e.g. ~/.bun/bin,
+# ~/.local/bin). When this script is invoked with `sudo`, $HOME becomes /root
+# and the invoking user's tool dirs drop off PATH, so `have bun` fails even
+# though bun is installed. Add every plausible location to PATH so the
+# prerequisite checks pass regardless of who runs the script.
+for _d in \
+  "$HOME/.bun/bin" \
+  "/root/.bun/bin" \
+  "/home/${SUDO_USER:-}/.bun/bin" \
+  /home/*/.bun/bin \
+  "$HOME/.local/bin" \
+  "/home/${SUDO_USER:-}/.local/bin" \
+  /home/*/.local/bin \
+  /usr/local/bin \
+  /opt/homebrew/bin; do
+  [[ -d "$_d" ]] || continue
+  case ":$PATH:" in
+    *":$_d:"*) ;;                 # already on PATH
+    *) PATH="$_d:$PATH" ;;
+  esac
+done
+export PATH
+unset _d
+
 # ── Helpers ─────────────────────────────────────────────────────────────────
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -118,7 +143,15 @@ kill_port() {       # kill_port <port>
 # ============================================================================
 step "Step 0/9 — Checking prerequisites"
 
-have bun    || die "bun not found. Install: curl -fsSL https://bun.sh/install | bash"
+# Heads-up: this script does NOT require root. Port 3000 is unprivileged,
+# and running with sudo makes every generated file (node_modules, .next,
+# .env, server.log) root-owned — which causes permission errors on re-runs
+# as a normal user. Recommend running without sudo: `bash deploy.sh`.
+if [[ $(id -u) -eq 0 ]]; then
+  warn "running as root (sudo) — generated files will be root-owned; prefer 'bash deploy.sh' without sudo"
+fi
+
+have bun    || die "bun not found in PATH. If you installed it as a normal user but ran this with sudo, either (a) run 'bash deploy.sh' without sudo, or (b) install bun for root: sudo curl -fsSL https://bun.sh/install | sudo bash"
 have curl   || die "curl not found"
 ok "bun: $(bun --version)"
 ok "curl: $(curl --version | head -1 | awk '{print $1,$2}')"
