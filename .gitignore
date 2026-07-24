@@ -62,7 +62,7 @@ server.log
 standalone/
 *.tar
 
-# Local database (binary, not for VCS — schema managed by Prisma + supabase migrations)
+# Local SQLite database (binary file, not for VCS — schema managed by Prisma)
 /db/
 
 # Tool/cache artifacts

@@ -1,17 +1,18 @@
-// Prisma schema for CredoraFin — PostgreSQL (Supabase local + Supabase Cloud + AWS RDS)
-// All scalar types (String → text, Boolean → boolean, Int → integer, DateTime → timestamptz)
-// map cleanly to PostgreSQL. PKs use cuid() strings for portability across SQLite/PG.
+// Prisma schema for CredoraFin — SQLite (zero-config, single-file database)
+// SQLite needs no server process, no Docker, and no external services — the
+// database is just a file on disk (db/app.db). PKs use cuid() strings.
+// To migrate to PostgreSQL later, only the provider + DATABASE_URL need to
+// change; the model definitions are portable.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-  // Direct connection is used for Prisma Client. For Supabase Cloud, the pooler URL
-  // (port 6543) should be used in runtime via `directUrl` only if you switch to pgbouncer.
-  // See DEPLOYMENT.md for the exact DATABASE_URL formats.
+  // DATABASE_URL should be: "file:./db/app.db" (relative to the prisma dir)
+  // or an absolute path:   "file:/home/ubuntu/credorafin/db/app.db"
 }
 
 model AdminUser {
