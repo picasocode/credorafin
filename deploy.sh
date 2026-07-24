@@ -164,10 +164,25 @@ fi
 
 # Supabase CLI is optional in --docker mode (Docker image uses cloud/remote DB)
 if [[ $DO_DOCKER -eq 0 ]]; then
-  if have supabase; then
+  # Detect a broken v2 shim BEFORE trusting `have supabase`. A previous v1-style
+  # install copies just `supabase` to /usr/local/bin without its companion
+  # `supabase-go` — `command -v supabase` succeeds, but `supabase --version`
+  # fails with "Could not find the supabase-go binary". We must detect this by
+  # actually running the binary, not just checking PATH presence.
+  if have supabase && ! supabase --version >/dev/null 2>&1; then
+    _supa_path="$(command -v supabase 2>/dev/null || true)"
+    if [[ -n "$_supa_path" ]]; then
+      warn "supabase at ${_supa_path} is non-functional (missing supabase-go) — removing"
+      rm -f "$_supa_path" 2>/dev/null || true
+      # Also drop a stray shim dir entry if present, so the fresh install wins
+      unset _supa_path
+    fi
+  fi
+
+  if have supabase && supabase --version >/dev/null 2>&1; then
     ok "supabase: $(supabase --version 2>/dev/null | head -1)"
   else
-    warn "supabase CLI not found — installing automatically"
+    warn "supabase CLI not found (or broken) — installing automatically"
 
     install_supabase() {
       # ---- Method 1: official GitHub release binary (best on Linux servers) ----
@@ -254,20 +269,9 @@ if [[ $DO_DOCKER -eq 0 ]]; then
       return 1
     }
 
-    # Before installing: detect a broken v2 shim left by a previous v1-style
-    # install (supabase present but supabase-go missing alongside it). The shim
-    # would keep failing, so remove it so our new co-located install wins.
-    if have supabase; then
-      _supa_path="$(command -v supabase 2>/dev/null || true)"
-      if [[ -n "$_supa_path" ]]; then
-        _supa_dir="$(dirname "$_supa_path")"
-        if [[ ! -f "${_supa_dir}/supabase-go" ]]; then
-          warn "found broken supabase shim at ${_supa_path} (no supabase-go beside it) — removing"
-          rm -f "$_supa_path" 2>/dev/null || true
-        fi
-      fi
-      unset _supa_path _supa_dir
-    fi
+    # (Broken-shim cleanup now happens above, before the `have supabase` check,
+    # so it also catches the case where a broken shim is ON path but the fresh
+    # install below needs to win.)
 
     if install_supabase; then
       # Verify the install actually works end-to-end (not just that the binary
