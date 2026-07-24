@@ -235,21 +235,40 @@ ok "db directory ready: $(dirname "$DB_FILE")/"
 set -a; source .env 2>/dev/null || true; set +a
 
 # ============================================================================
-# STEP 2 — Install dependencies (ALWAYS — refresh stale Prisma client)
+# STEP 2 — Install dependencies (clean install — refresh stale Prisma client)
 # ============================================================================
 step "Step 2/8 — Installing dependencies"
 
-# Always run `bun install`. A stale node_modules from the old postgresql setup
-# (or a partial install) can leave the Prisma client without the SQLite engine
-# binary, which makes `prisma generate` fail with confusing errors. `bun install`
-# is fast when nothing changed and guarantees a clean, consistent dep tree.
-log "running bun install (refreshes Prisma client for SQLite)..."
-if bun install --frozen-lockfile 2>/dev/null || bun install; then
+# Wipe node_modules BEFORE installing. A stale/corrupted node_modules (from the
+# old postgresql setup, a partial install, or root-owned files left by a prior
+# `sudo ./deploy.sh` run) causes `bun install` to fail with EEXIST link errors
+# and AccessDenied on nested folders. A clean slate fixes all of that. bun
+# caches downloaded tarballs globally (~/.bun/install/cache) so re-installing
+# from scratch is still fast — only the linking step runs.
+if [[ -d node_modules ]]; then
+  log "removing stale node_modules (avoids EEXIST / AccessDenied link errors)..."
+  if ! rm -rf node_modules 2>/dev/null; then
+    # Some files may be owned by root (from a prior sudo run). Fall back to sudo.
+    warn "regular rm failed (likely root-owned files) — retrying with sudo"
+    as_root rm -rf node_modules
+  fi
+  ok "node_modules cleared"
+fi
+
+# Also clear bun's lockfile-internal cache marker so it doesn't reuse a
+# half-written state. (We keep bun.lock/bun.lockb — they're the source of truth.)
+rm -rf .bun-cache 2>/dev/null || true
+
+log "running bun install (fresh install for SQLite Prisma client)..."
+# Don't use --frozen-lockfile here: if the lockfile is slightly out of sync
+# with package.json (e.g. after a git pull that touched deps), we want bun to
+# reconcile it rather than fail. A plain `bun install` is idempotent.
+if bun install; then
   ok "dependencies installed"
 else
-  err "bun install failed. Re-running with output:"
-  bun install 2>&1 | tail -n 30 >&2 || true
-  die "bun install failed — see output above"
+  err "bun install failed. Re-running with verbose output:"
+  bun install 2>&1 | tail -n 40 >&2 || true
+  die "bun install failed — see output above. Try manually: rm -rf node_modules && bun install"
 fi
 
 # ============================================================================
