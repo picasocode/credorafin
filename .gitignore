@@ -61,3 +61,13 @@ server.log
 # AWS / Docker build outputs
 standalone/
 *.tar
+
+# Local database (binary, not for VCS — schema managed by Prisma + supabase migrations)
+/db/
+
+# Tool/cache artifacts
+/tool-results/
+.tool-results/
+
+# Deploy script runtime
+.server.pid
