@@ -3,15 +3,16 @@
 # CredoraFin — One-command deployment script
 # ----------------------------------------------------------------------------
 # Runs the ENTIRE deployment with NO questions asked:
-#   1. Verify prerequisites (bun, docker, supabase CLI)
-#   2. Ensure .env exists (create from .env.example if missing)
-#   3. Install npm deps (if node_modules missing)
-#   4. Start Supabase local (if not already running) + wait for DB ready
-#   5. Generate Prisma client (PostgreSQL)
-#   6. Push DB schema (create all 11 tables)
-#   7. Seed DB (admin user + 6 positions + 5 hero slides + 6 blog posts)
-#   8. Build Next.js standalone production bundle
-#   9. Start the production server on port 3000
+#   0. Verify prerequisites (bun, docker, supabase CLI) — auto-install missing
+#      tools, and create a swapfile if RAM < 2 GB (Supabase needs ~2 GB)
+#   1. Ensure .env exists (create from .env.example if missing)
+#   2. Install npm deps (if node_modules missing)
+#   3. Start Supabase local (if not already running) + wait for DB ready
+#   4. Generate Prisma client (PostgreSQL)
+#   5. Push DB schema (create all 11 tables)
+#   6. Seed DB (admin user + 6 positions + 5 hero slides + 6 blog posts)
+#   7. Build Next.js standalone production bundle
+#   8. Start the production server on port 3000
 #
 # Usage:
 #   ./deploy.sh              # full local deploy (Supabase local + standalone)
@@ -351,6 +352,69 @@ to take effect. Either:
     ok "docker: $(docker --version 2>/dev/null | awk '{print $1,$2,$3}')"
   fi
 fi
+
+# ── Swap (prevent OOM-kills when running Supabase on small instances) ───────
+# Supabase local spins up ~6 containers (Postgres, GoTrue, PostgREST, Realtime,
+# Storage, Kong) and needs ~2 GB. On a t2/t3.micro (1 GB RAM) the kernel OOM-
+# killer will silently murder containers and `supabase start` will fail with a
+# cryptic error. The fix: ensure at least 2 GB of (RAM + swap). This block
+# creates a swapfile automatically when memory is low and no swap is configured.
+#
+# This needs root — uses sudo when run as a normal user.
+ensure_swap() {
+  # Parse /proc/meminfo once (kB units → MB)
+  local mem_total_mb swap_total_mb avail_mb need_swap_mb
+  mem_total_mb=$(awk '/^MemTotal:/{printf "%d", $2/1024}'     /proc/meminfo 2>/dev/null || echo 0)
+  swap_total_mb=$(awk '/^SwapTotal:/{printf "%d", $2/1024}'   /proc/meminfo 2>/dev/null || echo 0)
+  avail_mb=$(awk '/^MemAvailable:/{printf "%d", $2/1024}'     /proc/meminfo 2>/dev/null || echo "$mem_total_mb")
+
+  # Total virtual memory = RAM + swap. Supabase needs ~2 GB to be safe.
+  local total=$((mem_total_mb + swap_total_mb))
+  if [[ $total -ge 2048 ]]; then
+    ok "memory: ${mem_total_mb}MB RAM + ${swap_total_mb}MB swap = ${total}MB (sufficient)"
+    return 0
+  fi
+
+  # Need swap. Target 2 GB total, but never less than 1 GB swap, and cap at 4 GB.
+  local swap_size=$((2048 - mem_total_mb))
+  [[ $swap_size -lt 1024 ]] && swap_size=1024
+  [[ $swap_size -gt 4096 ]] && swap_size=4096
+
+  # Pick sudo if not root
+  local SUDO=""
+  [[ $(id -u) -ne 0 ]] && SUDO="sudo"
+
+  # If a swapfile already exists but is small, keep it — adding more is wasteful.
+  local existing_swapfile="/swapfile"
+  if $SUDO swapon --show=SIZE --show=NAME --noheadings 2>/dev/null | grep -q .; then
+    warn "memory low (${mem_total_mb}MB RAM + ${swap_total_mb}MB swap = ${total}MB) but swap already active"
+    warn "supabase may still OOM on a very small instance — consider upsizing if start fails"
+    return 0
+  fi
+
+  warn "memory low: ${mem_total_mb}MB RAM + ${swap_total_mb}MB swap = ${total}MB (need ~2048MB for Supabase)"
+  log "creating ${swap_size}MB swapfile at ${existing_swapfile} (needs root)..."
+
+  # Create, set perms, format, and enable the swapfile. Each step is idempotent.
+  $SUDO fallocate -l "${swap_size}M" "$existing_swapfile" 2>/dev/null \
+    || $SUDO dd if=/dev/zero of="$existing_swapfile" bs=1M count="$swap_size" status=none 2>/dev/null \
+    || { warn "could not allocate swapfile (disk full?)"; return 1; }
+
+  $SUDO chmod 600 "$existing_swapfile" 2>/dev/null || true
+  $SUDO mkswap "$existing_swapfile" >/dev/null 2>&1 || { warn "mkswap failed"; return 1; }
+  $SUDO swapon "$existing_swapfile" 2>/dev/null || { warn "swapon failed"; return 1; }
+
+  # Persist across reboots (only if not already in fstab)
+  if ! grep -q "^${existing_swapfile} " /etc/fstab 2>/dev/null; then
+    echo "${existing_swapfile} none swap sw 0 0" | $SUDO tee -a /etc/fstab >/dev/null 2>&1 || true
+  fi
+
+  # Re-read and report
+  local new_swap
+  new_swap=$(awk '/^SwapTotal:/{printf "%d", $2/1024}' /proc/meminfo 2>/dev/null || echo 0)
+  ok "swap enabled: ${mem_total_mb}MB RAM + ${new_swap}MB swap = $((mem_total_mb + new_swap))MB total"
+}
+ensure_swap
 
 cd "$(dirname "$0")"
 ok "working dir: $(pwd)"
