@@ -271,3 +271,54 @@ Stage Summary:
 - To run locally: `supabase start` → `bun run db:generate` → `bun run db:push` → `bun run db:seed` → `bun run dev`
 - To deploy to AWS: see DEPLOYMENT.md (App Runner = simplest path)
 - Admin login after seed: admin@credora.in / credora@admin123
+
+---
+Task ID: 7
+Agent: Main Agent
+Task: Create a deployment shell script that deploys everything without asking any questions
+
+Work Log:
+- Created /home/z/my-project/deploy.sh (executable, 320 lines) — a fully non-interactive, idempotent one-command deployment script
+- Script flow (9 steps, zero prompts):
+  Step 0: Check prerequisites (bun, curl required; docker required only for --docker; supabase CLI auto-installed via brew/npm if missing in local mode)
+  Step 1: Ensure .env exists (create from .env.example if missing); in local mode, force DATABASE_URL to local Supabase port 54322 if it points elsewhere (so local deploy always works)
+  Step 2: Install deps via bun if node_modules missing (frozen-lockfile, falls back to regular install)
+  Step 3: Start Supabase local if DB port 54322 not listening (supabase start); wait for Postgres readiness via port_open()
+  Step 4: Generate Prisma client (bunx prisma generate)
+  Step 5: Push DB schema (prisma db push --accept-data-loss) — creates all 11 tables
+  Step 6: Seed DB (bun run scripts/seed.ts) — admin + 6 positions + 5 hero slides + 6 blog posts (idempotent)
+  Step 7: Build Next.js standalone (bun run build) — skipped in --docker mode (build happens in image)
+  Step 8: Always clear port 3000 (kill_port with lsof→ss fallback) so re-runs replace the old server
+  Step 9: Start production server (node .next/standalone/server.js in local mode / docker run in --docker mode); wait for /api/health to respond
+- Robustness features:
+  * set -euo pipefail (fail fast on any error)
+  * port_open() helper with lsof → ss → /dev/tcp fallback chain (works on Linux + macOS, with or without lsof)
+  * wait_for_port() + wait_for() with 120s timeout and clear die() messages
+  * kill_port() with lsof → ss fallback
+  * Color-coded logging (▸ step, ✓ ok, ! warn, ✗ err) with TTY detection (no escape codes when piped)
+  * Idempotent: safe to re-run (Supabase skip-if-running, deps skip-if-present, seed skip-if-exists, port always cleared)
+  * Non-interactive throughout: no `read` prompts, no confirmation dialogs
+- Flags:
+  ./deploy.sh              → full local deploy (default)
+  ./deploy.sh --docker     → build + run via Docker (uses remote/cloud DATABASE_URL from .env, skips Supabase start)
+  ./deploy.sh --no-build   → skip build (reuse existing .next/standalone)
+  ./deploy.sh --no-seed    → skip DB seed (keep existing data)
+  ./deploy.sh --restart    → accepted as no-op for backwards compat (port-clearing is now always the default)
+  ./deploy.sh --help       → prints the script header
+- Validation performed:
+  * bash -n deploy.sh → syntax OK
+  * ./deploy.sh --help → prints full usage
+  * ./deploy.sh --bogus → exits 1 with "Unknown flag: --bogus (try --help)"
+  * Extracted + tested the .env-handling logic in isolation (3 cases): SQLite URL → updated to local PG ✓; already-local PG → skipped ✓; cloud Supabase URL (port 5432) → updated to local (54322) ✓
+  * Did NOT run the full script in this sandbox (no Docker → supabase start would fail at step 3, which is correct behavior; running it would also kill the dev server on port 3000)
+- Updated DEPLOYMENT.md: added a "⚡ Quick start (one command)" section at the top documenting `./deploy.sh` and its flags; added deploy.sh to the file reference table
+- Dev server in sandbox confirmed still running (HOME:200, HEALTH:200) after script creation — the script was not executed, only syntax-checked
+
+Stage Summary:
+- New file: /home/z/my-project/deploy.sh (chmod +x) — one-command, zero-question deployment
+- Local mode: ./deploy.sh → starts Supabase local, pushes schema, seeds, builds, starts production server on :3000
+- Docker mode: ./deploy.sh --docker → builds Docker image, runs container with .env, health-checks
+- Idempotent + non-interactive: safe to re-run, never prompts, always clears port 3000
+- Cross-platform: lsof/ss/dev/tcp fallback chain for port checks (Linux + macOS)
+- DEPLOYMENT.md updated with quick-start section pointing at the script
+- On the user's machine (with Docker + Supabase CLI): `./deploy.sh` is the only command needed

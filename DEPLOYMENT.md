@@ -9,6 +9,28 @@ This project is configured for **Supabase local development** and **AWS deployme
 
 ---
 
+## ⚡ Quick start (one command)
+
+```bash
+./deploy.sh
+```
+
+This runs the **entire** local deployment with zero questions:
+prereqs → `.env` → install deps → start Supabase local → push schema → seed → build → start production server on port 3000.
+
+Other modes:
+```bash
+./deploy.sh --docker     # build + run via Docker (uses remote/cloud DB)
+./deploy.sh --no-build   # skip build (reuse existing .next/standalone)
+./deploy.sh --no-seed    # skip DB seed (keep existing data)
+./deploy.sh --help       # full usage
+```
+
+The script is idempotent (safe to re-run) and always clears port 3000 first.
+For AWS deployment (App Runner / ECS / Amplify), see §4 below.
+
+---
+
 ## 1. Prerequisites
 
 | Tool | Version | Install |
@@ -239,6 +261,7 @@ The seed is idempotent (positions/posts skip if exist; hero slides are synced).
 
 | File | Purpose |
 |------|---------|
+| `deploy.sh` | One-command deployment script (local + Docker modes) |
 | `prisma/schema.prisma` | Single source of truth for the DB schema (PostgreSQL) |
 | `supabase/config.toml` | Local Supabase service config |
 | `supabase/migrations/00000000000000_init.sql` | Complete SQL migration (11 tables + RLS) |
