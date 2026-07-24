@@ -4,10 +4,15 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
+// Query logging is noisy + expensive in production; enable only in dev.
+const logLevel = process.env.NODE_ENV === 'production'
+  ? ['error', 'warn'] as const
+  : ['query', 'error', 'warn'] as const
+
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: ['query'],
+    log: [...logLevel],
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db

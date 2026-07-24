@@ -1,0 +1,43 @@
+# Build artifacts
+.next
+out
+build
+standalone
+
+# Dependencies (reinstalled in container)
+node_modules
+
+# Dev / logs
+dev.log
+server.log
+*.log
+.tool-results
+
+# Env (injected at runtime via --env-file or task definition)
+.env
+.env.*
+!.env.example
+
+# Local DB (SQLite legacy — not used in container)
+db
+
+# Local Supabase artifacts
+supabase/.branches
+supabase/.temp
+
+# VCS / editor
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+
+# Docs not needed at runtime
+README.md
+DEPLOYMENT.md
+worklog.md
+
+# Tests / prompts
+tests
+prompt
+download

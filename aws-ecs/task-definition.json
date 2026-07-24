@@ -1,0 +1,70 @@
+{
+  "_comment": "AWS ECS Fargate task definition template for CredoraFin. Replace placeholders in <ANGLE_BRACKETS> before use. Deploy with: aws ecs register-task-definition --cli-input-json file://aws-ecs/task-definition.json",
+  "family": "credorafin",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "<EXECUTION_ROLE_ARN>",
+  "taskRoleArn": "<TASK_ROLE_ARN>",
+  "containerDefinitions": [
+    {
+      "name": "credorafin",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/credorafin:latest",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 3000, "hostPort": 3000, "protocol": "tcp" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/credorafin",
+          "awslogs-region": "<REGION>",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "NEXTAUTH_URL", "value": "https://<YOUR_DOMAIN>" },
+        { "name": "NEXT_PUBLIC_SUPABASE_URL", "value": "https://<PROJECT_REF>.supabase.co" }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "<DATABASE_URL_SECRET_ARN>"
+        },
+        {
+          "name": "NEXTAUTH_SECRET",
+          "valueFrom": "<NEXTAUTH_SECRET_ARN>"
+        },
+        {
+          "name": "SUPABASE_SERVICE_ROLE_KEY",
+          "valueFrom": "<SUPABASE_SERVICE_ROLE_KEY_ARN>"
+        },
+        {
+          "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+          "valueFrom": "<SUPABASE_ANON_KEY_ARN>"
+        },
+        {
+          "name": "ADMIN_EMAIL",
+          "valueFrom": "<ADMIN_EMAIL_ARN>"
+        },
+        {
+          "name": "ADMIN_PASSWORD",
+          "valueFrom": "<ADMIN_PASSWORD_ARN>"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

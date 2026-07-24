@@ -1,0 +1,27 @@
+# ============================================================================
+# AWS App Runner configuration (simplest AWS deployment path)
+# Docs: https://docs.aws.amazon.com/apprunner/latest/dg/manage-deploy.html
+#
+# Deploy via:
+#   aws apprunner create-service \
+#     --service-name credorafin \
+#     --source-configuration file://apprunner.yaml
+#
+# Or via the AWS Console: App Runner → Create service → Source code repository
+# → point at this repo + branch, and App Runner will use this file.
+# ============================================================================
+
+version: 1.0
+runtime: docker
+build:
+  dockerfile: Dockerfile
+  context: .
+run:
+  command: node server.js
+  port: 3000
+  env:
+    - NODE_ENV=production
+    - PORT=3000
+    # Secrets are injected from AWS Systems Manager Parameter Store / Secrets
+    # Manager — do NOT hardcode them here. Configure them in the Console or via:
+    #   --source-configuration CodeConfiguration.Values.SecretArn
