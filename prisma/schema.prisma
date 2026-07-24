@@ -1,0 +1,188 @@
+// Prisma schema for CredoraFin — SQLite (file-based, no external DB required)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  role          String    @default("viewer") // super_admin | admin | viewer
+  passwordHash  String
+  lastLogin     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
+model ContactInquiry {
+  id                 String   @id @default(cuid())
+  name               String
+  businessName       String?
+  businessType       String?
+  fundingRequirement String?
+  phone              String
+  email              String?
+  message            String?
+  status             String   @default("new") // new | contacted | in_progress | converted | closed
+  ipAddress          String?  @map("ip_address")
+  userAgent          String?  @map("user_agent")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("contact_inquiries")
+}
+
+model ReferralPartner {
+  id             String   @id @default(cuid())
+  name           String
+  email          String?
+  phone          String
+  businessName   String?  @map("business_name")
+  businessType   String?  @map("business_type")
+  city           String?
+  referralSource String?  @map("referral_source")
+  message        String?
+  status         String   @default("pending") // pending | approved | active | suspended | rejected
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("referral_partners")
+}
+
+model JobPosition {
+  id          String   @id @default(cuid())
+  title       String
+  department  String
+  location    String
+  type        String   @default("Full-time")
+  experience  String
+  salary      String
+  color       String   @default("#304AC0")
+  description String
+  skills      String   // JSON-encoded string array
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("job_positions")
+}
+
+model JobApplication {
+  id         String   @id @default(cuid())
+  fullName   String   @map("full_name")
+  email      String
+  phone      String
+  position   String
+  experience String?
+  message    String?
+  status     String   @default("new") // new | screening | interview | offered | rejected | hired
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  resumeUrl  String?  @map("resume_url")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("job_applications")
+}
+
+model BrochureDownload {
+  id           String   @id @default(cuid())
+  email        String
+  product      String
+  brochureFile String   @map("brochure_file")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now())
+
+  @@map("brochure_downloads")
+}
+
+model BrochureFile {
+  id          String   @id @default(cuid())
+  slug        String   @unique // product slug
+  fileName    String   @map("file_name") // stored filename on disk
+  originalName String  @map("original_name") // user-uploaded filename
+  mimeType    String   @map("mime_type")
+  size        Int
+  uploadedBy  String?  @map("uploaded_by")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("brochure_files")
+}
+
+model ProductOverride {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String?
+  shortDesc   String?  @map("short_desc")
+  fullDesc    String?  @map("full_desc")
+  brochureFile String? @map("brochure_file")
+  brochureUrl String?  @map("brochure_url")
+  isActive    Boolean  @default(true) @map("is_active")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+  updatedBy   String?  @map("updated_by")
+
+  @@map("product_overrides")
+}
+
+// ── Home page hero slider ── managed via admin "Hero Slides" tab.
+model HeroSlide {
+  id             String   @id @default(cuid())
+  badge          String
+  headingWords   String   // JSON-encoded string array, e.g. ["Accelerate","Your MSME","Growth"]
+  subtitle       String
+  cta1           String   @default("Build Finance")
+  cta2           String   @default("Contact us")
+  image          String
+  fallbackImage  String   @map("fallback_image")
+  hudLeftMetric  String   @map("hud_left_metric")
+  hudLeftLabel   String   @map("hud_left_label")
+  hudLeftStatus  String   @map("hud_left_status")
+  hudRightMetric String   @map("hud_right_metric")
+  hudRightLabel  String   @map("hud_right_label")
+  hudRightTrend  String   @map("hud_right_trend")
+  hudGraphValue  String   @map("hud_graph_value")
+  hudGraphLabel  String   @map("hud_graph_label")
+  tabLabel       String   @map("tab_label")
+  tabIcon        String   @default("Building2") @map("tab_icon") // lucide icon name
+  accent         String   @default("#1A2255") // per-slide accent color
+  isActive       Boolean  @default(true) @map("is_active")
+  sortOrder      Int      @default(0) @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("hero_slides")
+}
+
+// ── Blog posts ── managed via admin "Blog Posts" tab.
+model BlogPost {
+  id            String   @id // slug, e.g. "credit-profile-vs-cibil" (URL: /blog/{id})
+  category      String
+  categoryIcon  String   @default("FileText") @map("category_icon") // lucide icon name
+  title         String
+  excerpt       String
+  content       String   // JSON-encoded string array of paragraphs
+  author        String   @default("Credora Advisory Team")
+  date          String   // ISO date string, e.g. "2025-01-15"
+  readTime      String   @map("read_time") // e.g. "5 min read"
+  color         String   @default("#304AC0")
+  featured      Boolean  @default(false)
+  tags          String   // JSON-encoded string array
+  image         String
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("blog_posts")
+}
