@@ -166,15 +166,89 @@ if [[ $DO_DOCKER -eq 0 ]]; then
   if have supabase; then
     ok "supabase: $(supabase --version 2>/dev/null | head -1)"
   else
-    warn "supabase CLI not found — will try to install it"
-    if have brew; then
-      brew install supabase/tap/supabase || die "brew install supabase failed"
-    elif have npm; then
-      npm install -g supabase || die "npm install -g supabase failed"
+    warn "supabase CLI not found — installing automatically"
+
+    install_supabase() {
+      # ---- Method 1: official GitHub release binary (best on Linux servers) ----
+      # Works without any package manager; picks x86_64/arm64 automatically.
+      local arch=""
+      case "$(uname -m)" in
+        x86_64|amd64)  arch="amd64"  ;;
+        aarch64|arm64) arch="arm64"  ;;
+        *) arch="" ;;
+      esac
+
+      if [[ "$(uname -s)" == "Linux" && -n "$arch" ]]; then
+        # Discover the latest release tag (e.g. 1.207.9) via the GitHub API.
+        local ver=""
+        ver=$(curl -fsSL https://api.github.com/repos/supabase/cli/releases/latest \
+              2>/dev/null | grep -m1 '"tag_name"' | sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
+        [[ -z "$ver" ]] && ver="1.207.9"   # fallback if API is rate-limited
+
+        local url="https://github.com/supabase/cli/releases/download/${ver}/supabase_linux_${arch}.tar.gz"
+        local tmpdir
+        tmpdir="$(mktemp -d)"
+        log "downloading supabase CLI ${ver} for linux/${arch}..."
+        if curl -fsSL "$url" -o "${tmpdir}/supabase.tar.gz"; then
+          tar -xzf "${tmpdir}/supabase.tar.gz" -C "$tmpdir" 2>/dev/null
+          local bin="${tmpdir}/supabase"
+          [[ -f "$bin" ]] || bin="$(find "$tmpdir" -name supabase -type f | head -1)"
+          if [[ -n "$bin" && -f "$bin" ]]; then
+            # Install to /usr/local/bin when root, else ~/.local/bin
+            local dest_dir
+            if [[ -w /usr/local/bin ]]; then
+              dest_dir="/usr/local/bin"
+            else
+              dest_dir="$HOME/.local/bin"
+              mkdir -p "$dest_dir"
+            fi
+            install -m 0755 "$bin" "${dest_dir}/supabase" 2>/dev/null || cp "$bin" "${dest_dir}/supabase" 2>/dev/null || true
+            chmod +x "${dest_dir}/supabase" 2>/dev/null || true
+            rm -rf "$tmpdir"
+            # Make sure the chosen dest is on PATH for the rest of this script
+            case ":$PATH:" in
+              *":${dest_dir}:"*) ;;
+              *) PATH="${dest_dir}:$PATH"; export PATH ;;
+            esac
+            have supabase && return 0
+          fi
+        fi
+        rm -rf "$tmpdir"
+      fi
+
+      # ---- Method 2: Homebrew (macOS or Linuxbrew) ----
+      if have brew; then
+        log "trying: brew install supabase/tap/supabase"
+        brew install supabase/tap/supabase 2>/dev/null && have supabase && return 0
+      fi
+
+      # ---- Method 3: npm global (if node/npm or bun available) ----
+      if have npm; then
+        log "trying: npm install -g supabase"
+        # May need sudo when npm's global dir isn't user-writable
+        if npm install -g supabase 2>/dev/null; then
+          have supabase && return 0
+        fi
+        if [[ $(id -u) -ne 0 ]]; then
+          sudo npm install -g supabase 2>/dev/null && have supabase && return 0
+        fi
+      elif have bun; then
+        log "trying: bun add -g supabase"
+        bun add -g supabase 2>/dev/null && have supabase && return 0
+      fi
+
+      return 1
+    }
+
+    if install_supabase; then
+      ok "supabase installed: $(supabase --version 2>/dev/null | head -1)"
     else
-      die "supabase CLI required for local mode. Install: https://supabase.com/docs/guides/local-development"
+      die "supabase CLI auto-install failed. Install manually:
+    Linux x86_64:  curl -fsSL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz | sudo tar -xz -C /usr/local/bin supabase
+    macOS:         brew install supabase/tap/supabase
+    Any (npm):     npm install -g supabase
+See: https://supabase.com/docs/guides/local-development"
     fi
-    ok "supabase installed: $(supabase --version 2>/dev/null | head -1)"
   fi
 fi
 
