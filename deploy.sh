@@ -421,59 +421,81 @@ if [[ $DO_NGINX -eq 1 ]]; then
   NGINX_SITE_FILE="/etc/nginx/sites-available/${DOMAIN}"
   NGINX_ENABLED_LINK="/etc/nginx/sites-enabled/${DOMAIN}"
 
-  # Write the server block. Heredoc is QUOTED ('NGINX_CONF') so nginx variables
-  # ($host, $remote_addr, $http_upgrade, etc.) are NOT expanded by bash — they
-  # must reach nginx literally. The domain is injected via sed placeholder.
-  as_root mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
+  as_root mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled /var/www/html
 
-  cat > "/tmp/${DOMAIN}.conf" <<'NGINX_CONF'
+  # Use the version-controlled HTTP-only config from the repo as the base.
+  # This is the PRE-certbot config: it serves ACME challenges on /.well-known/
+  # and proxies everything else to the dev server. After deploy.sh finishes,
+  # the user runs `certbot --nginx` which rewrites this file to add the 443
+  # block + HTTP→HTTPS redirect automatically.
+  NGINX_REPO_CONF="nginx/credorafin.com.http.conf"
+  if [[ -f "$NGINX_REPO_CONF" ]]; then
+    # Inject the configured domain (the repo version hardcodes credorafin.com,
+    # but --domain= may override it). Use sed on a temp copy so the repo file
+    # stays pristine.
+    cp "$NGINX_REPO_CONF" "/tmp/${DOMAIN}.conf"
+    sed -i "s|credorafin.com|${DOMAIN}|g" "/tmp/${DOMAIN}.conf"
+    as_root cp "/tmp/${DOMAIN}.conf" "$NGINX_SITE_FILE"
+    rm -f "/tmp/${DOMAIN}.conf"
+    ok "nginx site config copied from ${NGINX_REPO_CONF}"
+  else
+    # Fallback: generate inline (for clones that don't have the nginx/ dir)
+    warn "nginx/credorafin.com.http.conf not found in repo — generating inline"
+    cat > "/tmp/${DOMAIN}.conf" <<'NGINX_CONF'
 server {
     listen 80;
     listen [::]:80;
     server_name __DOMAIN__ www.__DOMAIN__;
 
-    # Client body size for file uploads (brochures, resumes)
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+        try_files $uri =404;
+    }
+
     client_max_body_size 20M;
 
-    # Reverse proxy to the Next.js dev server (port 3000)
-    location / {
+    location /_next/webpack-hmr {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
-
-        # WebSocket support (required for Next.js HMR / realtime features)
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-
-        # Forward original request info so the app sees real client data
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
-
-        # Timeouts for long-running requests (dev server can be slow on first compile)
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
     }
 
-    # Dev-mode HMR websocket path (Next.js uses /_next/webpack-hmr)
-    location /_next/webpack-hmr {
+    location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
+        proxy_connect_timeout 60s;
         proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+    }
+
+    location /_next/static/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_cache_bypass $http_upgrade;
+        expires 365d;
+        add_header Cache-Control "public, immutable";
     }
 }
 NGINX_CONF
-
-  # Inject the domain into the placeholder
-  sed -i "s|__DOMAIN__|${DOMAIN}|g" "/tmp/${DOMAIN}.conf"
-  as_root cp "/tmp/${DOMAIN}.conf" "$NGINX_SITE_FILE"
-  rm -f "/tmp/${DOMAIN}.conf"
-  ok "nginx site config written: ${NGINX_SITE_FILE}"
+    sed -i "s|__DOMAIN__|${DOMAIN}|g" "/tmp/${DOMAIN}.conf"
+    as_root cp "/tmp/${DOMAIN}.conf" "$NGINX_SITE_FILE"
+    rm -f "/tmp/${DOMAIN}.conf"
+    ok "nginx site config generated inline: ${NGINX_SITE_FILE}"
+  fi
 
   # Enable the site (symlink) and disable the default site to avoid conflicts
   as_root ln -sf "$NGINX_SITE_FILE" "$NGINX_ENABLED_LINK"
