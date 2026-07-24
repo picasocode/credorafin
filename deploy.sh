@@ -290,7 +290,8 @@ if [[ $need_docker -eq 1 ]]; then
           log "installing docker via apt-get..."
           if [[ $(id -u) -ne 0 ]]; then SUDO="sudo"; else SUDO=""; fi
           $SUDO apt-get update -y >/dev/null 2>&1
-          $SUDO apt-get install -y ca-certificates curl gnupg lsb-release docker.io >/dev/null 2>&1
+          # docker.io + docker-compose-plugin (supabase CLI needs `docker compose`)
+          $SUDO apt-get install -y ca-certificates curl gnupg lsb-release docker.io docker-compose-plugin >/dev/null 2>&1
           if have docker; then return 0; fi
         fi
 
@@ -360,8 +361,16 @@ ok "working dir: $(pwd)"
 step "Step 1/9 — Ensuring .env exists"
 
 if [[ ! -f .env ]]; then
-  [[ -f .env.example ]] && cp .env.example .env
-  ok "created .env from .env.example"
+  if [[ -f .env.example ]]; then
+    cp .env.example .env
+    ok "created .env from .env.example"
+  else
+    # No template — create a minimal .env so later steps don't fail
+    : > .env
+    ok "created empty .env (no .env.example found)"
+  fi
+  # Verify the file actually exists (guards against weird cp failures)
+  [[ -f .env ]] || die "failed to create .env"
 else
   ok ".env already exists"
 fi
@@ -401,13 +410,36 @@ fi
 if [[ $DO_DOCKER -eq 0 ]]; then
   step "Step 3/9 — Starting Supabase local"
 
+  # Supabase CLI v2 uses `docker compose` (the plugin) — verify it's available
+  if ! docker compose version >/dev/null 2>&1; then
+    die "docker compose plugin not found. Supabase CLI needs 'docker compose'.
+Install it: sudo apt-get install -y docker-compose-plugin
+Or reinstall docker: curl -fsSL https://get.docker.com | sudo sh"
+  fi
+  ok "docker compose: $(docker compose version 2>/dev/null | head -1)"
+
   # Is Supabase already running? Check DB port.
   if port_open "$DB_PORT"; then
     ok "Supabase local already running"
   else
     log "running: supabase start (first run downloads images, ~5 min)"
-    supabase start >/dev/null 2>&1 || die "supabase start failed (is Docker daemon running?)"
-    ok "supabase started"
+    # Capture output to a log so we can show the REAL error on failure.
+    # (Previously this hid all output, making failures impossible to debug.)
+    SUPA_LOG="$(pwd)/supabase-start.log"
+    if supabase start >"$SUPA_LOG" 2>&1; then
+      ok "supabase started"
+    else
+      err "supabase start failed. Full output:"
+      echo "──── begin supabase-start.log ────" >&2
+      tail -n 60 "$SUPA_LOG" >&2 2>/dev/null || cat "$SUPA_LOG" >&2 2>/dev/null || true
+      echo "────  end supabase-start.log  ────" >&2
+      err ""
+      err "Common fixes:"
+      err "  - Low memory? Free RAM: 'free -h' (supabase needs ~2GB free)"
+      err "  - Stale state? Run: supabase stop  (then re-run deploy.sh)"
+      err "  - Docker issues? Run: docker info  and  docker compose version"
+      die "supabase start failed — see log above ($SUPA_LOG)"
+    fi
   fi
 
   # Wait for Postgres to accept connections on DB_PORT
