@@ -180,37 +180,50 @@ if [[ $DO_DOCKER -eq 0 ]]; then
       esac
 
       if [[ "$(uname -s)" == "Linux" && -n "$arch" ]]; then
-        # Discover the latest release tag (e.g. 1.207.9) via the GitHub API.
+        # Discover the latest release tag (e.g. v2.109.1) via the GitHub API.
         local ver=""
         ver=$(curl -fsSL https://api.github.com/repos/supabase/cli/releases/latest \
               2>/dev/null | grep -m1 '"tag_name"' | sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
-        [[ -z "$ver" ]] && ver="1.207.9"   # fallback if API is rate-limited
+        [[ -z "$ver" ]] && ver="v2.109.1"   # fallback if API is rate-limited
 
-        local url="https://github.com/supabase/cli/releases/download/${ver}/supabase_linux_${arch}.tar.gz"
+        # IMPORTANT (v2): Supabase CLI v2 ships TWO co-located binaries in the
+        # tarball — `supabase` (a Node shim) and `supabase-go` (the real Go
+        # CLI). The shim looks for `supabase-go` next to itself, so we must
+        # extract the WHOLE tarball into one directory and put that directory
+        # on PATH — never copy just `supabase` elsewhere (the v1-style install
+        # breaks v2 with "Could not find the supabase-go binary").
+        #
+        # v2 asset naming: supabase_<version>_linux_<arch>.tar.gz
+        # (v1 used supabase_linux_<arch>.tar.gz — no version segment.)
+        local ver_num="${ver#v}"   # strip leading 'v'
+        local url="https://github.com/supabase/cli/releases/download/${ver}/supabase_${ver_num}_linux_${arch}.tar.gz"
         local tmpdir
         tmpdir="$(mktemp -d)"
         log "downloading supabase CLI ${ver} for linux/${arch}..."
         if curl -fsSL "$url" -o "${tmpdir}/supabase.tar.gz"; then
           tar -xzf "${tmpdir}/supabase.tar.gz" -C "$tmpdir" 2>/dev/null
-          local bin="${tmpdir}/supabase"
-          [[ -f "$bin" ]] || bin="$(find "$tmpdir" -name supabase -type f | head -1)"
-          if [[ -n "$bin" && -f "$bin" ]]; then
-            # Install to /usr/local/bin when root, else ~/.local/bin
+          # Verify BOTH binaries are present (the v2 requirement)
+          if [[ -f "${tmpdir}/supabase" ]]; then
             local dest_dir
-            if [[ -w /usr/local/bin ]]; then
-              dest_dir="/usr/local/bin"
+            if [[ -w /opt ]] || [[ $(id -u) -eq 0 ]]; then
+              dest_dir="/opt/supabase"
+              mkdir -p "$dest_dir"
             else
-              dest_dir="$HOME/.local/bin"
+              dest_dir="$HOME/.local/share/supabase"
               mkdir -p "$dest_dir"
             fi
-            install -m 0755 "$bin" "${dest_dir}/supabase" 2>/dev/null || cp "$bin" "${dest_dir}/supabase" 2>/dev/null || true
-            chmod +x "${dest_dir}/supabase" 2>/dev/null || true
+            # Copy BOTH binaries so they stay co-located
+            cp "${tmpdir}/supabase"     "${dest_dir}/supabase"     2>/dev/null
+            cp "${tmpdir}/supabase-go"  "${dest_dir}/supabase-go"  2>/dev/null
+            chmod +x "${dest_dir}/supabase" "${dest_dir}/supabase-go" 2>/dev/null || true
             rm -rf "$tmpdir"
-            # Make sure the chosen dest is on PATH for the rest of this script
+            # Put the install dir at the FRONT of PATH so this run finds it,
+            # and export SUPABASE_GO_BINARY as a belt-and-suspenders fallback.
             case ":$PATH:" in
               *":${dest_dir}:"*) ;;
               *) PATH="${dest_dir}:$PATH"; export PATH ;;
             esac
+            export SUPABASE_GO_BINARY="${dest_dir}/supabase-go"
             have supabase && return 0
           fi
         fi
@@ -241,11 +254,35 @@ if [[ $DO_DOCKER -eq 0 ]]; then
       return 1
     }
 
+    # Before installing: detect a broken v2 shim left by a previous v1-style
+    # install (supabase present but supabase-go missing alongside it). The shim
+    # would keep failing, so remove it so our new co-located install wins.
+    if have supabase; then
+      _supa_path="$(command -v supabase 2>/dev/null || true)"
+      if [[ -n "$_supa_path" ]]; then
+        _supa_dir="$(dirname "$_supa_path")"
+        if [[ ! -f "${_supa_dir}/supabase-go" ]]; then
+          warn "found broken supabase shim at ${_supa_path} (no supabase-go beside it) — removing"
+          rm -f "$_supa_path" 2>/dev/null || true
+        fi
+      fi
+      unset _supa_path _supa_dir
+    fi
+
     if install_supabase; then
-      ok "supabase installed: $(supabase --version 2>/dev/null | head -1)"
+      # Verify the install actually works end-to-end (not just that the binary
+      # is on PATH) — `--version` exercises the shim→supabase-go forwarding.
+      if supabase --version >/dev/null 2>&1; then
+        ok "supabase installed: $(supabase --version 2>/dev/null | head -1)"
+      else
+        warn "supabase binary present but 'supabase --version' failed — install may be broken"
+        die "supabase CLI installed but non-functional. Re-run deploy.sh, or install manually:
+    mkdir -p /opt/supabase && curl -fsSL https://github.com/supabase/cli/releases/latest/download/supabase_2.109.1_linux_amd64.tar.gz | tar -xz -C /opt/supabase
+    export PATH=/opt/supabase:\$PATH"
+      fi
     else
       die "supabase CLI auto-install failed. Install manually:
-    Linux x86_64:  curl -fsSL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz | sudo tar -xz -C /usr/local/bin supabase
+    Linux x86_64:  mkdir -p /opt/supabase && curl -fsSL https://github.com/supabase/cli/releases/latest/download/supabase_2.109.1_linux_amd64.tar.gz | sudo tar -xz -C /opt/supabase && sudo ln -sf /opt/supabase/supabase /usr/local/bin/supabase
     macOS:         brew install supabase/tap/supabase
     Any (npm):     npm install -g supabase
 See: https://supabase.com/docs/guides/local-development"
