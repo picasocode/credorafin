@@ -252,6 +252,105 @@ See: https://supabase.com/docs/guides/local-development"
   fi
 fi
 
+# ── Docker (required for `supabase start` in local mode) ────────────────────
+# On a bare Ubuntu/Debian EC2 box, Docker is usually missing. Install it
+# automatically so `supabase start` (Step 3) doesn't fail. In --docker mode
+# this is also required to build/run the image.
+docker_running() { docker info >/dev/null 2>&1; }
+
+need_docker=0
+if [[ $DO_DOCKER -eq 1 ]]; then
+  need_docker=1
+elif [[ $DO_DOCKER -eq 0 ]]; then
+  # Local Supabase mode also needs the Docker daemon
+  need_docker=1
+fi
+
+if [[ $need_docker -eq 1 ]]; then
+  if have docker && docker_running; then
+    ok "docker: $(docker --version 2>/dev/null | awk '{print $1,$2,$3}')"
+  else
+    if ! have docker; then
+      warn "docker not found — installing automatically"
+      install_docker() {
+        # Method 1: official convenience script (works on most Linux distros)
+        # https://docs.docker.com/engine/install/ubuntu/  (get.docker.com)
+        if have curl; then
+          log "installing docker via get.docker.com (needs root)..."
+          if [[ $(id -u) -eq 0 ]]; then
+            curl -fsSL https://get.docker.com | sh 2>/dev/null
+          else
+            curl -fsSL https://get.docker.com | sudo sh 2>/dev/null
+          fi
+          if have docker; then return 0; fi
+        fi
+
+        # Method 2: apt (Debian/Ubuntu)
+        if have apt-get; then
+          log "installing docker via apt-get..."
+          if [[ $(id -u) -ne 0 ]]; then SUDO="sudo"; else SUDO=""; fi
+          $SUDO apt-get update -y >/dev/null 2>&1
+          $SUDO apt-get install -y ca-certificates curl gnupg lsb-release docker.io >/dev/null 2>&1
+          if have docker; then return 0; fi
+        fi
+
+        return 1
+      }
+
+      if install_docker; then
+        ok "docker installed: $(docker --version 2>/dev/null | awk '{print $1,$2,$3}')"
+      else
+        die "docker auto-install failed. Install manually:
+  Ubuntu/Debian: curl -fsSL https://get.docker.com | sudo sh
+  Or:            sudo apt-get install -y docker.io
+See: https://docs.docker.com/engine/install/"
+      fi
+    else
+      warn "docker installed but daemon not running"
+    fi
+
+    # Start + enable the daemon (systemd)
+    if ! docker_running; then
+      log "starting docker daemon..."
+      if [[ $(id -u) -eq 0 ]]; then
+        systemctl start docker 2>/dev/null || service docker start 2>/dev/null || true
+        systemctl enable docker 2>/dev/null || true
+      else
+        sudo systemctl start docker 2>/dev/null || sudo service docker start 2>/dev/null || true
+        sudo systemctl enable docker 2>/dev/null || true
+      fi
+      # Wait up to 30s for the daemon socket
+      elapsed=0
+      while ! docker_running; do
+        sleep 2; elapsed=$((elapsed + 2))
+        [[ $elapsed -ge 30 ]] && break
+      done
+    fi
+
+    if docker_running; then
+      ok "docker daemon is running"
+    else
+      die "docker daemon would not start. Try: sudo systemctl start docker"
+    fi
+
+    # If running as non-root, ensure the user can talk to the docker socket
+    # without sudo (supabase start invokes docker directly). Adding the user
+    # to the docker group only takes effect after a new login session, so on
+    # a first run as non-root we ask the user to either re-login or use sudo.
+    if [[ $(id -u) -ne 0 ]] && ! docker ps >/dev/null 2>&1; then
+      sudo usermod -aG docker "$USER" 2>/dev/null || true
+      if ! docker ps >/dev/null 2>&1; then
+        die "docker is installed but the current user needs the docker group
+to take effect. Either:
+  (a) log out and back in (or run 'newgrp docker'), then re-run: bash deploy.sh
+  (b) run this script as root:  sudo bash deploy.sh
+(root can talk to the docker socket immediately — no group refresh needed)"
+      fi
+    fi
+    ok "docker: $(docker --version 2>/dev/null | awk '{print $1,$2,$3}')"
+  fi
+fi
+
 cd "$(dirname "$0")"
 ok "working dir: $(pwd)"
 
