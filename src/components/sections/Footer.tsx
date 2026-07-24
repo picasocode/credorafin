@@ -23,7 +23,6 @@ const quickLinks = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
   { label: "Careers", href: "/careers" },
-  { label: "EMI Calculator", href: "/emi-calculator" },
   { label: "Blog", href: "/blog" },
   { label: "Referral Partner", href: "/referral-partner" },
   { label: "Contact", href: "/contact" },
@@ -89,12 +88,6 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link href="/emi-calculator" className="flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors group">
-                  <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  EMI Calculator
-                </Link>
-              </li>
               <li>
                 <Link href="/blog" className="flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors group">
                   <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
