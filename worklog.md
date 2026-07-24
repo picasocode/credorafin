@@ -178,3 +178,44 @@ Stage Summary:
 - Public pages fall back to seeded defaults if the API/DB is unavailable (resilient)
 - All new/modified code is lint-clean; remaining lint errors are pre-existing credorafin issues unrelated to this feature
 - Admin login: admin@credora.in / credora@admin123
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Change home page hero sliding content from the old 4 slides (Business Loans / Project Finance / Pre-Underwriting / Credit Repair) to 5 new slides: MSME Loan, Project Finance, Supply Chain Finance, Referral Partner, Credit Repair Services
+
+Work Log:
+- Added `Handshake` + `Users` icons to src/lib/icon-registry.ts (import + iconMap) so the Referral Partner slide can use Handshake; also makes them available in the admin icon picker
+- Rewrote DEFAULT_SLIDES in src/components/sections/Hero.tsx (the client-side fallback) to 5 new slides:
+  1. MSME Loan (Building2, /images/pages/hero-indian-team.png, "Accelerate Your MSME Growth")
+  2. Project Finance (TrendingUp, /images/pages/office-india.png, "Raise Capital for Large Projects")
+  3. Supply Chain Finance (Briefcase, /images/pages/success-india.png, "Optimize Cash Flow with SCF Solutions")
+  4. Referral Partner (Handshake, /images/pages/referral-india.png, "Grow Together as a Referral Partner")
+  5. Credit Repair Services (ShieldCheck, /images/pages/handshake-india.png, "Resolve Defaults & Repair Credit")
+  Each slide has matching badge, subtitle, cta1/cta2, HUD overlays (hudLeft/hudRight/hudGraph), accent #1A2255, isActive, sortOrder 0-4
+- Updated the hero tab dock grid in Hero.tsx from `grid-cols-2 md:grid-cols-4` to `grid-cols-2 sm:grid-cols-3 md:grid-cols-5` so 5 tabs lay out cleanly (1 row of 5 on desktop, wraps 2-3 on mobile)
+- Rewrote the hero slides array in scripts/seed.ts to the same 5 new slides (JSON-encoded headingWords) and changed the seeding block from "skip if count>0" to a SYNC (deleteMany + recreate) so re-running the seed replaces the old 4 slides with the new 5. Added a comment noting admin edits to hero slides get reset by a re-seed (baseline is seed-controlled)
+- Ran `bun run scripts/seed.ts` → "✓ Synced 5 hero slides"
+- Verified GET /api/hero-slides returns exactly 5 slides with the correct tabLabel/tabIcon/sortOrder/heading for each
+- Lint: edited files (Hero.tsx, icon-registry.ts, seed.ts) are clean (eslint exit 0). The 24 remaining lint errors are all pre-existing credorafin issues in admin/login/page.tsx, page.tsx, dashboard/page.tsx — unrelated to this change
+- End-to-end browser verification (agent-browser):
+  * Home page H1 = "Accelerate Your MSME Growth" (slide 1, MSME Loan)
+  * All 5 tab buttons present with EXACT labels: MSME Loan, Project Finance, Supply Chain Finance, Referral Partner, Credit Repair Services
+  * Clicked each hero tab button (matched by exact label within section#hero) — each updates H1 + subtitle correctly:
+    - MSME Loan → "Accelerate Your MSME Growth" + collateral-free funding subtitle
+    - Project Finance → "Raise Capital for Large Projects" + debt structuring subtitle
+    - Supply Chain Finance → "Optimize Cash Flow with SCF Solutions" + vendor payment discounting subtitle
+    - Referral Partner → "Grow Together as a Referral Partner" + referral commission subtitle
+    - Credit Repair Services → "Resolve Defaults & Repair Credit" + CIBIL repair subtitle
+  * Desktop (1440x900): tab dock = 1 row × 5 cols, each button 194px wide — clean
+  * Mobile (390x844): tab dock = 3 rows × 2 cols (grid-cols-2 wraps) — clean
+  * Zero console errors, zero page errors (only Fast Refresh logs + benign pre-existing scroll-behavior warning)
+  * dev.log: no errors/warnings during verification
+
+Stage Summary:
+- Home page hero sliding content is now the 5 user-requested slides: MSME Loan, Project Finance, Supply Chain Finance, Referral Partner, Credit Repair Services
+- Change applied to BOTH the live DB (via seed sync → /api/hero-slides) and the client-side DEFAULT_SLIDES fallback in Hero.tsx, so the new content shows regardless of API availability
+- Tab dock grid updated to support 5 columns (responsive: 2/3/5 cols)
+- Admin panel (Hero Slides tab) still fully manages these 5 slides — admins can edit/reorder/toggle/add/delete as before
+- Browser-verified: all 5 slides render + switch correctly, responsive layout intact, no errors
+- Files touched: src/lib/icon-registry.ts (edited), src/components/sections/Hero.tsx (edited), scripts/seed.ts (edited). No API routes, Prisma schema, or other files modified.

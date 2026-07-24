@@ -46,7 +46,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudLeft: { metric: "+18%", label: "Market Forecast", status: "Optimal Condition" },
     hudRight: { metric: "9.5% p.a.", label: "Average Interest Rate", trend: "Stable" },
     hudGraph: { value: "₹50 Crores", label: "Max Liquidity Pool Available" },
-    tabLabel: "Business Loans",
+    tabLabel: "MSME Loan",
     tabIcon: "Building2",
     accent: "#1A2255",
     isActive: true,
@@ -72,39 +72,57 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
   },
   {
     id: "default-3",
-    badge: "Risk & Compliance Vetting",
-    headingWords: ["Guarantee", "Success via", "Pre-Underwriting"],
-    subtitle: "Pre-vet commercial loan files prior to bank submission to secure unmatched structural credibility.",
-    cta1: "Apply Vetting",
+    badge: "Working Capital Unlocked",
+    headingWords: ["Optimize", "Cash Flow with", "SCF Solutions"],
+    subtitle: "Vendor payment discounting and receivables financing that keep your supply chain liquid and resilient.",
+    cta1: "Get SCF",
     cta2: "Contact us",
-    image: "/images/pages/indian-professional.png",
-    fallbackImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1600&q=80",
-    hudLeft: { metric: "92%", label: "Approval Probability", status: "Risk Maintained" },
-    hudRight: { metric: "48 Hours", label: "Maximum File Audit Time", trend: "Rapid Track" },
-    hudGraph: { value: "Zero Gaps", label: "Credit Risk Pre-Assessment" },
-    tabLabel: "Pre-Underwriting",
-    tabIcon: "BadgeCheck",
+    image: "/images/pages/success-india.png",
+    fallbackImage: "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1600&q=80",
+    hudLeft: { metric: "90 Days", label: "Payment Cycle", status: "Discounted Early" },
+    hudRight: { metric: "0 Collateral", label: "Asset-Light Facility", trend: "Flexible" },
+    hudGraph: { value: "₹25 Crores", label: "Annual SCF Limit Available" },
+    tabLabel: "Supply Chain Finance",
+    tabIcon: "Briefcase",
     accent: "#1A2255",
     isActive: true,
     sortOrder: 2
   },
   {
     id: "default-4",
+    badge: "Partner & Earn",
+    headingWords: ["Grow", "Together as a", "Referral Partner"],
+    subtitle: "Refer MSME clients and earn attractive recurring commissions while helping businesses access faster funding.",
+    cta1: "Become a Partner",
+    cta2: "Contact us",
+    image: "/images/pages/referral-india.png",
+    fallbackImage: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80",
+    hudLeft: { metric: "Tier-1", label: "Commission Slab", status: "Recurring Payouts" },
+    hudRight: { metric: "48 Hours", label: "Payout Cycle", trend: "Transparent" },
+    hudGraph: { value: "Unlimited", label: "Referral Earning Potential" },
+    tabLabel: "Referral Partner",
+    tabIcon: "Handshake",
+    accent: "#1A2255",
+    isActive: true,
+    sortOrder: 3
+  },
+  {
+    id: "default-5",
     badge: "Financial Reconstruction",
     headingWords: ["Resolve", "Defaults &", "Repair Credit"],
     subtitle: "Struggling with historical settlement records or complex CIBIL positions? Restore corporate leverage now.",
     cta1: "Fix Credit Score",
     cta2: "Contact us",
     image: "/images/pages/handshake-india.png",
-    fallbackImage: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80",
+    fallbackImage: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=80",
     hudLeft: { metric: "+150", label: "CIBIL Score Shift", status: "Engine Optimized" },
     hudRight: { metric: "Rapid", label: "Settlement Cycle Time", trend: "Immediate Plan" },
     hudGraph: { value: "Restored", label: "Removal of Legacy Default History" },
-    tabLabel: "Credit Repair",
-    tabIcon: "Shield",
+    tabLabel: "Credit Repair Services",
+    tabIcon: "ShieldCheck",
     accent: "#1A2255",
     isActive: true,
-    sortOrder: 3
+    sortOrder: 4
   }
 ];
 
@@ -386,7 +404,7 @@ export default function Hero() {
 
       {/* TABS NAVIGATION DOCK STRIP */}
       <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
-        <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.03)] border border-neutral-200/50 p-1.5 grid grid-cols-2 md:grid-cols-4 gap-1">
+        <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.03)] border border-neutral-200/50 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;

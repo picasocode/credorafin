@@ -48,6 +48,9 @@ async function main() {
   }
 
   // ── 3. Seed default hero slides (home page slider) ──
+  // Hero slides are synced to this seed definition on every run
+  // (delete + recreate) so the baseline content stays controlled.
+  // Admin edits made via the dashboard will be reset by a re-seed.
   const heroSlides = [
     {
       badge: "Empowering Enterprises",
@@ -59,7 +62,7 @@ async function main() {
       hudLeftMetric: "+18%", hudLeftLabel: "Market Forecast", hudLeftStatus: "Optimal Condition",
       hudRightMetric: "9.5% p.a.", hudRightLabel: "Average Interest Rate", hudRightTrend: "Stable",
       hudGraphValue: "₹50 Crores", hudGraphLabel: "Max Liquidity Pool Available",
-      tabLabel: "Business Loans", tabIcon: "Building2", accent: "#1A2255", sortOrder: 0,
+      tabLabel: "MSME Loan", tabIcon: "Building2", accent: "#1A2255", sortOrder: 0,
     },
     {
       badge: "Infrastructure & Scale",
@@ -74,16 +77,28 @@ async function main() {
       tabLabel: "Project Finance", tabIcon: "TrendingUp", accent: "#1A2255", sortOrder: 1,
     },
     {
-      badge: "Risk & Compliance Vetting",
-      headingWords: JSON.stringify(["Guarantee", "Success via", "Pre-Underwriting"]),
-      subtitle: "Pre-vet commercial loan files prior to bank submission to secure unmatched structural credibility.",
-      cta1: "Apply Vetting", cta2: "Contact us",
-      image: "/images/pages/indian-professional.png",
-      fallbackImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1600&q=80",
-      hudLeftMetric: "92%", hudLeftLabel: "Approval Probability", hudLeftStatus: "Risk Maintained",
-      hudRightMetric: "48 Hours", hudRightLabel: "Maximum File Audit Time", hudRightTrend: "Rapid Track",
-      hudGraphValue: "Zero Gaps", hudGraphLabel: "Credit Risk Pre-Assessment",
-      tabLabel: "Pre-Underwriting", tabIcon: "BadgeCheck", accent: "#1A2255", sortOrder: 2,
+      badge: "Working Capital Unlocked",
+      headingWords: JSON.stringify(["Optimize", "Cash Flow with", "SCF Solutions"]),
+      subtitle: "Vendor payment discounting and receivables financing that keep your supply chain liquid and resilient.",
+      cta1: "Get SCF", cta2: "Contact us",
+      image: "/images/pages/success-india.png",
+      fallbackImage: "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1600&q=80",
+      hudLeftMetric: "90 Days", hudLeftLabel: "Payment Cycle", hudLeftStatus: "Discounted Early",
+      hudRightMetric: "0 Collateral", hudRightLabel: "Asset-Light Facility", hudRightTrend: "Flexible",
+      hudGraphValue: "₹25 Crores", hudGraphLabel: "Annual SCF Limit Available",
+      tabLabel: "Supply Chain Finance", tabIcon: "Briefcase", accent: "#1A2255", sortOrder: 2,
+    },
+    {
+      badge: "Partner & Earn",
+      headingWords: JSON.stringify(["Grow", "Together as a", "Referral Partner"]),
+      subtitle: "Refer MSME clients and earn attractive recurring commissions while helping businesses access faster funding.",
+      cta1: "Become a Partner", cta2: "Contact us",
+      image: "/images/pages/referral-india.png",
+      fallbackImage: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80",
+      hudLeftMetric: "Tier-1", hudLeftLabel: "Commission Slab", hudLeftStatus: "Recurring Payouts",
+      hudRightMetric: "48 Hours", hudRightLabel: "Payout Cycle", hudRightTrend: "Transparent",
+      hudGraphValue: "Unlimited", hudGraphLabel: "Referral Earning Potential",
+      tabLabel: "Referral Partner", tabIcon: "Handshake", accent: "#1A2255", sortOrder: 3,
     },
     {
       badge: "Financial Reconstruction",
@@ -91,23 +106,20 @@ async function main() {
       subtitle: "Struggling with historical settlement records or complex CIBIL positions? Restore corporate leverage now.",
       cta1: "Fix Credit Score", cta2: "Contact us",
       image: "/images/pages/handshake-india.png",
-      fallbackImage: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80",
+      fallbackImage: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=80",
       hudLeftMetric: "+150", hudLeftLabel: "CIBIL Score Shift", hudLeftStatus: "Engine Optimized",
       hudRightMetric: "Rapid", hudRightLabel: "Settlement Cycle Time", hudRightTrend: "Immediate Plan",
       hudGraphValue: "Restored", hudGraphLabel: "Removal of Legacy Default History",
-      tabLabel: "Credit Repair", tabIcon: "Shield", accent: "#1A2255", sortOrder: 3,
+      tabLabel: "Credit Repair Services", tabIcon: "ShieldCheck", accent: "#1A2255", sortOrder: 4,
     },
   ];
 
-  const heroCount = await db.heroSlide.count();
-  if (heroCount === 0) {
-    for (const s of heroSlides) {
-      await db.heroSlide.create({ data: s });
-    }
-    console.log(`  ✓ Created ${heroSlides.length} hero slides`);
-  } else {
-    console.log(`  ✓ Hero slides already seeded (${heroCount})`);
+  // Sync hero slides to the seed definition (delete + recreate).
+  await db.heroSlide.deleteMany({});
+  for (const s of heroSlides) {
+    await db.heroSlide.create({ data: s });
   }
+  console.log(`  ✓ Synced ${heroSlides.length} hero slides`);
 
   // ── 4. Seed default blog posts ──
   let blogCreated = 0;

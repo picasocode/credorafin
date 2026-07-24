@@ -26,6 +26,8 @@ import {
   LineChart,
   Banknote,
   Coins,
+  Handshake,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -50,6 +52,8 @@ export const iconMap: Record<string, LucideIcon> = {
   LineChart,
   Banknote,
   Coins,
+  Handshake,
+  Users,
 };
 
 /** List of icon names available in the admin picker. */
