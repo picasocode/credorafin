@@ -322,3 +322,44 @@ Stage Summary:
 - Cross-platform: lsof/ss/dev/tcp fallback chain for port checks (Linux + macOS)
 - DEPLOYMENT.md updated with quick-start section pointing at the script
 - On the user's machine (with Docker + Supabase CLI): `./deploy.sh` is the only command needed
+
+---
+Task ID: 8
+Agent: Main Agent
+Task: Push the project to GitHub (picasocode/credorafin) using a user-provided PAT
+
+Work Log:
+- Checked git state: branch=main, working tree clean (env auto-commits), 6 commits local, NO remote configured
+- Scanned tracked files for sensitive content before pushing:
+  * .env was TRACKED (committed before .gitignore .env* rule existed) — contains local Supabase demo keys + placeholder secrets, not production secrets, but still shouldn't be in VCS
+  * db/custom.db was TRACKED — 116K binary SQLite file, project migrated to PostgreSQL
+  * tool-results/*.txt were TRACKED — cached file-read junk
+- Cleanup before push:
+  * git rm --cached .env (untracked, kept on disk)
+  * git rm --cached db/custom.db (untracked, kept on disk)
+  * git rm -r --cached tool-results/ (untracked, kept on disk)
+  * Updated .gitignore: added /db/, /tool-results/, .server.pid
+  * Committed: "chore: untrack .env, local SQLite DB, and tool-results cache; update .gitignore" (5 files changed, 10 insertions, 3238 deletions)
+- Verified token belongs to GitHub user "picasocode" (id 127660456) via GET /user
+- Verified repo picasocode/credorafin exists, is PUBLIC, default_branch=main, token can READ (HTTP 200 on GET /repos/picasocode/credorafin)
+- Added remote: origin → https://github.com/picasocode/credorafin.git (clean URL, NO token embedded in .git/config)
+- Fetched origin/main to check history compatibility:
+  * git merge-base HEAD origin/main → NONE (no common ancestor)
+  * Local has 6 commits (sandbox-created initial commit + auto-commits); remote main has 44 commits
+  * Histories are completely independent — a regular push to main would be rejected as non-fast-forward
+  * Decided to push to a NEW branch (feat/supabase-aws-deploy) to avoid destructive force-push to main
+- Attempted push: git push https://<token>@github.com/picasocode/credorafin.git HEAD:refs/heads/feat/supabase-aws-deploy
+  * Result: 403 Permission denied — "remote: Permission to picasocode/credorafin.git denied to picasocode."
+- Diagnosed: checked X-OAuth-Scopes response header → EMPTY. The token is a classic PAT with NO scopes selected = read-only. It can authenticate + read public repos but CANNOT push.
+- Verified .git/config has NO leaked token (remote URL is clean https://github.com/picasocode/credorafin.git)
+
+Stage Summary:
+- Push FAILED due to token having zero OAuth scopes (read-only). The token authenticates as picasocode but has no write permission.
+- Local repo is FULLY READY to push: 6 commits on main, remote configured as origin, .env/db/junk untracked, .gitignore hardened, no token leaked in config.
+- User needs to regenerate the token with write scope:
+  * Classic PAT: select the "repo" scope (full repo access) at https://github.com/settings/tokens/new
+  * Fine-grained PAT: select repo "credorafin" → Repository permissions → Contents: Read and write
+- Once a new token is provided, the push command is:
+  git push https://<NEW_TOKEN>@github.com/picasocode/credorafin.git HEAD:refs/heads/feat/supabase-aws-deploy
+  (pushes to a new branch to avoid force-overwriting remote main's 44 commits; user can then open a PR or force-push to main if they prefer)
+- SECURITY: the provided token ([REDACTED:github_token]) was shared in chat and should be revoked at https://github.com/settings/tokens even though it has no scopes, as a precaution.
