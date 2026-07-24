@@ -228,7 +228,49 @@ ok "NEXTAUTH_URL = http://${DOMAIN}"
 
 # Ensure the db/ directory exists (SQLite needs the dir to exist before write)
 mkdir -p "$(dirname "$DB_FILE")"
-ok "db directory ready: $(dirname "$DB_FILE")/"
+
+# Fix ownership: a prior 'sudo ./deploy.sh' run may have created db/ and
+# db/app.db as root. When now running as a regular user, SQLite can read the
+# file but can't create its -journal/-wal sidecar files in the root-owned
+# directory → "attempt to write a readonly database" (SQLITE_READONLY) on the
+# first real write. Ensure the real user owns the db dir + file. This is a
+# no-op if ownership is already correct.
+REAL_USER="${SUDO_USER:-$(whoami)}"
+REAL_GROUP="$(id -gn "$REAL_USER" 2>/dev/null || id -gn)"
+DB_DIR="$(dirname "$DB_FILE")"
+if [[ "$REAL_USER" != "root" ]]; then
+  _cur_owner="$(stat -c %U "$DB_DIR" 2>/dev/null || echo "")"
+  if [[ -n "$_cur_owner" && "$_cur_owner" != "$REAL_USER" ]]; then
+    warn "db/ owned by '$_cur_owner' (leftover from a prior sudo run) — reclaiming ownership for '$REAL_USER'"
+    if [[ $(id -u) -eq 0 ]]; then
+      chown -R "$REAL_USER:$REAL_GROUP" "$DB_DIR" 2>/dev/null || true
+    else
+      sudo chown -R "$REAL_USER:$REAL_GROUP" "$DB_DIR" 2>/dev/null || true
+    fi
+    ok "db/ ownership transferred to '$REAL_USER'"
+  fi
+  # Also fix the db file itself if it exists and is root-owned
+  if [[ -f "$DB_FILE" ]]; then
+    _file_owner="$(stat -c %U "$DB_FILE" 2>/dev/null || echo "")"
+    if [[ -n "$_file_owner" && "$_file_owner" != "$REAL_USER" ]]; then
+      if [[ $(id -u) -eq 0 ]]; then
+        chown "$REAL_USER:$REAL_GROUP" "$DB_FILE" 2>/dev/null || true
+      else
+        sudo chown "$REAL_USER:$REAL_GROUP" "$DB_FILE" 2>/dev/null || true
+      fi
+      ok "db file ownership transferred to '$REAL_USER'"
+    fi
+  fi
+fi
+unset _cur_owner _file_owner
+
+# Verify the db dir is actually writable (catches edge cases the chown above
+# might miss, e.g. ACLs or read-only filesystems) and fail fast with a clear
+# message instead of letting Prisma hit "readonly database" deep in the seed.
+if ! (touch "$DB_DIR/.write_test" 2>/dev/null && rm -f "$DB_DIR/.write_test" 2>/dev/null); then
+  die "db directory '$DB_DIR' is not writable by '$REAL_USER'. Fix with: sudo chown -R \$USER:\$USER $DB_DIR"
+fi
+ok "db directory ready: $DB_DIR/ (owner: $(stat -c %U "$DB_DIR" 2>/dev/null || echo '?'))"
 
 # Re-source so the rest of this script sees the values
 # shellcheck disable=SC1091
@@ -321,7 +363,14 @@ if [[ $DO_SEED -eq 1 ]]; then
     ok "admin login: admin@credora.in / credora@admin123"
   else
     err "db seed failed. Re-running with output:"
-    bun run scripts/seed.ts 2>&1 | tail -n 30 >&2 || true
+    seed_out="$(bun run scripts/seed.ts 2>&1 || true)"
+    echo "$seed_out" | tail -n 30 >&2
+    # Detect the classic "readonly database" ownership issue and give an
+    # actionable hint (the chown in Step 1 should normally prevent this, but
+    # be defensive in case of ACLs or a manually-created db file).
+    if echo "$seed_out" | grep -qi "readonly database"; then
+      die "db seed failed: SQLite database is readonly. The db file/dir is likely owned by root. Fix with: sudo chown -R \$USER:\$USER $(dirname "$DB_FILE") && ./deploy.sh"
+    fi
     die "db seed failed — see output above"
   fi
 else
