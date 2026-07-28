@@ -2,14 +2,14 @@
 
 import React from "react";
 import Link from "next/link";
-import { Phone, Mail, MapPin, Linkedin, Facebook, Instagram, Twitter, ArrowUp, ChevronRight } from "lucide-react";
+import { Phone, Mail, MapPin, Linkedin, Facebook, Instagram, Youtube, ArrowUp, ChevronRight } from "lucide-react";
 import { SOCIAL, type SocialIcon } from "@/lib/seo";
 
 const socialIconMap: Record<SocialIcon, React.ElementType> = {
   linkedin: Linkedin,
   facebook: Facebook,
   instagram: Instagram,
-  twitter: Twitter,
+  youtube: Youtube,
 };
 
 const productLinks = [
@@ -96,18 +96,6 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link href="/blog" className="flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors group">
-                  <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="/referral-partner" className="flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors group">
-                  <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  Referral Partner
-                </Link>
-              </li>
             </ul>
             <Link href="/services" className="inline-block mt-5">
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-white bg-[#304AC0] hover:bg-[#13277E] rounded-full px-4 py-1.5 transition-colors duration-200">

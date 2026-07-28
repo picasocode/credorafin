@@ -55,13 +55,13 @@ export const CONTACT = {
 } as const;
 
 /** Social profile URLs — used in Organization sameAs and Footer social icons. */
-export type SocialIcon = "linkedin" | "facebook" | "instagram" | "twitter";
+export type SocialIcon = "linkedin" | "facebook" | "instagram" | "youtube";
 
 export const SOCIAL: { name: string; url: string; icon: SocialIcon }[] = [
-  { name: "LinkedIn", url: "https://www.linkedin.com/company/credorafin", icon: "linkedin" },
-  { name: "Facebook", url: "https://www.facebook.com/credorafin", icon: "facebook" },
-  { name: "Instagram", url: "https://www.instagram.com/credorafin", icon: "instagram" },
-  { name: "Twitter", url: "https://twitter.com/credorafin", icon: "twitter" },
+  { name: "LinkedIn", url: "https://in.linkedin.com/company/credora-fintech", icon: "linkedin" },
+  { name: "Instagram", url: "https://www.instagram.com/credora_fintech_pvt_ltd/", icon: "instagram" },
+  { name: "Facebook", url: "https://www.facebook.com/p/Credora-Fintech-Pvt-Ltd-61578730990789/", icon: "facebook" },
+  { name: "YouTube", url: "https://www.youtube.com/channel/UCmRgMfLCjD0vPDp7cfPlPSA", icon: "youtube" },
 ];
 
 /**
