@@ -26,7 +26,6 @@ import {
   UserCheck,
   Lock,
 } from "lucide-react";
-import AnimatedIllustration from "@/components/AnimatedIllustration";
 import { SmoothReveal } from "@/lib/animations";
 import { services } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -169,18 +168,6 @@ export default function EndToEndSupportPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#87B73C]/20 via-transparent to-transparent" />
                   </div>
-                  <motion.div className="absolute -bottom-6 -right-6" animate={{ y: [-6, 6, -6] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
-                    <div className="bg-white rounded-xl shadow-xl p-3 border border-[#E8ECF0]">
-                      <AnimatedIllustration theme="support" size={96} color="#87B73C" />
-                    </div>
-                  </motion.div>
-                  <motion.div className="absolute -top-4 -left-4" animate={{ y: [-5, 5, -5] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
-                    <motion.div animate={{ boxShadow: [`0 0 0px #87B73C00`, `0 0 20px #87B73C30`, `0 0 0px #87B73C00`] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
-                      <div className="bg-white rounded-xl shadow-xl p-3 border border-[#E8ECF0]">
-                        <AnimatedIllustration theme="shield" size={70} color="#87B73C" />
-                      </div>
-                    </motion.div>
-                  </motion.div>
                 </div>
               </FadeIn>
             </div>
@@ -312,7 +299,11 @@ export default function EndToEndSupportPage() {
             </StaggerParent>
             <FadeIn delay={0.2}>
               <div className="flex justify-center">
-                <AnimatedIllustration theme="support" size={260} color="#87B73C" />
+                <img
+                  src="/images/sections/partnership.png"
+                  alt="Dedicated partnership supporting clients through the entire loan lifecycle"
+                  className="rounded-2xl shadow-xl w-64 h-64 object-cover"
+                />
               </div>
             </FadeIn>
           </div>
@@ -353,9 +344,6 @@ export default function EndToEndSupportPage() {
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#87B73C]/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center relative z-10">
           <FadeIn>
-            <motion.div className="mb-8 inline-block" animate={{ y: [-6, 6, -6] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-              <AnimatedIllustration theme="success" size={120} color="#87B73C" />
-            </motion.div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">Get Started with {service.title}</h2>
             <p className="text-white/70 mb-8 max-w-xl mx-auto">Let us handle the entire loan lifecycle so you can focus on growing your business. From disbursal to closure, we&apos;ve got you covered.</p>
             <Link href="/contact">

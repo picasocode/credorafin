@@ -45,7 +45,6 @@ import {
   PulseGlow,
   SmoothReveal,
 } from "@/lib/animations";
-import AnimatedIllustration from "@/components/AnimatedIllustration";
 import { useToast } from "@/hooks/use-toast";
 
 const contactInfo = [
@@ -239,9 +238,9 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Animated illustration */}
+              {/* Real illustration */}
               <div className="hidden lg:flex justify-center">
-                <AnimatedIllustration theme="support" size={220} color="#304AC0" />
+                <img src="/images/sections/partnership.png" alt="Contact Credora Fintech for funding solutions" className="rounded-2xl shadow-xl w-full max-w-sm mx-auto" />
               </div>
             </div>
           </SectionReveal>

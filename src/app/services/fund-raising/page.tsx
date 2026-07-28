@@ -20,7 +20,6 @@ import {
   Target,
   Zap,
 } from "lucide-react";
-import AnimatedIllustration from "@/components/AnimatedIllustration";
 import ProcessInfographic from "@/components/ProcessInfographic";
 import { SmoothReveal } from "@/lib/animations";
 import { services } from "@/lib/data";
@@ -163,18 +162,6 @@ export default function FundRaisingPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1C1D62]/30 via-transparent to-transparent" />
                   </div>
-                  <motion.div className="absolute -bottom-6 -left-6" animate={{ y: [-6, 6, -6] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
-                    <div className="bg-white rounded-xl shadow-xl p-3 border border-[#E8ECF0]">
-                      <AnimatedIllustration theme="chart" size={96} color="#1C1D62" />
-                    </div>
-                  </motion.div>
-                  <motion.div className="absolute -top-4 -right-4" animate={{ y: [-5, 5, -5] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
-                    <motion.div animate={{ boxShadow: [`0 0 0px #1C1D6200`, `0 0 20px #1C1D6230`, `0 0 0px #1C1D6200`] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
-                      <div className="bg-white rounded-xl shadow-xl p-3 border border-[#E8ECF0]">
-                        <AnimatedIllustration theme="money" size={70} color="#1C1D62" />
-                      </div>
-                    </motion.div>
-                  </motion.div>
                 </div>
               </FadeIn>
             </div>
@@ -342,7 +329,11 @@ export default function FundRaisingPage() {
             </StaggerParent>
             <FadeIn delay={0.2}>
               <div className="flex justify-center">
-                <AnimatedIllustration theme="money" size={260} color="#1C1D62" />
+                <img
+                  src="/images/sections/financial-growth.png"
+                  alt="Financial growth chart showing funding raised successfully"
+                  className="rounded-2xl shadow-xl w-64 h-64 object-cover"
+                />
               </div>
             </FadeIn>
           </div>
@@ -383,9 +374,6 @@ export default function FundRaisingPage() {
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#87B73C]/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center relative z-10">
           <FadeIn>
-            <motion.div className="mb-8 inline-block" animate={{ y: [-6, 6, -6] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-              <AnimatedIllustration theme="success" size={120} color="#87B73C" />
-            </motion.div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">Get Started with {service.title}</h2>
             <p className="text-white/70 mb-8 max-w-xl mx-auto">Let us connect you with the right lenders and secure the best possible terms for your funding needs.</p>
             <Link href="/contact">

@@ -49,7 +49,6 @@ import {
   PulseGlow,
   SmoothReveal,
 } from "@/lib/animations";
-import AnimatedIllustration from "@/components/AnimatedIllustration";
 
 /* ────────────────────────────────────────────
    DATA
@@ -603,7 +602,7 @@ export default function ReferralPartnerPage() {
       </section>
 
       {/* ═══════════════════════════════════════
-          PARTNER BENEFITS — 4 cards with AnimatedIllustration
+          PARTNER BENEFITS — 4 cards with icons
           ═══════════════════════════════════════ */}
       <section className="py-16 md:py-20 bg-[#F0F4FF]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -787,7 +786,7 @@ export default function ReferralPartnerPage() {
       </section>
 
       {/* ═══════════════════════════════════════
-          REWARD CALCULATOR — Interactive estimation with AnimatedIllustration
+          REWARD CALCULATOR — Interactive estimation
           ═══════════════════════════════════════ */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -853,7 +852,7 @@ export default function ReferralPartnerPage() {
       </section>
 
       {/* ═══════════════════════════════════════
-          TESTIMONIAL / QUOTE with AnimatedIllustration
+          TESTIMONIAL / QUOTE with image
           ═══════════════════════════════════════ */}
       <section className="py-16 md:py-20 bg-[#F0F4FF]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -879,7 +878,7 @@ export default function ReferralPartnerPage() {
               <div className="bg-white rounded-2xl p-8 sm:p-10 border border-[#E8ECF0] relative z-10">
                 <div className="flex flex-col md:flex-row items-start gap-6">
                   <div className="flex-shrink-0 hidden md:block">
-                    <AnimatedIllustration theme="success" size={100} color="#304AC0" />
+                    <img src="/images/sections/partnership.png" alt="Successful referral partnership with Credora Fintech" className="rounded-2xl shadow-xl w-24 h-24 object-cover" />
                   </div>
                   <div>
                     <blockquote className="text-lg sm:text-xl font-medium text-[#1C1D62] leading-relaxed italic">

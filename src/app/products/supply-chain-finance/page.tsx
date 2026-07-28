@@ -4,7 +4,6 @@ import React, { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
-import AnimatedIllustration from "@/components/AnimatedIllustration";
 import {
   Building2,
   Link2,
@@ -182,11 +181,6 @@ export default function SupplyChainFinancePage() {
                   </motion.div>
                   <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${accent}40, transparent 60%)` }} />
                 </div>
-                <FloatingElement className="absolute -top-6 -right-4 hidden lg:block" amplitude={8} duration={4}>
-                  <div className="w-24 h-24 opacity-80">
-                    <AnimatedIllustration theme="money" size={96} color={accent} />
-                  </div>
-                </FloatingElement>
               </SlideReveal>
             </div>
           </div>
@@ -439,7 +433,7 @@ export default function SupplyChainFinancePage() {
               <SlideReveal direction="right" delay={0.2}>
                 <div className="relative flex items-center justify-center">
                   <div className="w-72 h-72 sm:w-80 sm:h-80">
-                    <AnimatedIllustration theme="chart" size={280} color={accent} />
+                    <img src="/images/sections/financial-growth.png" alt="Supply chain finance working capital growth chart" className="rounded-2xl shadow-xl w-full h-full object-cover" />
                   </div>
                 </div>
               </SlideReveal>
@@ -581,9 +575,6 @@ export default function SupplyChainFinancePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             <SectionReveal>
-              <div className="flex items-center gap-3 mb-4">
-                <AnimatedIllustration theme="success" size={48} color="#87B73C" />
-              </div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">Unlock Working Capital Today</h2>
               <p className="text-white/70 mb-0 text-base sm:text-lg">Don&apos;t let unpaid invoices hold back your business. Get immediate liquidity with our supply chain finance solutions.</p>
             </SectionReveal>

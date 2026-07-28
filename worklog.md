@@ -1216,3 +1216,180 @@ Stage Summary:
 - ✓ Truncated "Earn" card text fixed — full sentence "Once the loan is disbursed, you earn a referral reward." now displays completely
 - ✓ Desktop horizontal timeline + mobile vertical timeline both render full text without overflow
 - ✓ Files modified: src/app/referral-partner/page.tsx (1 file, 1 line change: max-w-xs → max-w-sm)
+
+---
+Task ID: 4-OTHER
+Agent: Sub Agent (general-purpose)
+Task: Replace ALL AnimatedIllustration usages with real images in the 3 remaining pages (contact, careers, referral-partner) and remove the AnimatedIllustration import from each file
+
+Work Log:
+- Read /home/z/my-project/worklog.md to understand context — prior tasks (1 through K) had completed home/blog/admin dynamic content, responsive fixes, footer updates, rupee font, and "Earn" card truncation fix
+- Verified all 4 image assets exist in /public/images/sections/: business-consultation.png, financial-growth.png, partnership.png, security-trust.png
+- Modified 3 files (only — per task spec, did NOT touch any services/* or products/* pages that still use AnimatedIllustration):
+
+1. /home/z/my-project/src/app/contact/page.tsx (1 usage replaced):
+   - Removed import line 48: `import AnimatedIllustration from "@/components/AnimatedIllustration";`
+   - Replaced line 244 `<AnimatedIllustration theme="support" size={220} color="#304AC0" />` with:
+     `<img src="/images/sections/partnership.png" alt="Contact Credora Fintech for funding solutions" className="rounded-2xl shadow-xl w-full max-w-sm mx-auto" />`
+   - Kept surrounding wrapper `<div className="hidden lg:flex justify-center">...</div>` intact
+   - Updated adjacent comment from "Animated illustration" to "Real illustration" for accuracy
+
+2. /home/z/my-project/src/app/careers/page.tsx (1 usage replaced):
+   - Removed import line 52: `import AnimatedIllustration from "@/components/AnimatedIllustration";`
+   - Replaced line 736 `<AnimatedIllustration theme="business" size={100} color="#304AC0" />` with:
+     `<img src="/images/sections/business-consultation.png" alt="Career growth at Credora Fintech" className="rounded-2xl shadow-xl w-24 h-24 object-cover" />`
+   - Kept surrounding wrapper `<div className="flex-shrink-0 hidden md:block">...</div>` intact
+   - Updated section comment from "TESTIMONIAL with AnimatedIllustration" to "TESTIMONIAL with image"
+
+3. /home/z/my-project/src/app/referral-partner/page.tsx (1 usage replaced):
+   - Removed import line 52: `import AnimatedIllustration from "@/components/AnimatedIllustration";`
+   - Replaced line 882 `<AnimatedIllustration theme="success" size={100} color="#304AC0" />` with:
+     `<img src="/images/sections/partnership.png" alt="Successful referral partnership with Credora Fintech" className="rounded-2xl shadow-xl w-24 h-24 object-cover" />`
+   - Kept surrounding wrapper `<div className="flex-shrink-0 hidden md:block">...</div>` intact
+   - Updated section comment from "TESTIMONIAL / QUOTE with AnimatedIllustration" to "TESTIMONIAL / QUOTE with image"
+   - Note: Two other code comments at lines 605 ("PARTNER BENEFITS — 4 cards with AnimatedIllustration") and 789 ("REWARD CALCULATOR — Interactive estimation with AnimatedIllustration") were left intact — they describe sections that don't actually contain AnimatedIllustration components (they use icons + progress bars); these comments are pre-existing descriptive inaccuracies out of scope for this task
+
+Verification:
+- ESLint ran cleanly (0 errors, 0 warnings) on all 3 modified files via `bunx eslint <file>`
+- Confirmed via Grep that no `<AnimatedIllustration` JSX usages remain in the 3 target files
+- All surrounding content (text, layout, animations, forms, Framer Motion wrappers) preserved untouched
+- Did NOT run `bun run build` per task rules
+- Did NOT modify any other files (services/*, products/*, AnimatedIllustration component itself all untouched)
+
+Stage Summary:
+- ✓ All 3 AnimatedIllustration usages in the specified pages replaced with real <img> tags pointing to /images/sections/*.png
+- ✓ All 3 AnimatedIllustration imports removed
+- ✓ ESLint clean on all 3 files
+- ✓ Total: 3 files modified, 3 usages replaced, 3 imports removed
+
+---
+Task ID: 2-SERVICES (Sub Agent — Replace AnimatedIllustration with real images in 4 services pages)
+Task: Replace ALL AnimatedIllustration usages with real images in the 4 services pages + remove the AnimatedIllustration import from each file
+
+Work Log:
+- Read worklog.md to understand prior context (Tasks 1-K) — project is stable, dev server running on port 3000
+- Verified 4 stock images exist in /public/images/sections/ (all 1024x1024 JPEGs despite .png extension): business-consultation.png, financial-growth.png, partnership.png, security-trust.png
+- Inspected AnimatedIllustration component — confirmed it accepts theme + size props; size >= 200 = large standalone, size < 200 = small floating badge
+- Grepped all 4 service pages for AnimatedIllustration usages — confirmed each has exactly 4 usages:
+  * 2 small floating badges in hero section (size 96 + size 70) wrapped in motion.div with absolute positioning + bg-white rounded-xl container
+  * 1 large standalone illustration (size 260) in mid-page section wrapped in <FadeIn delay={0.2}><div className="flex justify-center">
+  * 1 medium floating badge (size 120) in CTA section wrapped in <FadeIn><motion.div className="mb-8 inline-block">
+- All 4 files already had `import Image from "next/image";` (used by hero Image), so reused Image component for large standalone replacements
+
+Edits per file (4 edits each: 1 import removal + 2 hero badge removals + 1 large illustration replacement + 1 CTA badge removal = 4 edits but the 2 hero badges were combined into 1 MultiEdit operation since they're contiguous):
+
+1. src/app/services/credit-repair/page.tsx (4 usages → 3 removed, 1 replaced):
+   - Removed import line 27
+   - Removed hero size 96 badge (theme="business") + hero size 70 badge (theme="shield") — both motion.div wrappers + bg-white containers + AnimatedIllustration, all in one contiguous block
+   - Replaced size 260 (theme="success") with <Image src="/images/sections/partnership.png" alt="Professional partnership helping clients restore creditworthiness" width={520} height={520} className="rounded-2xl shadow-xl w-64 h-64 object-cover" />
+   - Removed CTA size 120 badge (theme="success") — motion.div wrapper + AnimatedIllustration
+
+2. src/app/services/fund-raising/page.tsx (4 usages → 3 removed, 1 replaced):
+   - Removed import line 23
+   - Removed hero size 96 badge (theme="chart") + hero size 70 badge (theme="money") — contiguous block
+   - Replaced size 260 (theme="money") with <Image src="/images/sections/financial-growth.png" alt="Financial growth chart showing funding raised successfully" ... />
+   - Removed CTA size 120 badge (theme="success")
+
+3. src/app/services/end-to-end-support/page.tsx (4 usages → 3 removed, 1 replaced):
+   - Removed import line 29
+   - Removed hero size 96 badge (theme="support") + hero size 70 badge (theme="shield") — contiguous block
+   - Replaced size 260 (theme="support") with <Image src="/images/sections/partnership.png" alt="Dedicated partnership supporting clients through the entire loan lifecycle" ... />
+   - Removed CTA size 120 badge (theme="success")
+
+4. src/app/services/pre-underwriting-loan-structuring/page.tsx (4 usages → 3 removed, 1 replaced):
+   - Removed import line 24
+   - Removed hero size 96 badge (theme="document") + hero size 70 badge (theme="shield") — contiguous block
+   - Replaced size 260 (theme="document") with <Image src="/images/sections/business-consultation.png" alt="Financial advisor consulting client on loan documentation" ... />
+   - Removed CTA size 120 badge (theme="success")
+
+Image-to-theme mapping applied (per task spec):
+- theme="success" → partnership.png (credit-repair, end-to-end-support large)
+- theme="money" → financial-growth.png (fund-raising large)
+- theme="support" → partnership.png (end-to-end-support large)
+- theme="document" → business-consultation.png (pre-underwriting large)
+
+Verification:
+- Grep for AnimatedIllustration across all 4 services pages → 0 matches (all usages + imports removed cleanly)
+- ESLint on all 4 files → 0 errors, 0 warnings (bunx eslint <file> — all clean)
+- Hero section structure preserved: <div className="relative"><div className="rounded-2xl overflow-hidden shadow-2xl relative"><Image ... /><div className="absolute inset-0 ...gradient..." /></div></div> — only the floating badge motion.divs were removed, the main hero Image + gradient overlay are intact
+- Large standalone illustration: kept <FadeIn delay={0.2}><div className="flex justify-center"> wrapper, replaced AnimatedIllustration with <Image width={520} height={520} className="rounded-2xl shadow-xl w-64 h-64 object-cover" /> (520x520 intrinsic for retina, displayed at 256x256 = w-64 h-64 to closely match original 260x260 size; centered by flex justify-center)
+- CTA section: kept <FadeIn> wrapper, removed motion.div + AnimatedIllustration, kept <h2> "Get Started with {service.title}" and everything below (link, button, etc.) intact
+- next.config.ts has no image config restrictions, so local /public/images/sections/* paths work with next/image out of the box
+
+Stage Summary:
+- ✓ All 4 services pages modified: credit-repair, fund-raising, end-to-end-support, pre-underwriting-loan-structuring
+- ✓ 16 total AnimatedIllustration usages processed (4 per file × 4 files): 12 removed (3 small floating badges per file × 4 files), 4 replaced with real images (1 large standalone per file × 4 files)
+- ✓ 4 import lines removed (1 per file)
+- ✓ All other content, animations, layout, text, and functionality intact — only AnimatedIllustration usages + their immediate wrapper containers touched
+- ✓ ESLint clean on all 4 files (0 errors, 0 warnings)
+- ✓ Files modified: 4 (all in src/app/services/)
+- ✓ Did NOT run bun run build (per task rules)
+- ✓ Did NOT modify any other files
+
+---
+Task ID: 3-PRODUCTS (Sub Agent — Replace AnimatedIllustration with real images in 5 products pages)
+Task: Replace ALL AnimatedIllustration usages with real images in the 5 products pages + remove the AnimatedIllustration import from each file
+
+Work Log:
+- Read worklog.md to understand prior context — Task 2-SERVICES did identical work on 4 services pages; followed same pattern (small badges removed entirely, large illustrations replaced with <img>)
+- Verified 4 image assets exist in /public/images/sections/: business-consultation.png, financial-growth.png, partnership.png, security-trust.png
+- Grepped all 5 products pages for AnimatedIllustration usages — DISCOVERY: only 2 of the 5 files actually still contained AnimatedIllustration (project-finance + specialized-finance). The other 3 files (msme-loans, supply-chain-finance, cross-border-finance) had ALREADY been modified by an earlier unlogged task:
+  * msme-loans/page.tsx — no AnimatedIllustration import/usage; already has `<img src="/images/sections/financial-growth.png" ...>` at line 381
+  * supply-chain-finance/page.tsx — no AnimatedIllustration import/usage; already has `<img src="/images/sections/financial-growth.png" ...>` at line 436
+  * cross-border-finance/page.tsx — no AnimatedIllustration import/usage; already has `<img src="/images/sections/security-trust.png" ...>` at line 406
+  * All 3 already-modified files use `<img>` tag (not next/image <Image>) per task spec, with correct className="rounded-2xl shadow-xl w-full h-full object-cover"; FloatingElement kept (still used for decorative circles in CTA + 1 mid-page element); small badges already removed cleanly
+  * ESLint on all 3 already-modified files → 0 errors, 0 warnings (no work needed)
+
+- Confirmed 2 remaining files (project-finance, specialized-finance) each had exactly 3 AnimatedIllustration usages (matching task spec):
+  * A) Hero section: small floating badge size 96 wrapped in <FloatingElement className="absolute -top-6 -right-4 hidden lg:block"> + <div className="w-24 h-24 opacity-80">
+  * B) "Why Choose" section: large shield illustration size 280 inside <div className="w-72 h-72 sm:w-80 sm:h-80">
+  * C) CTA section: small success icon size 48 inside <div className="flex items-center gap-3 mb-4">
+
+Edits per file (4 edits: 1 import removal + 1 hero badge removal + 1 large illustration replacement + 1 CTA badge removal):
+
+1. src/app/products/project-finance/page.tsx (3 usages → 2 removed, 1 replaced):
+   - Removed import line 7: `import AnimatedIllustration from "@/components/AnimatedIllustration";`
+   - Removed hero size 96 badge (theme="business") — entire FloatingElement wrapper + inner w-24 h-24 opacity-80 div + AnimatedIllustration, all removed; main hero Image + gradient overlay div + rounded-2xl wrapper kept intact
+   - Replaced line 386 size 280 (theme="shield") with `<img src="/images/sections/security-trust.png" alt="Secure project finance structures and trusted funding solutions" className="rounded-2xl shadow-xl w-full h-full object-cover" />` — kept surrounding w-72 h-72 sm:w-80 sm:h-80 container
+   - Removed CTA size 48 badge (theme="success") — entire wrapper div (`<div className="flex items-center gap-3 mb-4">`) + AnimatedIllustration removed; <SectionReveal> now directly wraps <h2>"Fund Your Next Big Project"</h2>; 3 decorative FloatingElement circles in CTA kept intact
+
+2. src/app/products/specialized-finance/page.tsx (3 usages → 2 removed, 1 replaced):
+   - Removed import line 7: `import AnimatedIllustration from "@/components/AnimatedIllustration";`
+   - Removed hero size 96 badge (theme="document") — entire FloatingElement wrapper + inner w-24 h-24 opacity-80 div + AnimatedIllustration, all removed
+   - Replaced line 387 size 280 (theme="shield") with `<img src="/images/sections/security-trust.png" alt="Secure specialized finance structures and trusted complex funding solutions" className="rounded-2xl shadow-xl w-full h-full object-cover" />` — kept surrounding w-72 h-72 sm:w-80 sm:h-80 container
+   - Removed CTA size 48 badge (theme="success") — entire wrapper div + AnimatedIllustration removed; <SectionReveal> now directly wraps <h2>"Have a Complex Funding Requirement?"</h2>; 3 decorative FloatingElement circles in CTA kept intact
+
+Image-to-theme mapping applied (per task spec):
+- theme="shield" → security-trust.png (project-finance large, specialized-finance large, cross-border-finance large [pre-existing])
+- theme="business" → business-consultation.png (project-finance hero badge — REMOVED, not replaced)
+- theme="document" → business-consultation.png (specialized-finance hero badge — REMOVED, not replaced)
+- theme="success" → partnership.png (CTA badges — REMOVED, not replaced)
+- theme="money"/"chart" → financial-growth.png (msme-loans + supply-chain-finance large [pre-existing])
+
+FloatingElement import status:
+- project-finance: KEPT (still used at 4 locations — 3 decorative circles in CTA section lines 510/513/516 + 1 mx-auto mb-5 element mid-page line 435)
+- specialized-finance: KEPT (still used at 4 locations — 3 decorative circles in CTA section lines 511/514/517 + 1 mx-auto mb-5 element mid-page line 434)
+- All 3 already-modified files: FloatingElement also KEPT (still used)
+
+Verification:
+- Grep for AnimatedIllustration across all 5 products pages → 0 matches (all usages + imports removed cleanly)
+- Grep for `/images/sections/` across all 5 products pages → 5 matches (one large <img> per file, all with correct className)
+- ESLint on all 5 products pages (both modified + 3 already-modified) → 0 errors, 0 warnings (all clean)
+- Hero section structure preserved: <div className="relative rounded-2xl overflow-hidden shadow-2xl"> wrapper + main hero Image + gradient overlay div all intact; only the floating FloatingElement badge was removed
+- Large standalone illustration: kept <SlideReveal direction="right" delay={0.2}><div className="relative flex items-center justify-center"><div className="w-72 h-72 sm:w-80 sm:h-80"> wrapper, replaced AnimatedIllustration with <img className="rounded-2xl shadow-xl w-full h-full object-cover" />
+- CTA section: kept <SectionReveal> wrapper + all 3 decorative FloatingElement circles (border-white/border-white/bg-white), removed only the inner success-icon wrapper div + AnimatedIllustration; <h2> + <p> + button column all intact
+- Did NOT run bun run build (per task rules)
+- Did NOT modify any other files (no changes to AnimatedIllustration component, no changes to msme-loans/supply-chain-finance/cross-border-finance which were already done)
+
+Stage Summary:
+- ✓ All 5 products pages confirmed free of AnimatedIllustration (2 modified this session + 3 already modified by prior unlogged work)
+- ✓ 6 total AnimatedIllustration usages processed this session (3 per file × 2 files): 4 removed (2 small hero badges + 2 small CTA badges), 2 replaced with real <img> tags (1 large shield per file)
+- ✓ 2 import lines removed (1 per modified file)
+- ✓ All other content, animations, layout, text, hero images, process sections, FAQ accordions, stats rows, decorative FloatingElement circles — all intact
+- ✓ ESLint clean on all 5 products pages (0 errors, 0 warnings)
+- ✓ Files modified this session: 2 (src/app/products/project-finance/page.tsx, src/app/products/specialized-finance/page.tsx)
+- ✓ Files verified but not modified this session: 3 (msme-loans, supply-chain-finance, cross-border-finance — already done)
+- ✓ Did NOT run bun run build (per task rules)
+- ✓ Did NOT modify any other files
+
+Note for next agent: The 3 already-modified products pages (msme-loans, supply-chain-finance, cross-border-finance) were modified by a prior task not recorded in worklog.md. Their state was verified to match the task spec exactly (img tags with correct className + theme mapping, FloatingElement kept where still used, small badges removed). No corrective action was needed.
