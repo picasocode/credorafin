@@ -9,7 +9,7 @@ export default function FloatingEMIButton() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center">
+    <div className="fixed top-1/2 right-4 sm:right-6 -translate-y-1/2 z-50 flex items-center">
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -17,7 +17,7 @@ export default function FloatingEMIButton() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.9 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute bottom-0 right-16 bg-white rounded-2xl shadow-2xl border border-[#E8ECF0] p-5 w-64 sm:w-72"
+            className="absolute top-1/2 -translate-y-1/2 right-14 sm:right-16 bg-white rounded-2xl shadow-2xl border border-[#E8ECF0] p-4 sm:p-5 w-60 sm:w-72 max-w-[calc(100vw-5rem)]"
           >
             <button
               onClick={() => setIsExpanded(false)}

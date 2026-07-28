@@ -57,7 +57,7 @@ export default function EMICalculatorPage() {
           </motion.h1>
 
           <motion.p
-            className="text-lg text-white/70 leading-relaxed max-w-2xl mx-auto mb-8"
+            className="text-base sm:text-lg text-white/70 leading-relaxed max-w-2xl mx-auto mb-8"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 80 }}
@@ -69,7 +69,7 @@ export default function EMICalculatorPage() {
 
           {/* Trust badges */}
           <motion.div
-            className="flex flex-wrap justify-center gap-6"
+            className="flex flex-wrap justify-center gap-3 sm:gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
