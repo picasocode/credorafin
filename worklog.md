@@ -1111,3 +1111,42 @@ Stage Summary:
 - ✓ Footer phone/email untouched (out of scope)
 - ✓ Mobile menu still functional: nav links + GET FUNDED NOW CTA intact
 - ✓ Files modified: src/components/sections/Navbar.tsx (1 file, -25 lines)
+
+---
+Task ID: I (Main Agent — Footer social links + remove Blog/Referral Partner from Services column)
+Task: Update footer social media links (LinkedIn/Instagram/Facebook/YouTube) + remove Blog and Referral Partner from the Services column in footer
+
+Work Log:
+- Located footer social config in src/lib/seo.ts (SOCIAL array, used by both Footer.tsx and schema.ts sameAs)
+- Updated SOCIAL array in seo.ts:
+  * LinkedIn: https://www.linkedin.com/company/credorafin → https://in.linkedin.com/company/credora-fintech
+  * Instagram: https://www.instagram.com/credorafin → https://www.instagram.com/credora_fintech_pvt_ltd/
+  * Facebook: https://www.facebook.com/credorafin → https://www.facebook.com/p/Credora-Fintech-Pvt-Ltd-61578730990789/
+  * Twitter (removed) → YouTube: https://www.youtube.com/channel/UCmRgMfLCjD0vPDp7cfPlPSA
+- Updated SocialIcon type: "twitter" → "youtube"
+- Updated Footer.tsx:
+  * lucide-react import: Twitter → Youtube
+  * socialIconMap: twitter: Twitter → youtube: Youtube
+- Removed 2 list items from footer Services column:
+  * <li>Blog</li> (link to /blog)
+  * <li>Referral Partner</li> (link to /referral-partner)
+- Services column now contains only the 4 actual services: Credit Repair Services, Pre-Underwriting & Loan Structuring, Fund Raising, End-to-End Support
+- Quick Links column (Home, About Us, Careers, Blog, Referral Partner, Contact) was NOT touched — user only asked to remove from "service" column
+- Note: twitterHandle in SITE config left as-is (still used for Twitter meta tags in layout.tsx metadata.twitter — harmless string, doesn't affect footer)
+
+Verification (Agent Browser):
+- Desktop 1440x900 footer: confirmed 4 social links with correct hrefs (LinkedIn/Instagram/Facebook/YouTube URLs match exactly)
+- Dumped footer column structure via JS eval:
+  * PRODUCTS: MSME Loans, Supply Chain Finance, Cross Border Finance, Project Finance, Specialized Finance
+  * SERVICES: Credit Repair Services, Pre-Underwriting & Loan Structuring, Fund Raising, End-to-End Support (Blog + Referral Partner GONE ✓)
+  * QUICK LINKS: Home, About Us, Careers, Blog, Referral Partner, Contact (intact ✓)
+- Mobile iPhone 14 (390x844) footer: renders cleanly, no errors
+- Zero console/runtime errors; ESLint clean on both modified files
+
+Stage Summary:
+- ✓ All 4 footer social links updated to correct URLs (LinkedIn, Instagram, Facebook, YouTube)
+- ✓ Twitter replaced with YouTube (icon + URL + type)
+- ✓ Blog and Referral Partner removed from footer Services column
+- ✓ Quick Links column untouched (Blog + Referral Partner still there)
+- ✓ SEO schema sameAs automatically picks up new URLs (uses same SOCIAL array)
+- ✓ Files modified: src/lib/seo.ts, src/components/sections/Footer.tsx (2 files)
