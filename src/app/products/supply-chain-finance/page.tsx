@@ -20,11 +20,6 @@ import {
   Percent,
   Banknote,
   ChevronDown,
-  FileText,
-  RefreshCw,
-  DollarSign,
-  Settings,
-  Truck,
 } from "lucide-react";
 import { products } from "@/lib/data";
 import ProcessInfographic from "@/components/ProcessInfographic";
@@ -216,60 +211,6 @@ export default function SupplyChainFinancePage() {
           </div>
         </section>
       )}
-
-      {/* ─── 3. How It Works Visual (SCF-Specific) ─── */}
-      <section className="py-16 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <SectionReveal>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${accent}12` }}>
-                <RefreshCw className="w-5 h-5" style={{ color: accent }} />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#1C1D62]">How Supply Chain Finance Works</h2>
-            </div>
-            <p className="text-[#718096] mb-10 ml-12 max-w-2xl">Convert your outstanding invoices into immediate working capital with our streamlined process.</p>
-          </SectionReveal>
-          <SectionReveal delay={0.1}>
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">
-              {[
-                { icon: FileText, label: "Invoice", sub: "Convert receivables", color: accent },
-                { icon: DollarSign, label: "Immediate Cash", sub: "Liquidity in 12–24 hrs", color: accent },
-                { icon: Settings, label: "Operations", sub: "Fund business growth", color: accent },
-                { icon: Truck, label: "New Invoices", sub: "Cycle continues", color: "#87B73C" },
-              ].map((step, idx, arr) => (
-                <React.Fragment key={idx}>
-                  <motion.div
-                    className="flex flex-col items-center text-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: idx * 0.15 }}
-                    whileHover={{ y: -4 }}
-                  >
-                    <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center mb-3" style={{ borderColor: step.color, backgroundColor: `${step.color}08` }}>
-                      <step.icon className="w-8 h-8" style={{ color: step.color }} />
-                    </div>
-                    <span className="text-sm font-semibold text-[#1C1D62]">{step.label}</span>
-                    <span className="text-xs text-[#718096]">{step.sub}</span>
-                  </motion.div>
-                  {idx < arr.length - 1 && (
-                    <div className="flex items-center gap-1 md:w-24 md:justify-center">
-                      <div className="hidden md:block h-0.5 w-full" style={{ backgroundColor: accent, opacity: 0.3 }} />
-                      <ArrowRight className="w-5 h-5 flex-shrink-0" style={{ color: accent }} />
-                    </div>
-                  )}
-                  {idx === arr.length - 2 && (
-                    <div className="flex items-center gap-1 md:w-24 md:justify-center">
-                      <div className="hidden md:block h-0.5 w-full" style={{ backgroundColor: accent, opacity: 0.3 }} />
-                      <RefreshCw className="w-5 h-5 flex-shrink-0" style={{ color: accent }} />
-                    </div>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </SectionReveal>
-        </div>
-      </section>
 
       {/* ─── 4. Eligibility Section ─── */}
       {product.eligibility && product.eligibility.length > 0 && (
