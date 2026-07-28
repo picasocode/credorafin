@@ -1189,3 +1189,30 @@ Stage Summary:
 - ✓ All other text remains in Poppins (per-glyph substitution — no visual change to non-₹ text)
 - ✓ Works on Windows, macOS, iOS, Android (Arial or Arial-metric-compatible fonts always present)
 - ✓ Files modified: src/app/globals.css, src/components/EMICalculator.tsx, src/components/sections/Hero.tsx, src/components/WhatsAppButton.tsx, src/app/admin/dashboard/page.tsx, src/app/admin/login/page.tsx (6 files)
+
+---
+Task ID: K (Main Agent — Fix truncated "Earn" card text on referral-partner page)
+Task: User uploaded a screenshot showing the "Three Simple Steps" section on /referral-partner where Card 3 ("Earn") body text was cut off ("Once the loan is disbursed, you earn a...") — fix it
+
+Work Log:
+- Used VLM (z-ai vision CLI) to analyze /home/z/my-project/upload/pasted_image_1785239155736.png
+- VLM identified: section "Three Simple Steps to Start Earning" with 3 cards (Refer / Assess / Earn). Card 3 paragraph was truncated at "...you earn a" — the word "referral reward." was clipped by the card's right edge due to overflow-hidden + narrow max-width
+- Root cause located in src/app/referral-partner/page.tsx line 544:
+  <p className="text-[#2D3748] leading-relaxed text-sm sm:text-base max-w-xs mx-auto flex-1">
+- max-w-xs = 20rem = 320px was too narrow for the "Earn" paragraph ("Once the loan is disbursed, you earn a referral reward.") to fit without the last word being clipped, especially combined with the parent card's overflow-hidden class
+- Fix: changed max-w-xs → max-w-sm (24rem = 384px), giving the paragraph more horizontal room to wrap naturally
+- Did NOT touch the mobile vertical timeline (it uses different markup, paragraph at line 597 has no max-width constraint and was already rendering fine)
+
+Verification (Agent Browser):
+- Desktop 1440x900, scrolled to "Three Simple Steps" section:
+  * Refer card: paragraph="You refer a business or individual who needs a funding solution." overflow=fits (width 321px in 387px card)
+  * Assess card: paragraph="Our team reaches out, assesses their requirement, and takes it forward." overflow=fits (321px in 387px card)
+  * Earn card: paragraph="Once the loan is disbursed, you earn a referral reward." overflow=fits (345px in 411px card) — FULL TEXT NOW VISIBLE ✓
+- Mobile iPhone 14 (390x844): all 3 vertical timeline cards fit, no overflow, full text visible
+- Zero console/runtime errors
+- ESLint clean on modified file
+
+Stage Summary:
+- ✓ Truncated "Earn" card text fixed — full sentence "Once the loan is disbursed, you earn a referral reward." now displays completely
+- ✓ Desktop horizontal timeline + mobile vertical timeline both render full text without overflow
+- ✓ Files modified: src/app/referral-partner/page.tsx (1 file, 1 line change: max-w-xs → max-w-sm)
