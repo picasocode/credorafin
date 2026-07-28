@@ -353,8 +353,8 @@ export default function CreditRepairPage() {
             <FadeIn delay={0.2}>
               <div className="flex justify-center">
                 <img
-                  src="/images/sections/partnership.png"
-                  alt="Professional partnership helping clients restore creditworthiness"
+                  src="/images/sections/credit-repair.png"
+                  alt="Financial advisor reviewing credit report with client showing credit score improvement"
                   className="rounded-2xl shadow-xl w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem] object-cover"
                 />
               </div>

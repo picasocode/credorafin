@@ -1510,3 +1510,61 @@ Stage Summary:
 - ✓ Files modified: 12 (Hero.tsx, page.tsx, contact/page.tsx, careers/page.tsx, referral-partner/page.tsx, 5 products pages, 4 services pages — wait that's 13. Actually: Hero.tsx + page.tsx + contact + careers + referral + 5 products + 4 services = 13 files)
 - ✓ All changes verified via Agent Browser on desktop + mobile
 - ✓ No new lint errors introduced
+
+---
+Task ID: 7-IMAGES (Main Agent — Generate page-specific images for products & services)
+Task: Make the section image relevant to each specific product/service page (was using 4 generic images across 9 pages), and ensure it fits properly
+
+Work Log:
+- Read worklog.md — understood previous state: 9 pages (5 products + 4 services) were sharing only 4 generic images (business-consultation.png, financial-growth.png, partnership.png, security-trust.png) from Task 5-FINAL. Each page's image was not topically relevant to its specific product/service.
+
+Image generation (z-ai image CLI, 1024x1024):
+- Generated 9 custom page-specific images using z-ai image CLI (1024x1024, JPEG content saved as .png):
+  1. msme-loans.png — Indian small business owner receiving MSME loan approval from financial advisor
+  2. supply-chain-finance.png — Modern warehouse with inventory shelves and supply chain logistics operations
+  3. cross-border-finance.png — International trade with cargo ships at port, shipping containers visible
+  4. project-finance.png — Large industrial construction site with tower cranes building infrastructure
+  5. specialized-finance.png — Business professionals analyzing complex custom funding solutions in boardroom
+  6. credit-repair.png — Financial advisor reviewing credit report with client, credit score improvement concept
+  7. fund-raising.png — Business professionals in investor meeting discussing capital raising strategy
+  8. end-to-end-support.png — Dedicated financial advisor supporting client through loan lifecycle with documents and laptop
+  9. pre-underwriting.png — Financial advisor reviewing detailed loan documentation and pre-underwriting paperwork
+
+- Hit 429 rate limit on first batch (3 parallel) — msme-loans.png failed initially; retried sequentially with 10-15s delays between each
+- 2 images (cross-border-finance.png, supply-chain-finance.png) initially generated but later disappeared from disk (unknown cause); regenerated both successfully
+- All 9 new images verified present in /public/images/sections/ (total 13 images: 9 new custom + 4 original generic kept for any other usage)
+
+Page updates (9 files):
+- 5 products pages — updated <img src> + alt text to use page-specific image:
+  * src/app/products/msme-loans/page.tsx → msme-loans.png
+  * src/app/products/supply-chain-finance/page.tsx → supply-chain-finance.png
+  * src/app/products/cross-border-finance/page.tsx → cross-border-finance.png
+  * src/app/products/project-finance/page.tsx → project-finance.png
+  * src/app/products/specialized-finance/page.tsx → specialized-finance.png
+- 4 services pages — updated <img src> + alt text:
+  * src/app/services/credit-repair/page.tsx → credit-repair.png
+  * src/app/services/fund-raising/page.tsx → fund-raising.png
+  * src/app/services/end-to-end-support/page.tsx → end-to-end-support.png
+  * src/app/services/pre-underwriting-loan-structuring/page.tsx → pre-underwriting.png
+- Image sizing (w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem]) preserved from Task N — no size changes needed
+- All images use <img> tag (not next/image <Image>) — z-ai CLI generates JPEG content saved with .png extension; plain <img> works fine (browsers sniff content type), next/image <Image> would reject
+
+Verification (Agent Browser, desktop 1440x900):
+- All 9 pages verified: each page loads its custom image at 512x512px, loaded:true, naturalWidth:1024
+- VLM analysis confirmed relevance:
+  * MSME Loans page: image shows professional business consultation, "highly relevant" to MSME loans
+  * Cross Border Finance page: image shows business professionals with shipping containers visible through window, "highly relevant" to cross-border trade finance
+  * Project Finance page: image shows large-scale construction site with tower cranes, "highly relevant" to large project/infrastructure finance
+- Zero console/runtime errors across all 9 pages
+- All pages serve 200 status codes
+- ESLint clean on all 9 modified files (0 new errors)
+- No changes to image sizing/fit (already correct from Task N: 512x512px on desktop, responsive on mobile/tablet)
+
+Stage Summary:
+- ✓ 9 custom page-specific images generated (one per product/service page)
+- ✓ All 9 pages updated to use their relevant custom image with descriptive alt text
+- ✓ Images verified relevant to their page topic via VLM analysis (3 pages spot-checked: MSME, Cross-Border, Project Finance — all confirmed "highly relevant")
+- ✓ All images fit properly in containers (512x512px on desktop, responsive scaling on smaller screens)
+- ✓ Files modified: 9 page files (5 products + 4 services) + 9 new image assets in /public/images/sections/
+- ✓ Original 4 generic images kept (may be used elsewhere; not deleted to avoid breaking other references)
+- ✓ ESLint clean, zero runtime errors, all pages verified via Agent Browser

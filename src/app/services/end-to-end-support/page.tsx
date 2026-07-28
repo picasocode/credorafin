@@ -300,8 +300,8 @@ export default function EndToEndSupportPage() {
             <FadeIn delay={0.2}>
               <div className="flex justify-center">
                 <img
-                  src="/images/sections/partnership.png"
-                  alt="Dedicated partnership supporting clients through the entire loan lifecycle"
+                  src="/images/sections/end-to-end-support.png"
+                  alt="Dedicated financial advisor supporting client through entire loan lifecycle with documents and laptop"
                   className="rounded-2xl shadow-xl w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem] object-cover"
                 />
               </div>

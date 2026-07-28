@@ -207,8 +207,8 @@ export default function PreUnderwritingPage() {
             <FadeIn delay={0.2}>
               <div className="flex justify-center">
                 <img
-                  src="/images/sections/business-consultation.png"
-                  alt="Financial advisor consulting client on loan documentation"
+                  src="/images/sections/pre-underwriting.png"
+                  alt="Financial advisor reviewing detailed loan documentation and pre-underwriting paperwork with client"
                   className="rounded-2xl shadow-xl w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem] object-cover"
                 />
               </div>

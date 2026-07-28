@@ -378,7 +378,7 @@ export default function SpecializedFinancePage() {
               <SlideReveal direction="right" delay={0.2}>
                 <div className="relative flex items-center justify-center">
                   <div className="w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem]">
-                    <img src="/images/sections/security-trust.png" alt="Secure specialized finance structures and trusted complex funding solutions" className="rounded-2xl shadow-xl w-full h-full object-cover" />
+                    <img src="/images/sections/specialized-finance.png" alt="Business professionals analyzing complex specialized funding solutions in modern boardroom" className="rounded-2xl shadow-xl w-full h-full object-cover" />
                   </div>
                 </div>
               </SlideReveal>

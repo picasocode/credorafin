@@ -377,7 +377,7 @@ export default function ProjectFinancePage() {
               <SlideReveal direction="right" delay={0.2}>
                 <div className="relative flex items-center justify-center">
                   <div className="w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem]">
-                    <img src="/images/sections/security-trust.png" alt="Secure project finance structures and trusted funding solutions" className="rounded-2xl shadow-xl w-full h-full object-cover" />
+                    <img src="/images/sections/project-finance.png" alt="Large industrial construction site with tower cranes for project finance infrastructure development" className="rounded-2xl shadow-xl w-full h-full object-cover" />
                   </div>
                 </div>
               </SlideReveal>

@@ -330,8 +330,8 @@ export default function FundRaisingPage() {
             <FadeIn delay={0.2}>
               <div className="flex justify-center">
                 <img
-                  src="/images/sections/financial-growth.png"
-                  alt="Financial growth chart showing funding raised successfully"
+                  src="/images/sections/fund-raising.png"
+                  alt="Business professionals in investor meeting discussing capital raising strategy"
                   className="rounded-2xl shadow-xl w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem] object-cover"
                 />
               </div>
