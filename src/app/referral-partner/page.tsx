@@ -541,7 +541,7 @@ export default function ReferralPartnerPage() {
                     <h3 className="text-xl font-semibold text-[#1C1D62] mb-3 group-hover:text-[#304AC0] transition-colors duration-300">
                       {step.title}
                     </h3>
-                    <p className="text-[#2D3748] leading-relaxed text-sm sm:text-base max-w-xs mx-auto flex-1">
+                    <p className="text-[#2D3748] leading-relaxed text-sm sm:text-base max-w-sm mx-auto flex-1">
                       {step.description}
                     </p>
 
