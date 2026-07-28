@@ -209,7 +209,7 @@ export default function Hero() {
       id="hero"
       aria-busy={loading}
       className="relative bg-[#FAFBFD] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
-      style={{ fontFamily: "'Poppins', sans-serif" }}
+      style={{ fontFamily: "'Poppins', 'ArialRupee', Arial, sans-serif" }}
     >
       {/* BACKGROUND GLOW */}
       <div className="absolute inset-0 z-0 pointer-events-none">

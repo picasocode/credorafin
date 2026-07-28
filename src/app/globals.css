@@ -3,6 +3,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================
+   RUPEE SYMBOL (₹) — Render in Arial site-wide
+   Uses unicode-range so ONLY the ₹ glyph (U+20B9)
+   is pulled from Arial; all other text stays in
+   Poppins. Arial is resolved locally on the user's
+   OS (available on Windows, macOS, Android, iOS).
+   ============================================ */
+@font-face {
+  font-family: "ArialRupee";
+  src: local("Arial"), local("ArialMT"), local("Arial Unicode MS"), local("Helvetica Neue"), local("Helvetica"), local("sans-serif");
+  unicode-range: U+20B9;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -95,7 +108,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-poppins), sans-serif;
+    font-family: var(--font-poppins), "ArialRupee", Arial, sans-serif;
   }
   html {
     scroll-behavior: smooth;

@@ -42,7 +42,7 @@ function AdminLoginForm() {
   return (
     <div
       className="min-h-screen flex"
-      style={{ fontFamily: "'Inter','DM Sans',system-ui,sans-serif", background: "#F9FAFB" }}
+      style={{ fontFamily: "'Inter','DM Sans','ArialRupee',Arial,system-ui,sans-serif", background: "#F9FAFB" }}
     >
       {/* ── Left: Form ── */}
       <div className={`flex-1 flex flex-col items-center justify-center px-6 py-12 transition-opacity duration-500 ${mounted ? "opacity-100" : "opacity-0"}`}>
