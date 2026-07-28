@@ -1053,3 +1053,32 @@ Stage Summary:
   10. ✓ DB dynamic pages all working + deploy.sh is one-command for fresh instance
 - Deploy script (deploy.sh) is production-ready: auto-installs nginx+swap, creates .env with absolute DB path + Gmail SMTP, builds standalone, starts server, configures nginx. Only manual input: SMTP_PASS (via DEPLOY_SMTP_PASS env var or .env)
 - Dev server running on port 3000 for preview
+
+---
+Task ID: G (Main Agent — EMI Floating Button + Mobile Responsive)
+Task: Reposition EMI floating button to vertical center of right side of page + make EMI calculator page responsive for mobile + correct and push
+
+Work Log:
+- Read previous worklog (Tasks 1-F) to understand context — prior session had completed all 10 original requirements and pushed commit c39bc8a
+- Located 3 relevant files: src/components/FloatingEMIButton.tsx, src/components/EMICalculator.tsx, src/app/emi-calculator/page.tsx
+- FloatingEMIButton.tsx: changed positioning from `fixed bottom-6 right-6` → `fixed top-1/2 right-4 sm:right-6 -translate-y-1/2` (vertically centered on right edge of viewport, both mobile + desktop). Re-anchored expanded panel from `bottom-0 right-16` → `top-1/2 -translate-y-1/2 right-14 sm:right-16` with `max-w-[calc(100vw-5rem)]` clamp to stay within mobile viewport
+- EMICalculator.tsx: added a dedicated mobile card view (`sm:hidden`) for the amortization schedule. On screens <640px, instead of the 7-column table (which was unreadable on mobile — required horizontal scroll), renders compact cards with: month badge + due date header, EMI amount on right, then 2-col grid (Opening/Closing/Principal/Interest). Mobile total row + END OF REPORT marker also render as styled cards. Desktop table (`hidden sm:block`) is unchanged with all 7 columns intact
+- emi-calculator/page.tsx: tightened hero paragraph font (text-lg → text-base sm:text-lg) and trust-badge gap (gap-6 → gap-3 sm:gap-6) to prevent crowding on 375px screens
+
+Verification (Agent Browser):
+- iPhone 14 (390x844) home: EMI button at y=394 (viewport center ~422) — perfectly vertically centered; WhatsApp at y=708 — no overlap
+- Mobile EMI expanded panel: fits within viewport (x=95 to x=301 on 390px screen), no overflow
+- /emi-calculator mobile: mobile card view renders all rows; "Show All Months" expands correctly; TOTAL row + ***END OF REPORT*** marker render as cards
+- Desktop 1440x900 /emi-calculator: 7-column table renders unchanged (Serial No., Due Date, Opening/Installment/Principal/Interest/Closing Principal INR)
+- Desktop home: EMI button at y=422 (button center y=450 = viewport center 450) — perfectly centered
+- /emi-calculator: EMI button correctly HIDDEN (per RootShell isEmiPage check); WhatsApp still visible
+- Zero console errors, zero runtime errors in dev.log
+- ESLint clean on all 3 modified files (0 errors, 0 warnings)
+
+Stage Summary:
+- ✓ EMI floating button repositioned to vertical center of right side of page (both mobile + desktop)
+- ✓ EMI calculator page now fully mobile responsive — amortization schedule uses card view on mobile, table on sm+
+- ✓ Expanded EMI popup fits within mobile viewport without horizontal scroll
+- ✓ Desktop layout completely unchanged
+- ✓ Committed as 56900bf and pushed to origin/main successfully
+- Files modified: src/components/FloatingEMIButton.tsx, src/components/EMICalculator.tsx, src/app/emi-calculator/page.tsx (3 files, +102/-5 lines)
