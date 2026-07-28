@@ -363,3 +363,193 @@ Stage Summary:
   git push https://<NEW_TOKEN>@github.com/picasocode/credorafin.git HEAD:refs/heads/feat/supabase-aws-deploy
   (pushes to a new branch to avoid force-overwriting remote main's 44 commits; user can then open a PR or force-push to main if they prefer)
 - SECURITY: the provided token ([REDACTED:github_token]) was shared in chat and should be revoked at https://github.com/settings/tokens even though it has no scopes, as a precaution.
+
+---
+Task ID: 1-c
+Agent: Legal & SEO Agent
+Task: Rewrite Privacy Policy and Terms & Conditions as clean single pages with TOC + semantic HTML + brand colors; enhance site-wide SEO (OG metadata, JSON-LD, sitemap, robots, per-page metadata); remove /emi-calculator from NAV_ENTRIES.
+
+Work Log:
+- Read prior worklog (Tasks 1–8) to understand context: credorafin project synced, hero/blog made dynamic, Supabase+AWS deploy configured, GitHub push attempted (failed due to read-only token)
+- Read existing privacy-policy/page.tsx (309 lines, dense, used <div> for sections, no TOC), terms-and-conditions/page.tsx (352 lines, dense, no TOC), root layout.tsx, sitemap.ts, robots.ts, seo.ts, schema.ts, PageSchema.tsx, JsonLd.tsx, and all major page layouts (about, products, services, blog, careers, contact, referral-partner) to verify existing SEO state
+- REWROTE src/app/privacy-policy/page.tsx:
+  * 'use client' (needed for IntersectionObserver scroll-spy)
+  * Semantic HTML: <main>, <section>, <article>, <h1>–<h3>, <time>
+  * Sticky TOC sidebar on lg+ (260px column), hidden on mobile, with active-section highlighting via IntersectionObserver (rootMargin: -25% 0px -65% 0px)
+  * "Last updated: 24 June 2026" badge in hero with <time dateTime="2026-06-24">
+  * 12 sections per task spec: Introduction, Information We Collect (5 subsections incl. Usage Data + Advisory Engagement data), How We Use Your Information, Information Sharing & Disclosure, Data Security (Technical + Organisational Safeguards, mentions local DB with restricted access), Data Retention, Your Rights (DPDP Act 2023: access/correction/erasure/grievance/opt-out/withdraw-consent), Cookies & Tracking Technologies, Third-Party Links, Children's Privacy, Changes to This Policy, Contact Us
+  * Brand colors: #1C1D62 (H1/H2), #304AC0 (H3/links), #87B73C (section-number badges, list markers, hero dot)
+  * Contact card with admin@credora.in (per task spec), +91 93448 99971, Chennai address, link to /contact
+  * Small presentational helpers (Section, H3, List) keep markup DRY
+- UPDATED src/app/privacy-policy/layout.tsx: removed ogImage("privacy-policy") (file doesn't exist — would 404), now uses SITE.defaultOgImage; title template yields "Privacy Policy | Credora Fintech"; description mentions DPDP Act 2023; kept PageSchema (renders webPageSchema + breadcrumbSchema)
+- REWROTE src/app/terms-and-conditions/page.tsx: same clean format as privacy policy (semantic HTML + sticky TOC sidebar + scroll-spy + last-updated badge + brand colors); 17 sections: Acceptance, Description of Services, Engagement Process, No Guarantee, Fees & Charges, Client Obligations, Referral Partner Program, Website & Account Use, IP, Third-Party Tools, Disclaimers, Limitation of Liability, Indemnification, Termination, Governing Law & Dispute Resolution (India / arbitration in Chennai), Changes, Contact Us
+- UPDATED src/app/terms-and-conditions/layout.tsx: same OG image fix; title → "Terms & Conditions | Credora Fintech"; kept PageSchema
+- UPDATED src/app/services/layout.tsx: added PageSchema with breadcrumbs (Home > Services) — previously this layout returned `children` with NO structured data while sibling layouts (/products, /blog, /careers, /about, /contact, /referral-partner) all had PageSchema. Now emits WebPage + BreadcrumbList JSON-LD for /services index page
+- VERIFIED src/lib/seo.ts: SITE.url already "https://credorafin.com", SITE/CONTACT/SOCIAL all populated, /emi-calculator already absent from NAV_ENTRIES (frontend agent already removed it — confirmed via grep, only remaining reference is in src/app/page.tsx line 693 which is the frontend agent's responsibility)
+- VERIFIED src/app/layout.tsx: already has comprehensive OG (og:title, og:description, og:image, og:url, og:type, og:site_name) + Twitter (twitter:card, twitter:title, twitter:description, twitter:image) metadata + JSON-LD for Organization + LocalBusiness + WebSite — no changes needed
+- VERIFIED src/app/sitemap.ts: already includes all 18 NAV_ENTRIES static pages + dynamic blog posts with sensible lastModified (current date for static, post date for blog), changeFrequency, priority — no changes needed
+- FIXED pre-existing robots.txt conflict: removed public/robots.txt (static file) which was conflicting with src/app/robots.ts (dynamic Next.js route) → was causing 500 error on /robots.txt. Now /robots.txt returns 200 with dynamic rules + sitemap reference + host directive
+- VERIFIED all major page layouts have unique title + description + OG + Twitter + PageSchema with breadcrumbs: /about ✓, /products ✓ (and 5 product sub-pages via ProductSeo), /services ✓ (now fixed), /blog ✓, /careers ✓, /contact ✓, /referral-partner ✓, /privacy-policy ✓ (updated), /terms-and-conditions ✓ (updated), / (home via root layout title.default)
+
+Lint:
+- Ran `bunx eslint` on all 6 files I touched (privacy-policy/page.tsx, privacy-policy/layout.tsx, terms-and-conditions/page.tsx, terms-and-conditions/layout.tsx, services/layout.tsx, lib/seo.ts — verified clean) → ZERO errors
+- Ran `bun run lint` (full project): 3 remaining errors are all pre-existing in prohibited files (admin/dashboard/page.tsx parse error, admin/login/page.tsx set-state-in-effect, page.tsx set-state-in-effect) — owned by other agents
+
+Runtime verification (curl + dev.log):
+- GET /privacy-policy → 200; semantic HTML confirmed (<article>, <section>, <h1>–<h3>); all 12 TOC anchors present; JSON-LD includes Organization, WebSite, WebPage, BreadcrumbList, LocalBusiness
+- GET /terms-and-conditions → 200; all 17 TOC anchors present
+- GET /services → 200; now emits WebPage + BreadcrumbList JSON-LD (previously had none)
+- GET /sitemap.xml → 200; 25 URLs (18 static + 7 blog); 0 occurrences of /emi-calculator
+- GET /robots.txt → 200 (was 500 before fix); serves dynamic rules with sitemap ref + host directive
+
+Notes for other agents / future work:
+- public/og-image.png does NOT exist (task asked to verify). Site uses /og/og-default.png (via SITE.defaultOgImage) and /og/og-home.png instead. No action taken (task said "don't generate images").
+- public/og/og-privacy-policy.png and og-terms-and-conditions.png do NOT exist. Privacy-policy and terms-and-conditions layouts previously referenced these (would 404 on social shares) — fixed by switching both to SITE.defaultOgImage.
+- Pre-existing src/app/page.tsx import error for @/components/EMICalculator (file removed by frontend agent) — frontend agent's responsibility.
+- Pre-existing Prisma SQLite PRAGMA error in dev.log — unrelated to this task; was present before.
+- Work record written to /home/z/my-project/agent-ctx/1-c-legal-seo-agent.md
+
+Stage Summary:
+- Privacy Policy rewritten as a clean single page with sticky TOC sidebar (scroll-spy), semantic HTML (<article>/<section>/<h1>–<h3>), "Last updated" date, brand colors (#1C1D62/#304AC0/#87B73C), 12 sections per task spec, JSON-LD (WebPage + BreadcrumbList via PageSchema which uses webPageSchema from src/lib/schema.ts)
+- Terms & Conditions rewritten with the same clean format, 17 sections (incl. governing law India + arbitration in Chennai), JSON-LD
+- Both legal pages now use SITE.defaultOgImage (fixed 404ing og-image refs to non-existent /og/og-privacy-policy.png and /og/og-terms-and-conditions.png)
+- /services index page now emits WebPage + BreadcrumbList JSON-LD (was previously missing — all sibling index pages had it)
+- /robots.txt fixed (removed conflicting static public/robots.txt; dynamic src/app/robots.ts now serves correctly → 200 instead of 500)
+- Sitemap verified: 25 URLs, 0 /emi-calculator entries
+- All major pages verified to have unique title + description + OG/Twitter cards + breadcrumb JSON-LD
+- Files touched: src/app/privacy-policy/page.tsx (rewritten), src/app/privacy-policy/layout.tsx (edited), src/app/terms-and-conditions/page.tsx (rewritten), src/app/terms-and-conditions/layout.tsx (edited), src/app/services/layout.tsx (edited), public/robots.txt (removed)
+- All touched files lint-clean; zero errors introduced
+
+---
+Task ID: 1-a
+Agent: Backend Hardening Agent
+Task: SQLite hardening + mail/backup system + security hardening (rate limit, httpOnly cookie, lead notifications) + seed idempotency fix + .env.example update
+
+Work Log:
+
+**SQLite Hardening (src/lib/db.ts):**
+- Added `applySqlitePragmas()` running `PRAGMA journal_mode=WAL`, `PRAGMA foreign_keys=ON`, `PRAGMA synchronous=NORMAL` via `prisma.$executeRawUnsafe`
+- Idempotent (per-process flag `__prismaPragmasApplied`); try/catch wrapped so transient DB outage at boot doesn't crash
+- Fire-and-forget on module load
+
+**Mail Library (src/lib/mail.ts) — NEW:**
+- Installed `nodemailer@9.0.3` + `@types/nodemailer@8.0.1`
+- Lazy singleton transporter; reads SMTP_HOST/PORT/USER/PASS/FROM + BACKUP_EMAILS + NOTIFY_EMAILS from env
+- Exports `sendMail({to,subject,html,text,attachments?})`, `sendBackupEmail(buffer,filename)`, `sendLeadNotification(type,data)`, plus getters `isSmtpConfigured()`, `getBackupEmails()`, `getNotifyEmails()`, `getSmtpInfo()`
+- Silent skip when SMTP_HOST empty — returns `{ok:false,error:"SMTP not configured"}` from all public fns; never throws
+- HTML-escaped lead notifications; skips noisy fields (id, ip, userAgent, passwordHash); branded card template
+
+**Backup System:**
+- `src/lib/backup.ts` (NEW): `resolveDbPath()` parses `file:./db/app.db` from DATABASE_URL → absolute fs path; `createDbBackup()` runs `PRAGMA wal_checkpoint(TRUNCATE)` (best-effort) + `fs.readFileSync` → `{buffer, filename, size, path}`; filename = `credorafin-backup-YYYY-MM-DDTHH-MM-SS.db` (colon-stripped for Windows)
+- `src/app/api/admin/backup/route.ts` (NEW):
+  - `GET` — creates snapshot, streams as download (`Content-Disposition: attachment`); `?email=1` also sends to BACKUP_EMAILS; metadata exposed via `X-Backup-*` headers
+  - `POST` — email-only: returns JSON `{ok, emailed, filename, size, recipients, error?}`
+  - Auth: `verifyAdminSession` + `requireRole(["super_admin","admin"])`
+- `scripts/backup.ts` (NEW): standalone CLI — saves to `./backups/`, emails if SMTP configured, prunes to latest 30; cron-ready
+- Added `"db:backup": "bun run scripts/backup.ts"` to package.json
+
+**Admin Backup UI:**
+- `src/components/admin/BackupPanel.tsx` (NEW): self-contained panel mirroring HeroSlidesPanel/BlogPostsPanel pattern (deps: react, lucide-react, @/lib/admin-client)
+  - Download button (GET, browser blob download), Email button (POST, toast feedback)
+  - Status grid (SMTP state, recipient count, last size, last action time), recipient lists, info banner with cron snippet
+  - Viewers + unconfigured-SMTP disabled states
+- `src/app/admin/dashboard/page.tsx` (MODIFIED):
+  - Added `Database` icon, `BackupPanel` import, `"Backup & Data"` to Tab type, NAV entry (group:"settings"), and `<BackupPanel user={user}/>` render block
+
+**SMTP Settings API:**
+- `src/app/api/admin/settings/route.ts` (NEW): `GET` returns `{smtp:{host,port,from,configured}, backupEmails, notifyEmails}` — NO password. Any authenticated admin can view. Read-only (env-only, can't change via UI — security decision).
+
+**Security Hardening:**
+- `src/app/api/admin/login/route.ts`: `httpOnly: false` → `httpOnly: true` on both POST (set) and DELETE (clear) — cookie no longer visible to JS (XSS can't exfiltrate)
+- `src/app/admin/dashboard/page.tsx`: removed `parseCookie()` fallback (was reading `credora_admin_session` from `document.cookie`); dashboard now relies exclusively on `fetchMe()` → `GET /api/admin/me`. Documented why in a comment.
+- `src/lib/rate-limit.ts` (NEW): in-memory sliding-window limiter; `rateLimit(identifier, max, windowMs)` → `{allowed, remaining, retryAfter}`; periodic Map prune; `getClientIp(request)` helper
+- Applied 5 req/min/IP rate limiting + lead notifications to `/api/contact`, `/api/careers`, `/api/brochure`:
+  - 429 + `Retry-After` header when exceeded
+  - `sendLeadNotification()` called after successful DB insert (best-effort, `.catch()` logs only)
+
+**Seed Safety Fix (scripts/seed.ts):**
+- Replaced `deleteMany({}) + create` (which wiped admin edits on every re-seed) with upsert-by-`sortOrder` — only creates slides whose `sortOrder` doesn't already exist
+- Now matches the idempotent pattern used for blog posts (upsert-by-id) and job positions (findFirst-by-title)
+
+**.env.example:**
+- Added SMTP_HOST/PORT/USER/PASS/FROM, BACKUP_EMAILS, NOTIFY_EMAILS with explanatory comment
+
+**Dependencies Added:**
+- nodemailer@9.0.3 (runtime)
+- @types/nodemailer@8.0.1 (dev)
+
+**Lint:**
+- 0 new lint errors introduced. All 12 created/modified backend files pass eslint cleanly.
+- Dashboard file still has 22 pre-existing `react-hooks/static-components` + `react-hooks/set-state-in-effect` errors from before this task (frontend-component concerns out of scope for this backend task).
+- Verified: with vs without my changes, total project lint count is identical (25 problems: 23 errors + 2 warnings, all pre-existing).
+
+Stage Summary:
+- 7 new files: src/lib/mail.ts, src/lib/backup.ts, src/lib/rate-limit.ts, src/app/api/admin/backup/route.ts, src/app/api/admin/settings/route.ts, src/components/admin/BackupPanel.tsx, scripts/backup.ts
+- 8 modified files: src/lib/db.ts, src/app/api/admin/login/route.ts, src/app/admin/dashboard/page.tsx, src/app/api/contact/route.ts, src/app/api/careers/route.ts, src/app/api/brochure/route.ts, scripts/seed.ts, .env.example, package.json
+- SQLite now WAL + FK + NORMAL-sync; admin session cookie is httpOnly; public POST routes are rate-limited and notify on new leads; admins can download or email DB backups from a new dashboard tab; daily backups are cron-ready via `bun run db:backup`.
+- Work record also saved to /home/z/my-project/agent-ctx/1-a-backend-hardening-agent.md
+
+---
+Task ID: 1-b
+Agent: Frontend Agent
+Task: Remove EMI Calculator entirely; fix white-button bug; fix responsive issues; clean up dead code in page.tsx; populate social links
+
+Work Log:
+- Read worklog.md to understand prior work (Task 1 set up project, Tasks 2-8 added dynamic content, deployment, GitHub push attempt)
+- Read all key files: page.tsx (1785 lines), Navbar.tsx (620), Hero.tsx (435), Footer.tsx (161), CTABanner.tsx (55), HomeProcessTimeline.tsx (58), seo.ts (102), RootShell.tsx (24), sitemap.ts (35), button.tsx, globals.css, data.ts
+- Grepped codebase for all EMI references — found usage in: RootShell.tsx, page.tsx, emi-calculator/{page,layout}.tsx, EMICalculator.tsx, FloatingEMIButton.tsx, Navbar.tsx (dead isButton filter), seo.ts (NAV_ENTRIES), blog-data.ts (one mention), README.md
+- Confirmed jspdf/jspdf-autotable/xlsx ONLY used in EMICalculator.tsx (safe to remove)
+
+Stage 1 — EMI Removal:
+- DELETED: src/components/EMICalculator.tsx, src/components/FloatingEMIButton.tsx, src/app/emi-calculator/ (page.tsx + layout.tsx), public/og/og-emi-calculator.png
+- RootShell.tsx: removed FloatingEMIButton import + usage
+- seo.ts: removed /emi-calculator from NAV_ENTRIES (sitemap.ts derives from this — auto-cleaned)
+- data.ts: removed dead isButton?: boolean from NavLink interface
+- Navbar.tsx: removed Calculator icon import; removed dead EMI button sections (desktop + mobile); simplified navLinks.filter(!isButton).map → navLinks.map (2 places)
+- blog-data.ts: "Understanding EMI" blog post — changed "Use our EMI calculator…" to "Speak with our advisors…" (calculator gone, blog post about EMI as a financial concept stays)
+- README.md: removed emi-calculator entries from project tree + features list
+- Ran `bun remove jspdf jspdf-autotable xlsx` (3 packages, only used by deleted EMICalculator.tsx)
+
+Stage 2 — White-Button Bug Fix:
+- Root cause: shadcn Button `outline` variant used `border-input bg-background` (#E8ECF0 border on white bg) which renders as nearly-invisible white-on-white
+- Fix 1 (source): button.tsx — hardened outline variant default to `border-[#304AC0]/40 bg-white text-[#1C1D62] hover:bg-[#F0F4FF] hover:border-[#304AC0]` (brand-colored, always visible)
+- Fix 2 (most prominent instance): Hero.tsx secondary CTA — changed `border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900` → `border-[#304AC0] bg-white text-[#1C1D62] hover:bg-[#F0F4FF] hover:text-[#1A2255] hover:border-[#1A2255]` + arrow icon `text-[#304AC0]`
+- Verified all other <Button> usages across site already have explicit brand colors (services, products, blog, Navbar, CTABanner)
+
+Stage 3 — Responsive Fixes:
+- Navbar.tsx megamenus: Products `w-[960px]` → `w-[min(960px,calc(100vw-2rem))]`; Services `w-[750px]` → `w-[min(750px,calc(100vw-2rem))]` (no more overflow on smaller desktop screens)
+- HomeProcessTimeline.tsx: replaced fragile `flex flex-wrap` with `calc()` widths (`xl:w-[calc(14.28%-20px)]` etc.) with clean responsive grid: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`; added sm:px-6 padding; responsive heading text-3xl sm:text-4xl
+- Verified admin/dashboard/page.tsx already has responsive grids (`grid-cols-2 xl:grid-cols-4`) + `overflow-x-auto` on tables — NOT modified per task constraints
+- Verified ProcessFlow.tsx `grid-cols-4` is inside `hidden lg:block` (only shows on lg+ where 4 cols is appropriate) — no fix needed
+- Verified all other section components have responsive grid variants (sm:grid-cols-2 lg:grid-cols-4 patterns throughout)
+
+Stage 4 — page.tsx Dead-Code Cleanup (1785 → 794 lines, -55%):
+- Identified dead code: old HeroSection (~510 lines, never mounted — Home() renders <Hero /> from Hero.tsx), ProcessFlowSection (~290 lines, never mounted), EMICalculatorSection wrapper
+- Identified dead data: heroSlides, loanTypePills, partnerBanks, calcEMI, formatINR, processSteps
+- Identified dead imports: EMICalculator, AnimatedIllustration, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring, HoverCard, ParallaxSection, FloatingElement, useCallback, cn, + 9 lucide icons (Calculator, Search, FileText, MapPin, FileCheck, Banknote, HeadphonesIcon, Sparkles, ChevronLeft, ChevronRight)
+- Wrote clean page.tsx keeping only: AnimatedCounter, WhyChooseUsSection, WhatWeDoSection, KeyNumbersSection, TestimonialSection, CTABannerSection, BlogPreviewSection, Home() (updated to drop <EMICalculatorSection />)
+
+Stage 5 — Social Links Population:
+- seo.ts: populated SOCIAL array (was empty with commented-out placeholders) with 4 real entries: LinkedIn, Facebook, Instagram, Twitter — each with name, url, icon fields; added SocialIcon union type
+- Footer.tsx: added Twitter icon import; added socialIconMap: Record<SocialIcon, React.ElementType>; rewrote "Follow Us" section to .map(SOCIAL) — was hardcoded array of 3 icons all pointing to "#", now uses real URLs with target=_blank, rel=noopener noreferrer, aria-label={name}
+- schema.ts verified — uses SOCIAL.map((s) => s.url) which still works (url field preserved)
+
+Verification:
+- `bunx eslint` on all 11 modified files → 0 errors, 0 warnings
+- `bun run lint` (full project) → 25 errors/warnings, ALL in admin/dashboard/page.tsx + admin/login/page.tsx — pre-existing, untouched per task constraints
+- grep -r "EMICalculator|FloatingEMI|emi-calculator|/emi" across src/ → 0 matches (only mentions left are in agent-ctx docs + worklog.md)
+- dev.log: GET / → 200; GET /sitemap.xml → 200; grep -c "emi-calculator" on sitemap response → 0
+- The pre-existing "./src/app/page.tsx:20:1" errors in dev.log were from BEFORE this rewrite (line 20 was the broken EMI import) — new page.tsx line 20 is "ShieldCheck," (lucide import); error resolved
+
+Stage Summary:
+- Files DELETED (4): EMICalculator.tsx, FloatingEMIButton.tsx, emi-calculator/page.tsx, emi-calculator/layout.tsx, public/og/og-emi-calculator.png (5 total counting asset)
+- Files MODIFIED (11): RootShell.tsx, seo.ts, data.ts, Navbar.tsx, Footer.tsx, Hero.tsx, button.tsx, HomeProcessTimeline.tsx, blog-data.ts, page.tsx, README.md
+- Packages REMOVED (3): jspdf, jspdf-autotable, xlsx
+- page.tsx size: 1785 → 794 lines (-55%)
+- All EMI references eliminated from codebase (only remaining are documentation in agent-ctx + worklog)
+- All outline Buttons now use brand colors by default (white-button bug fixed at source)
+- Navbar megamenus can no longer overflow viewport
+- HomeProcessTimeline now uses standard responsive grid
+- Footer social icons now point to real URLs via SOCIAL array
+- Did NOT touch: deploy.sh, nginx/, prisma/, src/lib/mail.ts, src/lib/backup.ts, src/app/api/*, src/app/privacy-policy/*, src/app/admin/dashboard/page.tsx
+- Full work record at: /home/z/my-project/agent-ctx/1-b-frontend-agent.md

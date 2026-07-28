@@ -54,13 +54,14 @@ export const CONTACT = {
   ],
 } as const;
 
-/** Social profile URLs — used in Organization sameAs. */
-export const SOCIAL: { name: string; url: string }[] = [
-  // Update with real profile URLs when claimed.
-  // { name: "LinkedIn", url: "https://www.linkedin.com/company/credorafintech" },
-  // { name: "Twitter",  url: "https://twitter.com/credorafin" },
-  // { name: "Facebook", url: "https://www.facebook.com/credorafintech" },
-  // { name: "Instagram", url: "https://www.instagram.com/credorafintech" },
+/** Social profile URLs — used in Organization sameAs and Footer social icons. */
+export type SocialIcon = "linkedin" | "facebook" | "instagram" | "twitter";
+
+export const SOCIAL: { name: string; url: string; icon: SocialIcon }[] = [
+  { name: "LinkedIn", url: "https://www.linkedin.com/company/credorafin", icon: "linkedin" },
+  { name: "Facebook", url: "https://www.facebook.com/credorafin", icon: "facebook" },
+  { name: "Instagram", url: "https://www.instagram.com/credorafin", icon: "instagram" },
+  { name: "Twitter", url: "https://twitter.com/credorafin", icon: "twitter" },
 ];
 
 /**
@@ -81,7 +82,6 @@ export const NAV_ENTRIES = [
   { path: "/services/pre-underwriting-loan-structuring", title: "Pre-Underwriting & Loan Structuring", priority: 0.8, changeFrequency: "monthly" as const },
   { path: "/services/fund-raising", title: "Fund Raising", priority: 0.8, changeFrequency: "monthly" as const },
   { path: "/services/end-to-end-support", title: "End-to-End Support", priority: 0.8, changeFrequency: "monthly" as const },
-  { path: "/emi-calculator", title: "EMI Calculator", priority: 0.7, changeFrequency: "monthly" as const },
   { path: "/referral-partner", title: "Referral Partner Program", priority: 0.7, changeFrequency: "monthly" as const },
   { path: "/blog", title: "Blog", priority: 0.8, changeFrequency: "weekly" as const },
   { path: "/contact", title: "Contact Us", priority: 0.7, changeFrequency: "monthly" as const },

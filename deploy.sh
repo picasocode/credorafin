@@ -1,22 +1,21 @@
 #!/usr/bin/env bash
 # ============================================================================
-# CredoraFin — One-command deployment script (SQLite + Nginx + DEV-mode edition)
+# CredoraFin — One-command deployment script (SQLite + Nginx + PRODUCTION edition)
 # ----------------------------------------------------------------------------
 # SQLite needs NO server process, NO Docker, and NO external services — the
 # database is just a file on disk (db/app.db). Nginx is auto-installed and
-# configured as a reverse proxy. The Next.js DEV server is started directly
-# (NO production build) so the box doesn't need enough RAM/time to compile a
-# standalone bundle — `next dev` compiles routes on-demand and hot-reloads.
+# configured as a reverse proxy. The Next.js app is built as a standalone
+# production bundle and served with bun (fast startup, low memory).
 #
 # Steps:
 #   0. Verify prerequisites (bun, curl, nginx — auto-install missing)
 #   1. Ensure .env exists (create from .env.example, force correct values)
-#   2. Install npm deps (ALWAYS — refreshes stale Prisma client)
+#   2. Install npm deps (ALWAYS — clean wipe + fresh install)
 #   3. Generate Prisma client
 #   4. Push DB schema (creates the SQLite file + all tables)
 #   5. Seed DB (admin user + 6 positions + 5 hero slides + 6 blog posts)
-#   6. Clear port 3000
-#   7. Start the Next.js DEV server on port 3000 (no production build)
+#   6. Build Next.js standalone production bundle
+#   7. Clear port 3000 + start production server with bun
 #   8. Configure Nginx reverse proxy for the domain + reload
 #
 # Usage:
@@ -24,6 +23,7 @@
 #   ./deploy.sh --domain=example.com  # use a custom domain
 #   ./deploy.sh --no-seed             # skip DB seed (keep existing data)
 #   ./deploy.sh --no-nginx            # skip nginx configuration
+#   ./deploy.sh --no-build            # skip the build step (reuse existing .next)
 #   ./deploy.sh --help
 #
 # The port is always cleared before starting (re-runs replace the old server).
@@ -36,13 +36,14 @@ set -euo pipefail
 APP_NAME="credorafin"
 APP_PORT="3000"
 HEALTH_URL="http://127.0.0.1:${APP_PORT}/api/health"
-MAX_WAIT_SECS=180         # max time to wait for the dev server to come up
+MAX_WAIT_SECS=90          # max time to wait for the prod server to come up
 DB_FILE="db/app.db"       # relative to project root
 DOMAIN="credorafin.com"   # production domain (override with --domain=)
 
 # Flags from argv
 DO_SEED=1
 DO_NGINX=1
+DO_BUILD=1
 
 # ── Pretty logging ──────────────────────────────────────────────────────────
 if [[ -t 1 ]]; then
@@ -64,9 +65,9 @@ for arg in "$@"; do
   case "$arg" in
     --no-seed)  DO_SEED=0 ;;
     --no-nginx) DO_NGINX=0 ;;
+    --no-build) DO_BUILD=0 ;;
     --domain=*) DOMAIN="${arg#*=}" ;;
     --restart)  ;;  # accepted for backwards compat (now the default behavior)
-    --no-build) ;;  # accepted for backwards compat (build step was removed)
     --help|-h)
       sed -n '2,30p' "$0"
       exit 0
@@ -152,6 +153,29 @@ have curl   || die "curl not found"
 ok "bun: $(bun --version)"
 ok "curl: $(curl --version | head -1 | awk '{print $1,$2}')"
 
+# ── Swap (auto-create if RAM < 2GB — prevents OOM during next build/start) ──
+# Next.js standalone + Prisma + React 19 can use 1-2GB RAM. On a 1GB EC2
+# instance, the OOM killer will fire during page rendering. A 2GB swapfile
+# is a cheap safety net. Skip if swap is already configured or RAM ≥ 2GB.
+TOTAL_RAM_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
+CURRENT_SWAP_KB="$(grep SwapTotal /proc/meminfo | awk '{print $2}')"
+if [[ ${CURRENT_SWAP_KB:-0} -lt 1048576 ]] && [[ ${TOTAL_RAM_KB:-0} -lt 2097152 ]]; then
+  warn "low RAM (${TOTAL_RAM_KB} kB) and minimal swap (${CURRENT_SWAP_KB} kB) — creating 2GB swapfile"
+  if [[ ! -f /swapfile ]]; then
+    as_root fallocate -l 2G /swapfile 2>/dev/null || as_root dd if=/dev/zero of=/swapfile bs=1M count=2048
+    as_root chmod 600 /swapfile
+    as_root mkswap /swapfile >/dev/null 2>&1
+  fi
+  as_root swapon /swapfile 2>/dev/null || true
+  # Persist in fstab so it survives reboot
+  if ! grep -q "^/swapfile" /etc/fstab 2>/dev/null; then
+    echo "/swapfile none swap sw 0 0" | as_root tee -a /etc/fstab >/dev/null
+  fi
+  ok "2GB swapfile enabled (persists across reboots)"
+else
+  ok "RAM: $((TOTAL_RAM_KB / 1024))MB, Swap: $((CURRENT_SWAP_KB / 1024))MB — sufficient"
+fi
+
 # ── Nginx (auto-install if missing) ─────────────────────────────────────────
 if have nginx; then
   ok "nginx: $(nginx -v 2>&1 | sed 's|nginx version: ||')"
@@ -190,7 +214,7 @@ ok "nginx daemon is running"
 cd "$(dirname "$0")"
 ok "working dir: $(pwd)"
 ok "domain: ${DOMAIN}"
-ok "mode: DEV (no production build)"
+ok "mode: PRODUCTION (standalone build + bun)"
 
 # ============================================================================
 # STEP 1 — Environment file
@@ -378,9 +402,29 @@ else
 fi
 
 # ============================================================================
-# STEP 6 — Stop any existing server (so re-runs don't serve stale processes)
+# STEP 6 — Build Next.js standalone production bundle
 # ============================================================================
-step "Step 6/8 — Clearing port ${APP_PORT}"
+if [[ $DO_BUILD -eq 1 ]]; then
+  step "Step 6/8 — Building Next.js standalone production bundle"
+  # Build with bun. next.config.ts has output: "standalone" which produces a
+  # self-contained server at .next/standalone/server.js. The build script in
+  # package.json also copies .next/static and public/ into the standalone dir.
+  log "running bun run build (this can take 1-3 min on a small EC2 instance)..."
+  if bun run build > /tmp/build.log 2>&1; then
+    ok "standalone build ready at .next/standalone/"
+  else
+    err "next build failed. Last 50 lines of build output:"
+    tail -n 50 /tmp/build.log >&2 || true
+    die "next build failed — see /tmp/build.log for full output. Tip: try --no-build to reuse an existing .next/"
+  fi
+else
+  step "Step 6/8 — (skipped: --no-build)"
+fi
+
+# ============================================================================
+# STEP 7 — Stop any existing server + start production server with bun
+# ============================================================================
+step "Step 7/8 — Clearing port ${APP_PORT} + starting production server"
 
 kill_port "$APP_PORT"
 sleep 1
@@ -390,27 +434,19 @@ else
   ok "port ${APP_PORT} is free"
 fi
 
-# ============================================================================
-# STEP 7 — Start the Next.js DEV server (NO production build needed)
-# ============================================================================
-step "Step 7/8 — Starting Next.js dev server"
-
-log "starting dev server in background (logs → server.log)..."
-# Dev mode: NO build step. `next dev` compiles routes on-demand and hot-reloads
-# on file changes. This avoids the memory/time cost of `next build` on small EC2
-# instances. We invoke `next dev` via bunx directly (instead of `bun run dev`)
-# so this script fully owns logging — `bun run dev` pipes through `tee dev.log`
-# which is handy for local dev but would double-log when stdout is redirected.
-NODE_ENV=development nohup bunx next dev -p 3000 > server.log 2>&1 &
+# Start the standalone production server with bun (faster startup + lower
+# memory than node). The standalone server.js is self-contained — it bundles
+# all Node modules needed to run, so we don't need node_modules in production.
+log "starting production server with bun (logs → server.log)..."
+NODE_ENV=production nohup bun .next/standalone/server.js > server.log 2>&1 &
 echo $! > .server.pid
-ok "dev server PID: $(cat .server.pid)"
+ok "production server PID: $(cat .server.pid)"
 
-# Wait for the app health endpoint to respond. The dev server takes longer to
-# boot than a prod server because it compiles the first route on-demand.
-MAX_WAIT_SECS=180
-log "waiting for app to respond at ${HEALTH_URL} (dev server compiles on-demand, this can take ~1-3 min)..."
-wait_for "$HEALTH_URL" "Dev server"
-ok "dev server is healthy"
+# Wait for the app health endpoint to respond. The production server boots
+# fast (no on-demand compilation) — typically under 5 seconds.
+log "waiting for app to respond at ${HEALTH_URL}..."
+wait_for "$HEALTH_URL" "Production server"
+ok "production server is healthy"
 
 # ============================================================================
 # STEP 8 — Configure Nginx reverse proxy for the domain
@@ -537,7 +573,7 @@ if [[ $DO_NGINX -eq 1 ]]; then
 else
   echo -e "  App URL:        ${C_BOLD}http://localhost:${APP_PORT}${C_RESET}"
 fi
-echo -e "  Mode:           ${C_BOLD}DEV (next dev — no production build)${C_RESET}"
+echo -e "  Mode:           ${C_BOLD}PRODUCTION (standalone build + bun)${C_RESET}"
 echo -e "  Database:       ${C_BOLD}SQLite at ${DB_FILE}${C_RESET}"
 echo -e "  Admin login:    ${C_BOLD}admin@credora.in / credora@admin123${C_RESET}"
 echo -e "  Health:         ${C_BOLD}${HEALTH_URL}${C_RESET}"

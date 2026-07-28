@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE, ogImage } from "@/lib/seo";
+import { PageSchema } from "@/components/PageSchema";
 
 export const metadata: Metadata = {
   title: "Services — Credit Repair, Pre-Underwriting, Fund Raising & Support",
@@ -47,5 +48,18 @@ export default function ServicesLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      <PageSchema
+        name="Financial Services"
+        description="Credora Fintech's comprehensive services — Credit Repair, Pre-Underwriting & Loan Structuring, Fund Raising, and End-to-End Support."
+        path="/services"
+        breadcrumbs={[
+          { name: "Home", path: "/" },
+          { name: "Services", path: "/services" },
+        ]}
+      />
+      {children}
+    </>
+  );
 }

@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { SITE, ogImage } from "@/lib/seo";
+import { SITE } from "@/lib/seo";
 import { PageSchema } from "@/components/PageSchema";
 
 export const metadata: Metadata = {
   title: "Terms and Conditions",
   description:
-    "Terms and Conditions governing the use of www.credorafin.com and the advisory services offered by Credora Fintech Pvt Ltd. Read about engagement process, fees, liability, and more.",
+    "Terms and Conditions governing the use of www.credorafin.com and the advisory services offered by Credora Fintech Pvt Ltd. Read about engagement process, fees, disclaimers, liability, and governing law.",
   keywords: [
     "Credora terms and conditions",
     "fintech terms of service",
     "loan advisory terms",
     "Credora Fintech terms",
-    "website terms",
+    "website terms India",
     "advisory services terms",
+    "governing law Chennai",
   ],
   alternates: { canonical: "/terms-and-conditions" },
   openGraph: {
@@ -20,15 +21,15 @@ export const metadata: Metadata = {
     locale: SITE.localeOg,
     url: "/terms-and-conditions",
     siteName: SITE.name,
-    title: "Terms and Conditions — Credora Fintech",
+    title: "Terms & Conditions | Credora Fintech",
     description:
-      "Terms and Conditions governing the use of credorafin.com and Credora Fintech advisory services.",
+      "Terms governing the use of credorafin.com and Credora Fintech advisory services — engagement, fees, liability, and dispute resolution.",
     images: [
       {
-        url: ogImage("terms-and-conditions"),
+        url: SITE.defaultOgImage,
         width: 1200,
         height: 630,
-        alt: "Terms and Conditions — Credora Fintech",
+        alt: "Terms & Conditions | Credora Fintech",
         type: "image/png",
       },
     ],
@@ -37,10 +38,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: `@${SITE.twitterHandle}`,
     creator: `@${SITE.twitterHandle}`,
-    title: "Terms and Conditions — Credora Fintech",
+    title: "Terms & Conditions | Credora Fintech",
     description:
-      "Terms and Conditions governing the use of credorafin.com and Credora Fintech advisory services.",
-    images: [ogImage("terms-and-conditions")],
+      "Terms governing the use of credorafin.com and Credora Fintech advisory services.",
+    images: [SITE.defaultOgImage],
   },
 };
 

@@ -97,7 +97,7 @@ export const blogPosts: BlogPost[] = [
       "When you take a business loan, your repayment is structured as Equated Monthly Instalments (EMI). While the EMI amount remains constant throughout the tenure, the composition of each EMI — how much goes toward principal and how much toward interest — changes every month.",
       "In the early months of your loan, a larger portion of your EMI goes toward interest payment. As you progress through the tenure, the interest component gradually decreases while the principal component increases. This is because interest is calculated on the outstanding balance, which reduces with each payment.",
       "For example, on a ₹20 lakh business loan at 17% per annum for 18 months, your EMI would be approximately ₹1,26,660. In the first month, about ₹98,327 goes toward principal and ₹28,333 toward interest. By the last month, nearly the entire EMI — ₹1,24,893 — goes toward principal, with only ₹1,769 as interest.",
-      "Understanding this structure is crucial for financial planning. It helps you evaluate whether a loan is affordable, compare different loan offers, and make informed decisions about prepayment or restructuring. Use our EMI calculator to see the detailed amortization schedule for your specific loan parameters.",
+      "Understanding this structure is crucial for financial planning. It helps you evaluate whether a loan is affordable, compare different loan offers, and make informed decisions about prepayment or restructuring. Speak with our advisors to see the detailed amortization schedule for your specific loan parameters.",
     ],
     author: "Credora Advisory Team",
     date: "2024-12-28",

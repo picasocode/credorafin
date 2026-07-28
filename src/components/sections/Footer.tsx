@@ -2,7 +2,15 @@
 
 import React from "react";
 import Link from "next/link";
-import { Phone, Mail, MapPin, Linkedin, Facebook, Instagram, ArrowUp, ChevronRight } from "lucide-react";
+import { Phone, Mail, MapPin, Linkedin, Facebook, Instagram, Twitter, ArrowUp, ChevronRight } from "lucide-react";
+import { SOCIAL, type SocialIcon } from "@/lib/seo";
+
+const socialIconMap: Record<SocialIcon, React.ElementType> = {
+  linkedin: Linkedin,
+  facebook: Facebook,
+  instagram: Instagram,
+  twitter: Twitter,
+};
 
 const productLinks = [
   { label: "MSME Loans", href: "/products/msme-loans" },
@@ -127,15 +135,21 @@ export default function Footer() {
             <div className="mt-6">
               <h4 className="text-sm font-semibold uppercase tracking-wider text-white/90 mb-3">Follow Us</h4>
               <div className="flex gap-3">
-                {[
-                  { icon: Linkedin, href: "#" },
-                  { icon: Facebook, href: "#" },
-                  { icon: Instagram, href: "#" },
-                ].map((social, i) => (
-                  <a key={i} href={social.href} className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-[#304AC0] transition-colors">
-                    <social.icon className="w-4 h-4" />
-                  </a>
-                ))}
+                {SOCIAL.map((social) => {
+                  const Icon = socialIconMap[social.icon];
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.name}
+                      className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-[#304AC0] transition-colors"
+                    >
+                      <Icon className="w-4 h-4" />
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </div>

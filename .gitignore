@@ -53,6 +53,15 @@ server.log
 # Skills directory
 /skills/
 
+# DB backups (created by scripts/backup.ts)
+/backups/
+
+# Agent context (per-session notes, not for VCS)
+/agent-ctx/
+
+# Runtime PID file (changes every dev server start)
+.zscripts/dev.pid
+
 # Supabase local artifacts
 /supabase/.branches
 /supabase/.temp

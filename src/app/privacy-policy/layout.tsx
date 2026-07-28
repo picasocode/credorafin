@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { SITE, ogImage } from "@/lib/seo";
+import { SITE } from "@/lib/seo";
 import { PageSchema } from "@/components/PageSchema";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "Privacy Policy for Credora Fintech Pvt Ltd. Learn how we collect, use, store, and protect your personal information when you use www.credorafin.com and our advisory platforms.",
+    "Privacy Policy for Credora Fintech Pvt Ltd. Learn how we collect, use, store, and protect your personal information when you use www.credorafin.com and our advisory platforms, in line with the DPDP Act, 2023.",
   keywords: [
     "Credora privacy policy",
-    "data protection",
+    "data protection India",
     "personal information",
     "fintech privacy",
     "loan advisory privacy",
@@ -21,15 +21,15 @@ export const metadata: Metadata = {
     locale: SITE.localeOg,
     url: "/privacy-policy",
     siteName: SITE.name,
-    title: "Privacy Policy — Credora Fintech",
+    title: "Privacy Policy | Credora Fintech",
     description:
-      "Learn how Credora Fintech collects, uses, and protects your personal information.",
+      "How Credora Fintech collects, uses, stores, and protects your personal information under India's DPDP Act, 2023.",
     images: [
       {
-        url: ogImage("privacy-policy"),
+        url: SITE.defaultOgImage,
         width: 1200,
         height: 630,
-        alt: "Privacy Policy — Credora Fintech",
+        alt: "Privacy Policy | Credora Fintech",
         type: "image/png",
       },
     ],
@@ -38,10 +38,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: `@${SITE.twitterHandle}`,
     creator: `@${SITE.twitterHandle}`,
-    title: "Privacy Policy — Credora Fintech",
+    title: "Privacy Policy | Credora Fintech",
     description:
-      "Learn how Credora Fintech collects, uses, and protects your personal information.",
-    images: [ogImage("privacy-policy")],
+      "How Credora Fintech collects, uses, stores, and protects your personal information.",
+    images: [SITE.defaultOgImage],
   },
 };
 

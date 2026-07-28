@@ -467,7 +467,6 @@ export interface NavLink {
   label: string;
   href: string;
   children?: { label: string; href: string }[];
-  isButton?: boolean;
 }
 
 export const navLinks: NavLink[] = [

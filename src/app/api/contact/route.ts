@@ -1,7 +1,19 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { sendLeadNotification } from "@/lib/mail";
 
 export async function POST(request: Request) {
+  // Rate limit: 5 requests per minute per IP.
+  const ip = getClientIp(request);
+  const rl = rateLimit(ip, 5, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const {
@@ -24,12 +36,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const ip =
+    const clientIp =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     const userAgent = request.headers.get("user-agent") ?? null;
 
     if (type === "referral-partner") {
-      await db.referralPartner.create({
+      const created = await db.referralPartner.create({
         data: {
           name,
           email: email ?? null,
@@ -39,10 +51,17 @@ export async function POST(request: Request) {
           city: city ?? null,
           referralSource: referralSource ?? null,
           message: message ?? null,
-          ipAddress: ip,
+          ipAddress: clientIp,
           userAgent,
         },
       });
+
+      // Best-effort lead notification. Never fail the request if email fails.
+      sendLeadNotification("referral-partner", {
+        ...created,
+        ipAddress: clientIp,
+        userAgent,
+      }).catch((e) => console.error("[Contact API] lead email failed:", e));
 
       return NextResponse.json({
         success: true,
@@ -52,7 +71,7 @@ export async function POST(request: Request) {
     }
 
     // Default: contact inquiry
-    await db.contactInquiry.create({
+    const created = await db.contactInquiry.create({
       data: {
         name,
         email: email ?? null,
@@ -61,10 +80,17 @@ export async function POST(request: Request) {
         businessType: businessType ?? null,
         fundingRequirement: fundingRequirement ?? null,
         message: message ?? null,
-        ipAddress: ip,
+        ipAddress: clientIp,
         userAgent,
       },
     });
+
+    // Best-effort lead notification. Never fail the request if email fails.
+    sendLeadNotification("contact", {
+      ...created,
+      ipAddress: clientIp,
+      userAgent,
+    }).catch((e) => console.error("[Contact API] lead email failed:", e));
 
     return NextResponse.json({
       success: true,

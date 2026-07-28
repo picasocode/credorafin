@@ -41,7 +41,6 @@ src/
 │   ├── blog/                     # Blog listing + [id] pages
 │   ├── careers/                  # Careers page
 │   ├── contact/                  # Contact page
-│   ├── emi-calculator/           # EMI Calculator tool
 │   ├── products/                 # Product pages
 │   │   ├── msme-loans/
 │   │   ├── project-finance/
@@ -147,7 +146,6 @@ ADMIN_PASSWORD="changeme"
 - **Hero Section** — Tata Capital-inspired full-width banner with carousel, left text + right image layout, product quick links strip, and stats bar
 - **Products** — MSME Loans, Project Finance, Supply Chain Finance, Cross-Border Finance, Specialized Finance
 - **Services** — Credit Repair, Fund Raising, Pre-Underwriting & Loan Structuring, End-to-End Support
-- **EMI Calculator** — Interactive loan EMI calculator with amortization schedule
 - **Blog** — SEO-friendly blog with MDX-powered articles
 - **Careers** — Job listings with application form and resume upload
 - **Referral Partner** — Partner registration and program details

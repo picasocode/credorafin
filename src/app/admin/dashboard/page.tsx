@@ -10,15 +10,16 @@ import {
   LayoutDashboard, Package, UserCog, Menu, ExternalLink,
   Activity, Check, Plus, Mail, EyeOff, Eye as EyeIcon,
   ArrowUpRight, CircleDot, UploadCloud, FileCheck,
-  LayoutTemplate, BookOpen
+  LayoutTemplate, BookOpen, Database
 } from "lucide-react";
 
 import HeroSlidesPanel from "@/components/admin/HeroSlidesPanel";
 import BlogPostsPanel from "@/components/admin/BlogPostsPanel";
+import BackupPanel from "@/components/admin/BackupPanel";
 
 /* ─── Types ─── */
 interface AdminUser { id: string; email: string; name: string; role: string; exp: number }
-type Tab = "Overview" | "Contacts" | "Referrals" | "Applications" | "Brochure Leads" | "Products" | "Hero Slides" | "Blog Posts" | "Positions" | "Admin Users";
+type Tab = "Overview" | "Contacts" | "Referrals" | "Applications" | "Brochure Leads" | "Products" | "Hero Slides" | "Blog Posts" | "Positions" | "Admin Users" | "Backup & Data";
 
 /* ─── Constants ─── */
 const CONTACT_STATUSES    = ["new","contacted","in_progress","converted","closed"] as const;
@@ -74,6 +75,7 @@ const NAV: {tab:Tab;icon:React.ReactNode;label:string;group:string}[] = [
   {tab:"Hero Slides",    icon:<LayoutTemplate size={15}/>, label:"Hero Slides",    group:"content"},
   {tab:"Blog Posts",     icon:<BookOpen size={15}/>,       label:"Blog Posts",     group:"content"},
   {tab:"Positions",      icon:<Briefcase size={15}/>,      label:"Job Positions",  group:"content"},
+  {tab:"Backup & Data",  icon:<Database size={15}/>,       label:"Backup & Data",  group:"settings"},
   {tab:"Admin Users",    icon:<UserCog size={15}/>,        label:"Admin Users",    group:"settings"},
 ];
 
@@ -81,14 +83,9 @@ const NAV: {tab:Tab;icon:React.ReactNode;label:string;group:string}[] = [
 const B = { navy:"#1C1D62", blue:"#304AC0", green:"#87B73C" };
 
 /* ─── Helpers ─── */
-function parseCookie(): AdminUser|null {
-  // fallback client-side read (works only when httpOnly=false)
-  if (typeof document==="undefined") return null;
-  const m = document.cookie.match(/(?:^|;\s*)credora_admin_session=([^;]*)/);
-  if (!m) return null;
-  try { const d=JSON.parse(atob(decodeURIComponent(m[1]))); if(d.exp&&d.exp<Date.now()) return null; return d; }
-  catch { return null; }
-}
+/* Session cookie is httpOnly, so the dashboard cannot read it from JS.
+ * The dashboard relies exclusively on /api/admin/me to obtain the current
+ * user. There is no client-side cookie fallback. */
 async function fetchMe(): Promise<AdminUser|null> {
   try {
     const res = await fetch("/api/admin/me", { credentials: "include" });
@@ -1413,6 +1410,7 @@ export default function AdminDashboard(){
             {tab==="Blog Posts"                 &&<BlogPostsPanel user={user}/>}
             {tab==="Positions"                   &&<PositionsPanel user={user}/>}
             {tab==="Admin Users"                 &&<AdminUsersPanel currentUser={user}/>}
+            {tab==="Backup & Data"               &&<BackupPanel user={user}/>}
             {(tab==="Contacts"||tab==="Referrals"||tab==="Applications"||tab==="Brochure Leads")&&<DataTablePanel tab={tab} user={user}/>}
           </div>
         </main>

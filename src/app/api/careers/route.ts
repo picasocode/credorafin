@@ -1,7 +1,19 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { sendLeadNotification } from "@/lib/mail";
 
 export async function POST(request: Request) {
+  // Rate limit: 5 requests per minute per IP.
+  const ip = getClientIp(request);
+  const rl = rateLimit(ip, 5, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const { full_name, email, phone, position, experience, message, name, resumeUrl } = body;
@@ -15,11 +27,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const ip =
+    const clientIp =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     const userAgent = request.headers.get("user-agent") ?? null;
 
-    await db.jobApplication.create({
+    const created = await db.jobApplication.create({
       data: {
         fullName: applicantName,
         email,
@@ -28,10 +40,17 @@ export async function POST(request: Request) {
         experience: experience ?? null,
         message: message ?? null,
         resumeUrl: resumeUrl ?? null,
-        ipAddress: ip,
+        ipAddress: clientIp,
         userAgent,
       },
     });
+
+    // Best-effort lead notification. Never fail the request if email fails.
+    sendLeadNotification("career", {
+      ...created,
+      ipAddress: clientIp,
+      userAgent,
+    }).catch((e) => console.error("[Careers API] lead email failed:", e));
 
     return NextResponse.json({
       success: true,

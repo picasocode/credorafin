@@ -8,7 +8,6 @@ import {
   Menu, X, Phone, Mail, ChevronDown, ChevronRight, ArrowRight,
   Building2, Link2, Globe, HardHat, Puzzle,
   CreditCard, FileCheck, Banknote, HeadphonesIcon,
-  Calculator,
 } from "lucide-react";
 import { navLinks, products, services } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -102,7 +101,7 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1 relative">
-              {navLinks.filter((link) => !link.isButton).map((link) => {
+              {navLinks.map((link) => {
                 const isProducts = link.label === "Products";
                 const isServices = link.label === "Services";
 
@@ -138,7 +137,7 @@ export default function Navbar() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.97 }}
                           transition={{ duration: 0.25, ease: "easeOut" }}
-                          className="absolute top-full left-0 mt-2 w-[960px] bg-white rounded-2xl shadow-2xl border border-[#E8ECF0] overflow-hidden"
+                          className="absolute top-full left-0 mt-2 w-[min(960px,calc(100vw-2rem))] bg-white rounded-2xl shadow-2xl border border-[#E8ECF0] overflow-hidden"
                           onMouseEnter={() => handleDropdownEnter(link.label)}
                           onMouseLeave={handleDropdownLeave}
                         >
@@ -327,7 +326,7 @@ export default function Navbar() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.97 }}
                           transition={{ duration: 0.25, ease: "easeOut" }}
-                          className="absolute top-full left-0 mt-2 w-[750px] bg-white rounded-2xl shadow-2xl border border-[#E8ECF0] overflow-hidden"
+                          className="absolute top-full left-0 mt-2 w-[min(750px,calc(100vw-2rem))] bg-white rounded-2xl shadow-2xl border border-[#E8ECF0] overflow-hidden"
                           onMouseEnter={() => handleDropdownEnter(link.label)}
                           onMouseLeave={handleDropdownLeave}
                         >
@@ -464,23 +463,6 @@ export default function Navbar() {
                   </div>
                 );
               })}
-              {/* EMI Calculator Button Links */}
-              {navLinks.filter((link) => link.isButton).map((link) => (
-                <div key={link.href} className="flex items-center ml-2 pl-3 border-l border-[#E8ECF0]">
-                  <Link
-                    href={link.href}
-                    onClick={handleLinkClick}
-                    className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-md shadow-md transition-all duration-200 ${
-                      isActive(link.href)
-                        ? "bg-gradient-to-r from-[#1e3a8a] to-[#0f1d5e] text-white shadow-lg"
-                        : "bg-gradient-to-r from-[#304AC0] to-[#13277E] text-white hover:from-[#253da3] hover:to-[#0f1d5e] hover:shadow-lg"
-                    }`}
-                  >
-                    <Calculator className="w-4 h-4" />
-                    {link.label}
-                  </Link>
-                </div>
-              ))}
             </div>
 
             {/* CTA */}
@@ -504,7 +486,7 @@ export default function Navbar() {
           {isMobileOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="lg:hidden bg-white border-t border-[#E8ECF0] overflow-hidden">
               <div className="px-4 py-4 space-y-1 max-h-[80vh] overflow-y-auto">
-                {navLinks.filter((link) => !link.isButton).map((link, i) => {
+                {navLinks.map((link, i) => {
                   const isProducts = link.label === "Products";
                   const isServices = link.label === "Services";
                   return (
@@ -584,23 +566,6 @@ export default function Navbar() {
                     </div>
                   );
                 })}
-                {/* EMI Calculator Button (mobile) */}
-                {navLinks.filter((link) => link.isButton).map((link) => (
-                  <motion.div key={link.href} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-                    <Link
-                      href={link.href}
-                      onClick={handleLinkClick}
-                      className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg text-sm font-bold uppercase tracking-wider shadow-md transition-all duration-200 ${
-                        isActive(link.href)
-                          ? "bg-gradient-to-r from-[#1e3a8a] to-[#0f1d5e] text-white"
-                          : "bg-gradient-to-r from-[#304AC0] to-[#13277E] text-white hover:from-[#253da3] hover:to-[#0f1d5e]"
-                      }`}
-                    >
-                      <Calculator className="w-4 h-4" />
-                      {link.label}
-                    </Link>
-                  </motion.div>
-                ))}
                 <div className="pt-3 border-t border-[#E8ECF0]">
                   <Link href="/contact">
                     <Button className="w-full bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider">Get Funded Now</Button>

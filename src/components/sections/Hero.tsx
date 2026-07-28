@@ -300,11 +300,11 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
-                className="h-10 px-7 rounded-full text-[12px] font-bold border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer"
+                className="h-10 px-7 rounded-full text-[12px] font-bold border-[#304AC0] bg-white text-[#1C1D62] hover:bg-[#F0F4FF] hover:text-[#1A2255] hover:border-[#1A2255] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer"
               >
                 <span className="flex items-center gap-1.5">
                   {slide.cta2}
-                  <ArrowUpRight className="w-4 h-4 text-neutral-400 stroke-[2.5]" />
+                  <ArrowUpRight className="w-4 h-4 text-[#304AC0] stroke-[2.5]" />
                 </span>
               </Button>
             </motion.div>

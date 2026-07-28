@@ -48,9 +48,9 @@ async function main() {
   }
 
   // ── 3. Seed default hero slides (home page slider) ──
-  // Hero slides are synced to this seed definition on every run
-  // (delete + recreate) so the baseline content stays controlled.
-  // Admin edits made via the dashboard will be reset by a re-seed.
+  // Idempotent: only create slides that don't already exist (matched by
+  // sortOrder). Admin edits made via the dashboard are preserved on
+  // re-seed. This matches the upsert-by-id pattern used for blog posts.
   const heroSlides = [
     {
       badge: "Empowering Enterprises",
@@ -114,12 +114,21 @@ async function main() {
     },
   ];
 
-  // Sync hero slides to the seed definition (delete + recreate).
-  await db.heroSlide.deleteMany({});
+  // Idempotent hero-slide seed: only insert slides whose sortOrder doesn't
+  // already exist in the DB. Admin-edited slides (different sortOrder or
+  // modified fields) are left untouched.
+  let slidesCreated = 0;
   for (const s of heroSlides) {
+    const existingSlide = await db.heroSlide.findFirst({ where: { sortOrder: s.sortOrder } });
+    if (existingSlide) continue;
     await db.heroSlide.create({ data: s });
+    slidesCreated++;
   }
-  console.log(`  ✓ Synced ${heroSlides.length} hero slides`);
+  if (slidesCreated > 0) {
+    console.log(`  ✓ Created ${slidesCreated} hero slides`);
+  } else {
+    console.log(`  ✓ Hero slides already seeded`);
+  }
 
   // ── 4. Seed default blog posts ──
   let blogCreated = 0;

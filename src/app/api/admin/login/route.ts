@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     });
 
     response.cookies.set(COOKIE_NAME, token, {
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: SESSION_MAX_AGE,
@@ -90,7 +90,7 @@ export async function DELETE() {
   const response = NextResponse.json({ success: true, message: "Logged out." });
 
   response.cookies.set(COOKIE_NAME, "", {
-    httpOnly: false,
+    httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: 0,

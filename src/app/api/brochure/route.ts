@@ -1,7 +1,19 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { sendLeadNotification } from "@/lib/mail";
 
 export async function POST(request: Request) {
+  // Rate limit: 5 requests per minute per IP.
+  const ip = getClientIp(request);
+  const rl = rateLimit(ip, 5, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const { email, product, brochureFile } = body;
@@ -22,7 +34,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const ip =
+    const clientIp =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     const userAgent = request.headers.get("user-agent") ?? null;
 
@@ -41,18 +53,28 @@ export async function POST(request: Request) {
     }
 
     // Record the download
+    let createdRow: Record<string, unknown> | null = null;
     try {
-      await db.brochureDownload.create({
+      createdRow = await db.brochureDownload.create({
         data: {
           email,
           product,
           brochureFile: uploadedFile ? uploadedFile.originalName : brochureFile,
-          ipAddress: ip,
+          ipAddress: clientIp,
           userAgent,
         },
       });
     } catch (insertErr) {
       console.error("[Brochure API] brochure_downloads insert failed (non-blocking):", insertErr);
+    }
+
+    // Best-effort lead notification. Never fail the request if email fails.
+    if (createdRow) {
+      sendLeadNotification("brochure", {
+        ...createdRow,
+        ipAddress: clientIp,
+        userAgent,
+      }).catch((e) => console.error("[Brochure API] lead email failed:", e));
     }
 
     return NextResponse.json({
