@@ -245,10 +245,58 @@ force_env_var() {   # force_env_var <key> <value>
   fi
 }
 
-force_env_var "DATABASE_URL" "file:./${DB_FILE}"
+# Resolve the DB file to an ABSOLUTE path. This is critical: Prisma CLI
+# (db push / migrate) resolves relative `file:` URLs against the schema.prisma
+# location (prisma/), while the Prisma Client at runtime resolves them against
+# the process cwd. A relative path therefore writes the seed to prisma/db/app.db
+# but the app reads from ./db/app.db → empty database, login fails. An absolute
+# path makes both sides agree on the same file.
+PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+DB_ABS_PATH="${PROJECT_ROOT}/${DB_FILE}"
+force_env_var "DATABASE_URL" "file:${DB_ABS_PATH}"
 force_env_var "NEXTAUTH_URL" "http://${DOMAIN}"
-ok "DATABASE_URL = file:./${DB_FILE}"
+force_env_var "NODE_ENV" "production"
+# ── SMTP (Gmail) auto-configuration ──────────────────────────────────────
+# Force the non-secret SMTP defaults so backups + lead notifications work
+# out of the box. The password is handled separately (see below) because it
+# must NOT live in this committed script.
+force_env_var "SMTP_HOST" "smtp.gmail.com"
+force_env_var "SMTP_PORT" "587"
+force_env_var "SMTP_USER" "credorafintechpvtltd@gmail.com"
+force_env_var "SMTP_FROM" "CredoraFin <credorafintechpvtltd@gmail.com>"
+force_env_var "BACKUP_EMAILS" "credorafintechpvtltd@gmail.com"
+force_env_var "NOTIFY_EMAILS" "credorafintechpvtltd@gmail.com"
+ok "DATABASE_URL = file:${DB_ABS_PATH} (absolute — CLI & runtime agree)"
 ok "NEXTAUTH_URL = http://${DOMAIN}"
+ok "SMTP_HOST = smtp.gmail.com (Gmail)"
+
+# ── SMTP_PASS handling ───────────────────────────────────────────────────
+# The Gmail App Password is a secret — it is NOT hardcoded in this script.
+# Resolution order:
+#   1. If .env already has a non-empty SMTP_PASS (not the placeholder), keep it.
+#   2. Else if the DEPLOY_SMTP_PASS env var is set, write that into .env.
+#   3. Else write a placeholder and warn the user with a copy-paste command.
+# This makes re-deploys truly single-command (password persists in .env),
+# and the first deploy can be single-command too via:
+#   DEPLOY_SMTP_PASS=xxxx ./deploy.sh
+SMTP_PASS_REGEX='^SMTP_PASS="(.+)"$'
+CURRENT_SMTP_PASS=""
+if grep -qE '^SMTP_PASS=' .env; then
+  CURRENT_SMTP_PASS="$(grep -E '^SMTP_PASS=' .env | sed -E 's/^SMTP_PASS="([^"]*)".*$/\1/')"
+fi
+if [[ -n "${CURRENT_SMTP_PASS}" && "${CURRENT_SMTP_PASS}" != "REPLACE_WITH_GMAIL_APP_PASSWORD" ]]; then
+  ok "SMTP_PASS already set in .env (preserved)"
+elif [[ -n "${DEPLOY_SMTP_PASS:-}" ]]; then
+  force_env_var "SMTP_PASS" "${DEPLOY_SMTP_PASS}"
+  ok "SMTP_PASS written from DEPLOY_SMTP_PASS env var"
+else
+  force_env_var "SMTP_PASS" "REPLACE_WITH_GMAIL_APP_PASSWORD"
+  warn "SMTP_PASS not set — email backups & lead notifications will be DISABLED"
+  warn "  Fix with ONE of these (then re-run ./deploy.sh):"
+  warn "    A)  nano .env  →  set SMTP_PASS="<your-16-char-gmail-app-password>""
+  warn "    B)  DEPLOY_SMTP_PASS=<app-password> ./deploy.sh"
+  warn "  Generate an app password: https://myaccount.google.com/apppasswords"
+fi
 
 # Ensure the db/ directory exists (SQLite needs the dir to exist before write)
 mkdir -p "$(dirname "$DB_FILE")"
@@ -564,7 +612,7 @@ fi
 # ============================================================================
 echo ""
 echo -e "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-echo -e "${C_BOLD}${C_GREEN}  ✓ CredoraFin dev server is running${C_RESET}"
+echo -e "${C_BOLD}${C_GREEN}  ✓ CredoraFin production server is running${C_RESET}"
 echo -e "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
 echo ""
 if [[ $DO_NGINX -eq 1 ]]; then
@@ -574,8 +622,16 @@ else
   echo -e "  App URL:        ${C_BOLD}http://localhost:${APP_PORT}${C_RESET}"
 fi
 echo -e "  Mode:           ${C_BOLD}PRODUCTION (standalone build + bun)${C_RESET}"
-echo -e "  Database:       ${C_BOLD}SQLite at ${DB_FILE}${C_RESET}"
+echo -e "  Database:       ${C_BOLD}SQLite at ${DB_FILE} (WAL mode)${C_RESET}"
 echo -e "  Admin login:    ${C_BOLD}admin@credora.in / credora@admin123${C_RESET}"
+# Show email/backup status (re-read .env so the value reflects what we just wrote)
+# shellcheck disable=SC1091
+set -a; source .env 2>/dev/null || true; set +a
+if [[ -n "${SMTP_PASS:-}" && "${SMTP_PASS}" != "REPLACE_WITH_GMAIL_APP_PASSWORD" ]]; then
+  echo -e "  Email/Backups:  ${C_BOLD}ENABLED (Gmail → ${BACKUP_EMAILS:-?})${C_RESET}"
+else
+  echo -e "  Email/Backups:  ${C_YELLOW}${C_BOLD}DISABLED (SMTP_PASS not set)${C_RESET}"
+fi
 echo -e "  Health:         ${C_BOLD}${HEALTH_URL}${C_RESET}"
 echo -e "  Logs:           ${C_BOLD}server.log${C_RESET}"
 echo -e "  PID file:       ${C_BOLD}.server.pid${C_RESET}"
@@ -591,7 +647,7 @@ if [[ $DO_NGINX -eq 1 ]]; then
   echo -e "         ${C_BOLD}sudo certbot --nginx -d ${DOMAIN} -d www.${DOMAIN}${C_RESET}"
   echo -e "       (if www DNS points elsewhere, the www challenge will 404 and block the cert)"
   echo ""
-  echo -e "  ${C_YELLOW}Manage the dev server:${C_RESET}"
+  echo -e "  ${C_YELLOW}Manage the production server:${C_RESET}"
   echo -e "    Stop:   ${C_BOLD}kill \$(cat .server.pid)${C_RESET}"
   echo -e "    Logs:   ${C_BOLD}tail -f server.log${C_RESET}"
   echo -e "    Restart:${C_BOLD} ./deploy.sh${C_RESET}"

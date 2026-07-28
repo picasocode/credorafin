@@ -553,3 +553,52 @@ Stage Summary:
 - Footer social icons now point to real URLs via SOCIAL array
 - Did NOT touch: deploy.sh, nginx/, prisma/, src/lib/mail.ts, src/lib/backup.ts, src/app/api/*, src/app/privacy-policy/*, src/app/admin/dashboard/page.tsx
 - Full work record at: /home/z/my-project/agent-ctx/1-b-frontend-agent.md
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Configure Gmail SMTP credentials (credorafintechpvtltd@gmail.com) for email backup + lead notifications; fix DB path resolution bug; finalize deploy.sh for single-command production deploy
+
+Work Log:
+- Read prior worklog (Tasks 1, 2, 3-a, 3-b, 1-a, 1-b, 1-c) — understood all previous work: EMI removed, mobile responsive fixed, white-button fixed, privacy policy rewritten, SEO done, backup system + mail library built by backend agent, SQLite WAL hardening done
+- User provided Gmail SMTP credentials: credorafintechpvtltd@gmail.com + app password (tllw dzmg kkax ahtg)
+
+**SMTP Configuration:**
+- Wrote full Gmail SMTP credentials into .env (gitignored): SMTP_HOST=smtp.gmail.com, SMTP_PORT=587, SMTP_USER=credorafintechpvtltd@gmail.com, SMTP_PASS=<app-password-no-spaces>, SMTP_FROM, BACKUP_EMAILS, NOTIFY_EMAILS all set to credorafintechpvtltd@gmail.com
+- Updated .env.example with Gmail defaults (host/port/user/from/emails pre-filled; SMTP_PASS empty with comment linking to https://myaccount.google.com/apppasswords)
+
+**deploy.sh SMTP Auto-Configuration (single-command):**
+- Added force_env_var calls for SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_FROM, BACKUP_EMAILS, NOTIFY_EMAILS (non-secret Gmail defaults)
+- Added SMTP_PASS resolution logic (3-tier):
+  1. If .env already has a real SMTP_PASS (not placeholder) → preserve it
+  2. Else if DEPLOY_SMTP_PASS env var is set → write that into .env
+  3. Else write placeholder + print clear warning with copy-paste fix instructions
+- This keeps the app password OUT of git while making re-deploys truly single-command (password persists in .env). First deploy can be single-command too: `DEPLOY_SMTP_PASS=xxxx ./deploy.sh`
+- Added NODE_ENV=production forcing
+- Fixed final banner: "dev server" → "production server" (3 places)
+- Added email/backup status line to final summary (ENABLED/DISABLED based on SMTP_PASS)
+
+**DB Path Resolution Bug Fix (CRITICAL):**
+- Discovered: relative SQLite path `file:./db/app.db` resolves DIFFERENTLY for Prisma CLI vs runtime:
+  - Prisma CLI (db push / seed): resolves relative to schema.prisma location → prisma/db/app.db (seed wrote here)
+  - Prisma Client runtime: resolves relative to cwd → db/app.db (empty, app read here) → login failed
+- Fix: use ABSOLUTE path everywhere
+  - .env: DATABASE_URL="file:/home/z/my-project/db/app.db"
+  - deploy.sh: computes PROJECT_ROOT + DB_ABS_PATH, forces `file:${DB_ABS_PATH}`
+  - .env.example: documented the absolute-path requirement with explanation
+- Cleaned stray files (prisma/db/app.db, empty db/app.db), re-pushed schema + seed against absolute path
+- Verified: admin user found, login succeeds, SMTP configured:true, backup email SENT successfully
+
+**End-to-End Backup Email Test (PASSED):**
+- POST /api/admin/login → {"success":true,"user":{...,"role":"super_admin"}}
+- GET /api/admin/settings → {"smtp":{"host":"smtp.gmail.com","configured":true},"backupEmails":["credorafintechpvtltd@gmail.com"],...}
+- POST /api/admin/backup → {"ok":true,"emailed":true,"filename":"credorafin-backup-2026-07-28T06-39-21.db","size":118784,"recipients":["credorafintechpvtltd@gmail.com"]}
+- Gmail accepted the email (3.3s SMTP round-trip); backup .db file attached
+
+Stage Summary:
+- Gmail SMTP fully configured and VERIFIED working — backup emails + lead notifications will fire in production
+- DB path resolution bug fixed (absolute path) — admin login + all DB operations now work correctly
+- deploy.sh is now truly single-command for production: auto-configures nginx, swap, .env, DB, build, server, AND SMTP (password via DEPLOY_SMTP_PASS env var or pre-existing .env)
+- App password kept OUT of git (only in gitignored .env); .env.example has empty SMTP_PASS with clear instructions
+- Files modified: .env, .env.example, deploy.sh
+- Backup email successfully delivered to credorafintechpvtltd@gmail.com
