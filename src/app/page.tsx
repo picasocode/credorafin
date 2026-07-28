@@ -14,6 +14,7 @@ import {
 } from "@/lib/animations";
 import FluidTimeline from "@/components/FluidTimeline";
 import Hero from "@/components/sections/Hero";
+import EMICalculator from "@/components/EMICalculator";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
@@ -785,6 +786,7 @@ export default function Home() {
       <WhatWeDoSection />
       <KeyNumbersSection />
       <FluidTimeline />
+      <EMICalculator />
       <BlogPreviewSection />
       <TestimonialSection />
       <CTABannerSection />

@@ -11,6 +11,7 @@ import {
   Linkedin,
   Facebook,
   Instagram,
+  Youtube,
   Send,
   CheckCircle2,
   ChevronRight,
@@ -359,13 +360,16 @@ export default function ContactPage() {
                     </p>
                     <div className="flex items-center gap-3">
                       {[
-                        { icon: Linkedin, label: "LinkedIn" },
-                        { icon: Facebook, label: "Facebook" },
-                        { icon: Instagram, label: "Instagram" },
+                        { icon: Linkedin, label: "LinkedIn", href: "https://in.linkedin.com/company/credora-fintech" },
+                        { icon: Instagram, label: "Instagram", href: "https://www.instagram.com/credora_fintech_pvt_ltd/" },
+                        { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/p/Credora-Fintech-Pvt-Ltd-61578730990789/" },
+                        { icon: Youtube, label: "YouTube", href: "https://www.youtube.com/channel/UCmRgMfLCjD0vPDp7cfPlPSA" },
                       ].map((social, i) => (
                         <motion.a
                           key={i}
-                          href="#"
+                          href={social.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors duration-300"
                           aria-label={social.label}
                           whileHover={{ scale: 1.1, rotate: 3 }}

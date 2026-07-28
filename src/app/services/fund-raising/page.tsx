@@ -332,7 +332,7 @@ export default function FundRaisingPage() {
                 <img
                   src="/images/sections/financial-growth.png"
                   alt="Financial growth chart showing funding raised successfully"
-                  className="rounded-2xl shadow-xl w-64 h-64 object-cover"
+                  className="rounded-2xl shadow-xl w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem] object-cover"
                 />
               </div>
             </FadeIn>

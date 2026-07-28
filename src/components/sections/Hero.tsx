@@ -4,10 +4,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import {
-  Clock,
   Sparkles,
-  ArrowUpRight,
-  Percent
+  ArrowUpRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
@@ -340,61 +338,6 @@ export default function Hero() {
                     priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/15 via-transparent to-transparent pointer-events-none" />
-                </motion.div>
-              </AnimatePresence>
-
-              {/* OVERLAY FLOATER 1 */}
-              <AnimatePresence>
-                <motion.div
-                  key={`hl-${current}`}
-                  initial={{ opacity: 0, x: -25, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ type: "spring", stiffness: 100, damping: 14 }}
-                  className="absolute top-[8%] left-6 z-20 bg-white/95 backdrop-blur-xl border border-neutral-200/50 rounded-xl p-3 shadow-lg hidden sm:flex flex-col gap-0.5 min-w-[130px] text-left"
-                >
-                  <div className="w-6 h-6 rounded-md flex items-center justify-center bg-[#1A2255]/5 text-[#1A2255] mb-0.5">
-                    <Percent className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </div>
-                  <span className="text-[16px] font-black text-neutral-900 tracking-tight leading-none">{slide.hudLeft.metric}</span>
-                  <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider mt-0.5">{slide.hudLeft.label}</span>
-                  <span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 rounded px-1.5 py-0.5 mt-1 block w-max">{slide.hudLeft.status}</span>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* OVERLAY FLOATER 2 */}
-              <AnimatePresence>
-                <motion.div
-                  key={`hr-${current}`}
-                  initial={{ opacity: 0, x: 25, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 0 }}
-                  transition={{ type: "spring", stiffness: 100, damping: 14 }}
-                  className="absolute top-[8%] right-6 z-20 bg-[#1A2255]/95 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 text-white shadow-xl hidden sm:block min-w-[160px] text-left"
-                >
-                  <span className="text-[8px] text-neutral-300 font-bold uppercase tracking-widest block mb-1">{slide.hudRight.label}</span>
-                  <p className="text-[16px] font-black tracking-tight text-white leading-none">{slide.hudRight.metric}</p>
-                  <p className="text-[9px] text-neutral-300 font-medium mt-1">Status: {slide.hudRight.trend}</p>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* OVERLAY FLOATER 3 */}
-              <AnimatePresence>
-                <motion.div
-                  key={`hb-${current}`}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  className="absolute bottom-4 left-6 z-20 bg-white/95 backdrop-blur-md border border-neutral-200/50 rounded-xl p-2 px-3.5 shadow-md max-w-[320px] text-left hidden sm:flex items-center gap-2.5"
-                >
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center bg-[#1A2255] text-white shrink-0">
-                    <Clock className="w-3 h-3" />
-                  </div>
-                  <div className="truncate flex items-center gap-2 text-[11px]">
-                    <span className="font-black text-[#1A2255] tracking-tight">{slide.hudGraph.value}</span>
-                    <span className="text-neutral-300">|</span>
-                    <span className="text-neutral-500 truncate font-medium">{slide.hudGraph.label}</span>
-                  </div>
                 </motion.div>
               </AnimatePresence>
             </motion.div>

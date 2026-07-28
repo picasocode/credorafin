@@ -432,7 +432,7 @@ export default function SupplyChainFinancePage() {
               </SlideReveal>
               <SlideReveal direction="right" delay={0.2}>
                 <div className="relative flex items-center justify-center">
-                  <div className="w-72 h-72 sm:w-80 sm:h-80">
+                  <div className="w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem]">
                     <img src="/images/sections/financial-growth.png" alt="Supply chain finance working capital growth chart" className="rounded-2xl shadow-xl w-full h-full object-cover" />
                   </div>
                 </div>

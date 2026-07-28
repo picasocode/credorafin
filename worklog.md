@@ -1435,3 +1435,78 @@ Stage Summary:
 - ✓ AnimatedIllustration.tsx component file deleted (no longer needed)
 - ✓ All 12 pages verified via Agent Browser — images load, zero errors
 - Files modified: 12 page files + 1 component deleted + 4 new images in /public/images/sections/
+
+---
+Task ID: 6-MULTI (Main Agent — 5 UI/UX corrections)
+Task: (M) Add EMI calculator on home page; (N) Make newly added section images bigger and fit in products & services; (O) Remove all cards/elements over hero image on home page (clean plain image); (P) Update social media links in contact page (with YouTube); (Q) Fix alignment errors in careers form and referral partner form
+
+Work Log:
+- Read worklog.md to understand previous task context (Tasks G-K: EMI button repositioning, navbar cleanup, footer social links, ₹ Arial font, referral Earn card fix)
+
+Task O (Hero clean image):
+- src/components/sections/Hero.tsx:
+  - Removed 3 floating overlay HUD cards (hudLeft, hudRight, hudGraph) that were positioned over the hero image (lines ~346-399)
+  - Removed unused imports: Clock, Percent (no longer referenced)
+  - Hero image now renders as clean plain image with only a subtle gradient overlay (from-[#1A2255]/15)
+  - Header typography (badge, h1, subtitle, CTA buttons) and bottom tabs navigation dock preserved
+
+Task M (EMI calculator on home page):
+- src/app/page.tsx:
+  - Added import: `import EMICalculator from "@/components/EMICalculator"`
+  - Added `<EMICalculator />` between `<FluidTimeline />` and `<BlogPreviewSection />` in Home composition
+  - EMICalculator is a self-contained section component (already used on /emi-calculator page)
+
+Task P (Contact social links):
+- src/app/contact/page.tsx:
+  - Added `Youtube` to lucide-react imports
+  - Replaced placeholder social links (3 icons with href="#") with 4 correct social profiles:
+    * LinkedIn: https://in.linkedin.com/company/credora-fintech
+    * Instagram: https://www.instagram.com/credora_fintech_pvt_ltd/
+    * Facebook: https://www.facebook.com/p/Credora-Fintech-Pvt-Ltd-61578730990789/
+    * YouTube: https://www.youtube.com/channel/UCmRgMfLCjD0vPDp7cfPlPSA
+  - Added target="_blank" and rel="noopener noreferrer" to all social links
+
+Task N (Bigger images in products & services):
+- 5 products pages — changed image wrapper from `w-72 h-72 sm:w-80 sm:h-80` (288/320px) to `w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem]` (320/384/512px):
+  * src/app/products/msme-loans/page.tsx (financial-growth.png)
+  * src/app/products/supply-chain-finance/page.tsx (financial-growth.png)
+  * src/app/products/cross-border-finance/page.tsx (security-trust.png)
+  * src/app/products/project-finance/page.tsx (security-trust.png)
+  * src/app/products/specialized-finance/page.tsx (security-trust.png)
+- 4 services pages — changed image className from `w-64 h-64` (256px) to `w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem]` (320/384/512px):
+  * src/app/services/credit-repair/page.tsx (partnership.png)
+  * src/app/services/fund-raising/page.tsx (financial-growth.png)
+  * src/app/services/end-to-end-support/page.tsx (partnership.png)
+  * src/app/services/pre-underwriting-loan-structuring/page.tsx (business-consultation.png)
+- Result: Images now render at 512x512px on desktop (verified via Agent Browser), 2x bigger than before
+
+Task Q (Form alignment fix):
+- Identified root cause via Agent Browser + VLM analysis: Phone icon (absolute left-3) was overlapping with +91 prefix text because both occupied the same left position
+- src/app/careers/page.tsx:
+  - Removed outer `<div className="relative">` wrapper and `<Phone className="absolute left-3...">` icon from phone field
+  - Kept the flex group with +91 prefix span + Input
+  - Removed unused `Phone` import from lucide-react
+- src/app/referral-partner/page.tsx: Same fix applied
+  - Removed outer relative wrapper + Phone icon
+  - Removed unused `Phone` import
+
+Verification (Agent Browser, desktop 1440x900 + mobile iPhone 14):
+- Home page hero: Image is clean, no HUD cards overlaying it (VLM confirmed "completely free of floating elements, overlays, or HUD cards")
+- EMI calculator: Section present on home page with heading "Calculate Your EMI" and all calculator controls
+- Contact social links: All 4 links (LinkedIn, Instagram, Facebook, YouTube) with correct hrefs verified via DOM query
+- Products image: 512x512px (was 320x320px) — 60% bigger
+- Services image: 512x512px (was 256x256px) — 2x bigger
+- Careers form: +91 prefix clean (no phone icon overlapping), all rows aligned with consistent heights
+- Referral form: Same — +91 prefix clean, all rows properly aligned
+- No console errors, no runtime errors, all pages serve 200 status
+- ESLint clean on all 12 modified files (0 new errors; pre-existing errors in admin/dashboard + admin/login pages unrelated)
+
+Stage Summary:
+- ✓ Hero image now clean and plain (3 HUD overlay cards removed)
+- ✓ EMI calculator section added to home page (between FluidTimeline and BlogPreview)
+- ✓ Contact page social links updated with 4 correct URLs (LinkedIn, Instagram, Facebook, YouTube)
+- ✓ All 9 section images (5 products + 4 services) resized from 256-320px to 512px on desktop
+- ✓ Phone field alignment fixed in both careers and referral forms (removed overlapping icon)
+- ✓ Files modified: 12 (Hero.tsx, page.tsx, contact/page.tsx, careers/page.tsx, referral-partner/page.tsx, 5 products pages, 4 services pages — wait that's 13. Actually: Hero.tsx + page.tsx + contact + careers + referral + 5 products + 4 services = 13 files)
+- ✓ All changes verified via Agent Browser on desktop + mobile
+- ✓ No new lint errors introduced

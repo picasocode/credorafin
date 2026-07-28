@@ -22,7 +22,6 @@ import {
   Send,
   UserCircle,
   Building,
-  Phone,
   Mail,
   MapPin,
   MessageSquare,
@@ -976,25 +975,22 @@ export default function ReferralPartnerPage() {
                       <Label htmlFor="phone" className="text-[#2D3748] text-sm font-medium">
                         Phone Number <span className="text-red-500">*</span>
                       </Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#718096]" />
-                        <div className="flex">
-                          <span className="inline-flex items-center px-3 h-11 rounded-l-lg border border-r-0 border-[#E8ECF0] bg-[#F7F8FA] text-[#718096] text-sm font-medium">
-                            +91
-                          </span>
-                          <Input
-                            id="phone"
-                            type="tel"
-                            placeholder="9876543210"
-                            value={formData.phone}
-                            onChange={(e) => {
-                              const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                              setFormData({ ...formData, phone: val });
-                              if (formErrors.phone) setFormErrors({ ...formErrors, phone: "" });
-                            }}
-                            className={`rounded-l-none h-11 rounded-r-lg border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 ${formErrors.phone ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}`}
-                          />
-                        </div>
+                      <div className="flex">
+                        <span className="inline-flex items-center px-3 h-11 rounded-l-lg border border-r-0 border-[#E8ECF0] bg-[#F7F8FA] text-[#718096] text-sm font-medium">
+                          +91
+                        </span>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="9876543210"
+                          value={formData.phone}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            setFormData({ ...formData, phone: val });
+                            if (formErrors.phone) setFormErrors({ ...formErrors, phone: "" });
+                          }}
+                          className={`rounded-l-none h-11 rounded-r-lg border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 ${formErrors.phone ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}`}
+                        />
                       </div>
                       {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
                     </div>

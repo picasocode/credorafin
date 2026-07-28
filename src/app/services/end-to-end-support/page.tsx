@@ -302,7 +302,7 @@ export default function EndToEndSupportPage() {
                 <img
                   src="/images/sections/partnership.png"
                   alt="Dedicated partnership supporting clients through the entire loan lifecycle"
-                  className="rounded-2xl shadow-xl w-64 h-64 object-cover"
+                  className="rounded-2xl shadow-xl w-80 h-80 sm:w-96 sm:h-96 lg:w-[32rem] lg:h-[32rem] object-cover"
                 />
               </div>
             </FadeIn>
