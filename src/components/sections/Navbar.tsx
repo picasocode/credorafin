@@ -460,27 +460,6 @@ export default function Navbar() {
           {isMobileOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="lg:hidden bg-white border-t border-[#E8ECF0] overflow-hidden">
               <div className="px-4 py-4 space-y-1 max-h-[80vh] overflow-y-auto">
-                {/* Prominent contact card — at top of mobile menu, before nav links */}
-                <div className="mb-3 rounded-xl border border-[#E8ECF0] bg-[#F7F9FC] p-4">
-                  <a
-                    href="tel:+919344899971"
-                    className="flex items-center gap-3 py-2 text-sm font-medium text-[#2D3748] hover:text-[#304AC0] transition-colors"
-                  >
-                    <span className="w-9 h-9 rounded-lg bg-[#304AC0]/10 flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-4 h-4 text-[#304AC0]" />
-                    </span>
-                    +91 93448 99971
-                  </a>
-                  <a
-                    href="mailto:info@credorafin.com"
-                    className="flex items-center gap-3 py-2 text-sm font-medium text-[#2D3748] hover:text-[#304AC0] transition-colors break-all"
-                  >
-                    <span className="w-9 h-9 rounded-lg bg-[#304AC0]/10 flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-4 h-4 text-[#304AC0]" />
-                    </span>
-                    info@credorafin.com
-                  </a>
-                </div>
                 {navLinks.map((link, i) => {
                   const isProducts = link.label === "Products";
                   const isServices = link.label === "Services";
@@ -558,10 +537,6 @@ export default function Navbar() {
                   <Link href="/contact">
                     <Button className="w-full bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider">Get Funded Now</Button>
                   </Link>
-                </div>
-                <div className="pt-3 space-y-2 text-sm text-[#718096]">
-                  <a href="tel:+919344899971" className="flex items-center gap-2"><Phone className="w-4 h-4" /> +91 93448 99971</a>
-                  <a href="mailto:info@credorafin.com" className="flex items-center gap-2"><Mail className="w-4 h-4" /> info@credorafin.com</a>
                 </div>
               </div>
             </motion.div>
