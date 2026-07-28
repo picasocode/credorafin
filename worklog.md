@@ -1082,3 +1082,32 @@ Stage Summary:
 - ✓ Desktop layout completely unchanged
 - ✓ Committed as 56900bf and pushed to origin/main successfully
 - Files modified: src/components/FloatingEMIButton.tsx, src/components/EMICalculator.tsx, src/app/emi-calculator/page.tsx (3 files, +102/-5 lines)
+
+---
+Task ID: H (Main Agent — Remove contact info from Navbar mobile menu)
+Task: Remove "+91 93448 99971" and "info@credorafin.com" from the Navbar mobile view (hamburger menu)
+
+Work Log:
+- Found 2 occurrences of phone/email in Navbar.tsx mobile menu:
+  1. Lines 463-483: "Prominent contact card" at the TOP of mobile menu (added in prior session Task B) — rounded card with Phone/Mail icons + phone/email links
+  2. Lines 562-565: Small contact line at the BOTTOM of mobile menu (pre-existing) — plain text links with Phone/Mail icons
+- Desktop top bar (lines 67-84, `hidden md:block`) was NOT removed — user only asked about mobile view; desktop top bar is already hidden on mobile via `hidden md:block` (CSS display:none below 768px)
+- Removed both mobile-menu contact blocks via MultiEdit:
+  * Removed the entire `<div className="mb-3 rounded-xl border ...">...</div>` contact card (21 lines)
+  * Removed the bottom `<div className="pt-3 space-y-2 text-sm ...">...</div>` contact line (4 lines)
+- Kept the "Get Funded Now" CTA button (still at bottom of mobile menu)
+- Kept `Phone` and `Mail` lucide-react imports (still used in desktop top bar at lines 76/79)
+- Verified with Agent Browser on iPhone 14 (390x844):
+  * Opened hamburger menu
+  * Queried mobile menu panel text content: "Home / About / Products / Services / Blog / Referral Partner / Contact / GET FUNDED NOW" — phone and email are GONE
+  * Confirmed desktop top bar parent has `display: none` on mobile viewport (correctly hidden via `hidden md:block`)
+  * The phone/email links still found at y=10530 are in the FOOTER (not navbar) — user did not ask to remove those
+- ESLint clean (0 errors, 0 warnings)
+- Zero console/runtime errors
+
+Stage Summary:
+- ✓ Both mobile-menu contact blocks (top prominent card + bottom small line) removed from Navbar mobile view
+- ✓ Desktop top bar (hidden on mobile anyway) untouched
+- ✓ Footer phone/email untouched (out of scope)
+- ✓ Mobile menu still functional: nav links + GET FUNDED NOW CTA intact
+- ✓ Files modified: src/components/sections/Navbar.tsx (1 file, -25 lines)
