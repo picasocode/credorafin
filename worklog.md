@@ -1393,3 +1393,45 @@ Stage Summary:
 - ✓ Did NOT modify any other files
 
 Note for next agent: The 3 already-modified products pages (msme-loans, supply-chain-finance, cross-border-finance) were modified by a prior task not recorded in worklog.md. Their state was verified to match the task spec exactly (img tags with correct className + theme mapping, FloatingElement kept where still used, small badges removed). No corrective action was needed.
+
+---
+Task ID: 5-FINAL (Main Agent — Remove AnimatedIllustration + add real images)
+Task: Remove all AnimatedIllustration placeholder graphics from the entire website and replace with real generated images
+
+Work Log:
+- Used VLM (z-ai vision CLI) to analyze user's screenshot — identified the graphic as AnimatedIllustration component with theme="chart" (BarChart3 icon + 5 alternating blue/green bars + TrendingUp badge in a faint circle)
+- Found 37 AnimatedIllustration usages across 12 files (4 services + 5 products + referral-partner + contact + careers)
+- Generated 4 professional fintech images using z-ai image CLI (1024x1024):
+  * business-consultation.png — advisor consulting client
+  * financial-growth.png — growth chart with upward arrow
+  * partnership.png — business handshake
+  * security-trust.png — secure financial documents
+  Note: z-ai CLI generates JPEG content but saves with .png extension — next/image <Image> component rejects these (content-type mismatch), but plain <img> works fine (browsers sniff content type)
+- Dispatched 3 parallel subagents:
+  * Task 2-SERVICES: 4 services pages (16 usages: 12 small badges removed, 4 large illustrations replaced with images)
+  * Task 3-PRODUCTS: 5 products pages (6 usages processed; 3 already done by prior task; 3 small badges removed, 3 large illustrations replaced)
+  * Task 4-OTHER: 3 pages (3 usages replaced with images)
+- Post-subagent fixes by main agent:
+  * Fixed 4 services pages: changed <Image> to <img> for section images (next/image rejected JPEG-as-PNG; plain <img> works)
+  * Cleaned up 2 stale comments in referral-partner/page.tsx that mentioned "AnimatedIllustration"
+  * Removed the AnimatedIllustration.tsx component file entirely (no longer used anywhere)
+
+Verification (Agent Browser, desktop 1440x900):
+- Checked all 12 pages — every section image loads correctly (loaded: true, naturalWidth: 1024):
+  * services/credit-repair, fund-raising, end-to-end-support, pre-underwriting-loan-structuring
+  * products/msme-loans, supply-chain-finance, cross-border-finance, project-finance, specialized-finance
+  * contact, careers, referral-partner
+- Zero console/runtime errors across all pages
+- All pages serve 200 status codes
+- ESLint clean on all 12 modified files (0 new errors)
+- Grep confirmed: 0 remaining AnimatedIllustration usages in src/ (excluding the deleted component file)
+- AnimatedIllustration.tsx component file deleted
+
+Stage Summary:
+- ✓ All 37 AnimatedIllustration placeholder graphics removed from the entire website
+- ✓ 4 professional AI-generated images added as replacements (business-consultation, financial-growth, partnership, security-trust)
+- ✓ Small decorative floating badges (size < 200) removed entirely (cleaner design)
+- ✓ Large standalone illustrations (size >= 200) replaced with real images
+- ✓ AnimatedIllustration.tsx component file deleted (no longer needed)
+- ✓ All 12 pages verified via Agent Browser — images load, zero errors
+- Files modified: 12 page files + 1 component deleted + 4 new images in /public/images/sections/
