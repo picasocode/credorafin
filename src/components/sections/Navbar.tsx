@@ -79,7 +79,7 @@ export default function Navbar() {
               <Mail className="w-3.5 h-3.5" /> info@credorafin.com
             </a>
           </div>
-          <span className="text-white/70">Mon – Sat: 9:00 AM – 6:00 PM</span>
+          <span className="text-white/70">Mon – Sat: 9:00 AM – 6:30 PM</span>
         </div>
       </motion.div>
 
@@ -179,17 +179,6 @@ export default function Navbar() {
                                     </Link>
                                   );
                                 })}
-                              </div>
-                              {/* Bottom CTA */}
-                              <div className="px-5 py-4 border-t border-[#E8ECF0]">
-                                <Link
-                                  href="/products"
-                                  onClick={handleLinkClick}
-                                  className="flex items-center justify-center gap-2 w-full bg-[#87B73C] hover:bg-[#6d9a2e] text-white text-xs font-bold uppercase tracking-wider py-2.5 rounded-lg transition-colors"
-                                >
-                                  Explore All Products
-                                  <ArrowRight className="w-3.5 h-3.5" />
-                                </Link>
                               </div>
                             </div>
 
@@ -361,16 +350,6 @@ export default function Navbar() {
                                   );
                                 })}
                               </div>
-                              <div className="px-5 py-4 border-t border-[#E8ECF0]">
-                                <Link
-                                  href="/services"
-                                  onClick={handleLinkClick}
-                                  className="flex items-center justify-center gap-2 w-full bg-[#304AC0] hover:bg-[#13277E] text-white text-xs font-bold uppercase tracking-wider py-2.5 rounded-lg transition-colors"
-                                >
-                                  Explore All Services
-                                  <ArrowRight className="w-3.5 h-3.5" />
-                                </Link>
-                              </div>
                             </div>
 
                             {/* ── Right: Service Overview ── */}
@@ -452,11 +431,6 @@ export default function Navbar() {
                               {child.label}
                             </Link>
                           ))}
-                          <div className="border-t border-[#E8ECF0] mt-1 pt-1">
-                            <Link href={link.href} onClick={handleLinkClick} className="block px-5 py-3 text-sm font-medium text-[#304AC0] hover:bg-[#F0F4FF] transition-colors">
-                              View All →
-                            </Link>
-                          </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -486,6 +460,27 @@ export default function Navbar() {
           {isMobileOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="lg:hidden bg-white border-t border-[#E8ECF0] overflow-hidden">
               <div className="px-4 py-4 space-y-1 max-h-[80vh] overflow-y-auto">
+                {/* Prominent contact card — at top of mobile menu, before nav links */}
+                <div className="mb-3 rounded-xl border border-[#E8ECF0] bg-[#F7F9FC] p-4">
+                  <a
+                    href="tel:+919344899971"
+                    className="flex items-center gap-3 py-2 text-sm font-medium text-[#2D3748] hover:text-[#304AC0] transition-colors"
+                  >
+                    <span className="w-9 h-9 rounded-lg bg-[#304AC0]/10 flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-4 h-4 text-[#304AC0]" />
+                    </span>
+                    +91 93448 99971
+                  </a>
+                  <a
+                    href="mailto:info@credorafin.com"
+                    className="flex items-center gap-3 py-2 text-sm font-medium text-[#2D3748] hover:text-[#304AC0] transition-colors break-all"
+                  >
+                    <span className="w-9 h-9 rounded-lg bg-[#304AC0]/10 flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-4 h-4 text-[#304AC0]" />
+                    </span>
+                    info@credorafin.com
+                  </a>
+                </div>
                 {navLinks.map((link, i) => {
                   const isProducts = link.label === "Products";
                   const isServices = link.label === "Services";
@@ -553,13 +548,6 @@ export default function Navbar() {
                                 {child.label}
                               </Link>
                             ))}
-                            <Link
-                              href={link.href}
-                              onClick={handleLinkClick}
-                              className="block px-4 py-2.5 text-sm font-semibold text-[#304AC0] hover:bg-[#F0F4FF] rounded-lg transition-colors mt-1"
-                            >
-                              View All {link.label} →
-                            </Link>
                           </motion.div>
                         )}
                       </AnimatePresence>

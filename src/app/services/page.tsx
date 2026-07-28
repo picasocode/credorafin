@@ -38,28 +38,26 @@ function truncateText(text: string, maxLength: number) {
 export default function ServicesPage() {
   return (
     <PageTransition>
-      {/* ─── Page Hero with Diagonal Stripe Pattern ─── */}
+      {/* ─── Page Hero with Clean Background Image ─── */}
       <section className="relative overflow-hidden bg-[#F0F4FF]">
-        {/* Subtle Indian-themed background image */}
+        {/* Indian-themed background image (visible, no pattern overlay) */}
         <Image
           src="/images/services/advisory-indian.png"
           alt=""
           fill
           sizes="100vw"
-          className="object-cover opacity-[0.08] pointer-events-none"
+          className="object-cover object-center opacity-20 pointer-events-none"
           aria-hidden="true"
         />
-        {/* Diagonal Stripe Pattern Background */}
-        <div className="absolute inset-0 opacity-[0.05]">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="diagStripes" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <line x1="0" y1="0" x2="0" y2="20" stroke="#1C1D62" strokeWidth="6" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#diagStripes)" />
-          </svg>
-        </div>
+        {/* Soft gradient overlay for text readability */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(240,244,255,0.95) 0%, rgba(240,244,255,0.75) 55%, rgba(240,244,255,0.45) 100%)",
+          }}
+          aria-hidden="true"
+        />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-20">
           <SmoothReveal>

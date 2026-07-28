@@ -208,7 +208,7 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-[#FAFBFD] w-full min-h-screen flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
+      className="relative bg-[#FAFBFD] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       {/* BACKGROUND GLOW */}
@@ -245,7 +245,7 @@ export default function Hero() {
               {slide.badge}
             </motion.div>
 
-            <h1 className="text-[2.2rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
+            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h1-${current}`}
@@ -313,7 +313,7 @@ export default function Hero() {
           {/* WIDER & SHORTER IMAGE CANVAS */}
           <motion.div 
             variants={itemVariants} 
-            className="relative w-full max-w-[1280px] h-[220px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
+            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
           >
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
@@ -351,7 +351,7 @@ export default function Hero() {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ type: "spring", stiffness: 100, damping: 14 }}
-                  className="absolute top-[8%] left-6 z-20 bg-white/95 backdrop-blur-xl border border-neutral-200/50 rounded-xl p-3 shadow-lg flex flex-col gap-0.5 min-w-[130px] text-left"
+                  className="absolute top-[8%] left-6 z-20 bg-white/95 backdrop-blur-xl border border-neutral-200/50 rounded-xl p-3 shadow-lg hidden sm:flex flex-col gap-0.5 min-w-[130px] text-left"
                 >
                   <div className="w-6 h-6 rounded-md flex items-center justify-center bg-[#1A2255]/5 text-[#1A2255] mb-0.5">
                     <Percent className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -370,7 +370,7 @@ export default function Hero() {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 0 }}
                   transition={{ type: "spring", stiffness: 100, damping: 14 }}
-                  className="absolute top-[8%] right-6 z-20 bg-[#1A2255]/95 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 text-white shadow-xl min-w-[160px] text-left"
+                  className="absolute top-[8%] right-6 z-20 bg-[#1A2255]/95 backdrop-blur-xl border border-white/10 rounded-xl p-3.5 text-white shadow-xl hidden sm:block min-w-[160px] text-left"
                 >
                   <span className="text-[8px] text-neutral-300 font-bold uppercase tracking-widest block mb-1">{slide.hudRight.label}</span>
                   <p className="text-[16px] font-black tracking-tight text-white leading-none">{slide.hudRight.metric}</p>

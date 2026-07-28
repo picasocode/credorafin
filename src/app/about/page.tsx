@@ -148,15 +148,24 @@ export default function AboutPage() {
           PAGE HERO — With Image Background
           ═══════════════════════════════════════ */}
       <section className="bg-[#F0F4FF] py-16 md:py-24 relative overflow-hidden">
-        {/* Hero image background with overlay */}
+        {/* Hero image background (visible, no pattern overlay) */}
         <div className="absolute inset-0">
           <Image
             src="/images/pages/about-hero.png"
             alt="Indian business team"
             fill
             sizes="100vw"
-            className="object-cover opacity-[0.08]"
+            className="object-cover object-center opacity-20"
             priority
+          />
+          {/* Soft gradient overlay for text readability */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(240,244,255,0.95) 0%, rgba(240,244,255,0.78) 55%, rgba(240,244,255,0.5) 100%)",
+            }}
+            aria-hidden="true"
           />
         </div>
 
@@ -544,19 +553,9 @@ export default function AboutPage() {
       </section>
 
       {/* ═══════════════════════════════════════
-          CTA — Full-width with pattern overlay and Indian professional image
+          CTA — Full-width with clean Indian professional image
           ═══════════════════════════════════════ */}
       <section className="py-16 md:py-20 bg-white relative overflow-hidden">
-        {/* Subtle pattern overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='%23304AC0' stroke-width='1'/%3E%3C/svg%3E")`,
-            backgroundSize: "40px 40px",
-          }}
-          aria-hidden="true"
-        />
-
         {/* Decorative floating elements */}
         <FloatingElement amplitude={8} duration={4} className="absolute top-10 right-[15%] hidden lg:block">
           <div className="w-3 h-3 rounded-full bg-[#304AC0]/20" />
@@ -565,15 +564,24 @@ export default function AboutPage() {
           <div className="w-2 h-2 rounded-full bg-[#87B73C]/30" />
         </FloatingElement>
 
-        {/* Indian professional decorative image (right side, hidden on mobile) */}
+        {/* Indian professional decorative image (right side, hidden on mobile) — visible */}
         <div className="absolute right-0 top-0 bottom-0 w-1/3 hidden lg:block pointer-events-none">
           <div className="relative w-full h-full">
             <Image
               src="/images/pages/indian-professional.png"
               alt=""
               fill
-              className="object-cover object-right opacity-[0.07]"
+              className="object-cover object-right opacity-20"
               sizes="33vw"
+              aria-hidden="true"
+            />
+            {/* Soft gradient to blend image with the white CTA background */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.85) 40%, rgba(255,255,255,0.55) 75%, rgba(255,255,255,0.35) 100%)",
+              }}
               aria-hidden="true"
             />
           </div>

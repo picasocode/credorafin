@@ -97,7 +97,6 @@ export default function ContactPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [step, setStep] = useState<1 | 2>(1);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -114,18 +113,6 @@ export default function ContactPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleNextStep = () => {
-    if (!formData.name) {
-      toast({
-        title: "Missing Fields",
-        description: "Please fill in your full name to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setStep(2);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -446,30 +433,12 @@ export default function ContactPage() {
                     </motion.div>
                   ) : (
                     <>
-                      {/* Step Indicator */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <MessageSquare className="w-5 h-5 text-[#304AC0]" />
-                          <h2 className="text-lg font-semibold text-[#1C1D62]">
-                            Send Us an Inquiry
-                          </h2>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-all duration-300 ${step === 1 ? "bg-[#304AC0] text-white" : "bg-[#E8ECF0] text-[#718096]"}`}>
-                            1
-                          </span>
-                          <motion.div
-                            className="w-8 h-px"
-                            style={{ backgroundColor: step === 2 ? "#304AC0" : "#E8ECF0" }}
-                            animate={{ backgroundColor: step === 2 ? "#304AC0" : "#E8ECF0" }}
-                          />
-                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-all duration-300 ${step === 2 ? "bg-[#304AC0] text-white" : "bg-[#E8ECF0] text-[#718096]"}`}>
-                            2
-                          </span>
-                          <span className="text-[#718096] text-xs ml-1.5">
-                            Step {step} of 2
-                          </span>
-                        </div>
+                      {/* Form Header */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <MessageSquare className="w-5 h-5 text-[#304AC0]" />
+                        <h2 className="text-lg font-semibold text-[#1C1D62]">
+                          Send Us an Inquiry
+                        </h2>
                       </div>
                       <div className="mb-6">
                         <Link href="/referral-partner" className="text-sm text-[#304AC0] hover:text-[#13277E] underline underline-offset-2 transition-colors duration-300">
@@ -477,312 +446,283 @@ export default function ContactPage() {
                         </Link>
                       </div>
 
-                      <form onSubmit={handleSubmit} className="space-y-5">
-                        {step === 1 && (
-                          <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="space-y-5"
-                          >
-                            <div className="grid sm:grid-cols-2 gap-5">
-                              {/* Full Name */}
-                              <div>
-                                <label
-                                  htmlFor="name"
-                                  className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
-                                >
-                                  Full Name<span className="text-red-500">*</span>
-                                </label>
-                                <motion.div
-                                  animate={{
-                                    boxShadow: focusedField === "name"
-                                      ? "0 0 0 3px rgba(48,74,192,0.1)"
-                                      : "0 0 0 0px rgba(48,74,192,0)"
-                                  }}
-                                  transition={{ duration: 0.2 }}
-                                  className="rounded-md"
-                                >
-                                  <Input
-                                    id="name"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    onFocus={() => setFocusedField("name")}
-                                    onBlur={() => setFocusedField(null)}
-                                    placeholder="Your full name"
-                                    required
-                                    className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
-                                  />
-                                </motion.div>
-                              </div>
-
-                              {/* Business Name */}
-                              <div>
-                                <label
-                                  htmlFor="businessName"
-                                  className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
-                                >
-                                  Business Name
-                                </label>
-                                <motion.div
-                                  animate={{
-                                    boxShadow: focusedField === "businessName"
-                                      ? "0 0 0 3px rgba(48,74,192,0.1)"
-                                      : "0 0 0 0px rgba(48,74,192,0)"
-                                  }}
-                                  transition={{ duration: 0.2 }}
-                                  className="rounded-md"
-                                >
-                                  <Input
-                                    id="businessName"
-                                    name="businessName"
-                                    value={formData.businessName}
-                                    onChange={handleChange}
-                                    onFocus={() => setFocusedField("businessName")}
-                                    onBlur={() => setFocusedField(null)}
-                                    placeholder="Your business name"
-                                    className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
-                                  />
-                                </motion.div>
-                              </div>
-                            </div>
-
-                            <div className="grid sm:grid-cols-2 gap-5">
-                              {/* Business Type / Industry */}
-                              <div>
-                                <label
-                                  htmlFor="businessType"
-                                  className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
-                                >
-                                  Business Type / Industry
-                                </label>
-                                <Select
-                                  value={formData.businessType}
-                                  onValueChange={(value) => setFormData((prev) => ({ ...prev, businessType: value }))}
-                                >
-                                  <SelectTrigger className="w-full border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300">
-                                    <SelectValue placeholder="Select your industry" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Manufacturing">Manufacturing</SelectItem>
-                                    <SelectItem value="Trading">Trading</SelectItem>
-                                    <SelectItem value="Export/Import">Export/Import</SelectItem>
-                                    <SelectItem value="Retail">Retail</SelectItem>
-                                    <SelectItem value="Services">Services</SelectItem>
-                                    <SelectItem value="Real Estate">Real Estate</SelectItem>
-                                    <SelectItem value="Healthcare">Healthcare</SelectItem>
-                                    <SelectItem value="Education">Education</SelectItem>
-                                    <SelectItem value="Hospitality">Hospitality</SelectItem>
-                                    <SelectItem value="Other">Other</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              {/* Funding Requirement */}
-                              <div>
-                                <label
-                                  htmlFor="fundingRequirement"
-                                  className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
-                                >
-                                  Funding Requirement in &#8377;
-                                </label>
-                                <motion.div
-                                  animate={{
-                                    boxShadow: focusedField === "fundingRequirement"
-                                      ? "0 0 0 3px rgba(48,74,192,0.1)"
-                                      : "0 0 0 0px rgba(48,74,192,0)"
-                                  }}
-                                  transition={{ duration: 0.2 }}
-                                  className="rounded-md"
-                                >
-                                  <Input
-                                    id="fundingRequirement"
-                                    name="fundingRequirement"
-                                    value={formData.fundingRequirement}
-                                    onChange={handleChange}
-                                    onFocus={() => setFocusedField("fundingRequirement")}
-                                    onBlur={() => setFocusedField(null)}
-                                    placeholder="e.g., 50,00,000"
-                                    className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
-                                  />
-                                </motion.div>
-                              </div>
-                            </div>
-
-                            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
-                              <Button
-                                type="button"
-                                size="lg"
-                                onClick={handleNextStep}
-                                className="w-full bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider py-3 rounded-md group transition-all duration-300"
-                              >
-                                Continue
-                                <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
-                              </Button>
-                            </motion.div>
-                          </motion.div>
-                        )}
-
-                        {step === 2 && (
-                          <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="space-y-5"
-                          >
-                            <div className="grid sm:grid-cols-2 gap-5">
-                              {/* Phone Number */}
-                              <div>
-                                <label
-                                  htmlFor="phone"
-                                  className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
-                                >
-                                  Phone Number<span className="text-red-500">*</span>
-                                </label>
-                                <motion.div
-                                  animate={{
-                                    boxShadow: focusedField === "phone"
-                                      ? "0 0 0 3px rgba(48,74,192,0.1)"
-                                      : "0 0 0 0px rgba(48,74,192,0)"
-                                  }}
-                                  transition={{ duration: 0.2 }}
-                                  className="rounded-md"
-                                >
-                                  <Input
-                                    id="phone"
-                                    name="phone"
-                                    type="tel"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    onFocus={() => setFocusedField("phone")}
-                                    onBlur={() => setFocusedField(null)}
-                                    placeholder="+91 XXXXX XXXXX"
-                                    required
-                                    className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
-                                  />
-                                </motion.div>
-                              </div>
-
-                              {/* Email Address */}
-                              <div>
-                                <label
-                                  htmlFor="email"
-                                  className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
-                                >
-                                  Email Address
-                                </label>
-                                <motion.div
-                                  animate={{
-                                    boxShadow: focusedField === "email"
-                                      ? "0 0 0 3px rgba(48,74,192,0.1)"
-                                      : "0 0 0 0px rgba(48,74,192,0)"
-                                  }}
-                                  transition={{ duration: 0.2 }}
-                                  className="rounded-md"
-                                >
-                                  <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    onFocus={() => setFocusedField("email")}
-                                    onBlur={() => setFocusedField(null)}
-                                    placeholder="you@example.com"
-                                    className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
-                                  />
-                                </motion.div>
-                              </div>
-                            </div>
-
-                            {/* Message */}
+                      <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Personal Information */}
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-[#718096] mb-3">
+                            Personal Information
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Full Name */}
                             <div>
                               <label
-                                htmlFor="message"
+                                htmlFor="name"
                                 className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
                               >
-                                Message / Describe your requirement
+                                Full Name<span className="text-red-500">*</span>
                               </label>
                               <motion.div
                                 animate={{
-                                  boxShadow: focusedField === "message"
+                                  boxShadow: focusedField === "name"
                                     ? "0 0 0 3px rgba(48,74,192,0.1)"
                                     : "0 0 0 0px rgba(48,74,192,0)"
                                 }}
                                 transition={{ duration: 0.2 }}
                                 className="rounded-md"
                               >
-                                <Textarea
-                                  id="message"
-                                  name="message"
-                                  value={formData.message}
+                                <Input
+                                  id="name"
+                                  name="name"
+                                  value={formData.name}
                                   onChange={handleChange}
-                                  onFocus={() => setFocusedField("message")}
+                                  onFocus={() => setFocusedField("name")}
                                   onBlur={() => setFocusedField(null)}
-                                  placeholder="Tell us about your funding requirement..."
-                                  rows={4}
-                                  className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300 resize-none"
+                                  placeholder="Your full name"
+                                  required
+                                  className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
                                 />
                               </motion.div>
                             </div>
 
-                            <div className="flex gap-3">
-                              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="lg"
-                                  onClick={() => setStep(1)}
-                                  className="font-medium text-sm uppercase tracking-wider py-3 rounded-md border-[#E8ECF0] text-[#2D3748] hover:bg-[#F0F4FF] transition-all duration-300"
-                                >
-                                  Back
-                                </Button>
+                            {/* Phone Number */}
+                            <div>
+                              <label
+                                htmlFor="phone"
+                                className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
+                              >
+                                Phone Number<span className="text-red-500">*</span>
+                              </label>
+                              <motion.div
+                                animate={{
+                                  boxShadow: focusedField === "phone"
+                                    ? "0 0 0 3px rgba(48,74,192,0.1)"
+                                    : "0 0 0 0px rgba(48,74,192,0)"
+                                }}
+                                transition={{ duration: 0.2 }}
+                                className="rounded-md"
+                              >
+                                <Input
+                                  id="phone"
+                                  name="phone"
+                                  type="tel"
+                                  value={formData.phone}
+                                  onChange={handleChange}
+                                  onFocus={() => setFocusedField("phone")}
+                                  onBlur={() => setFocusedField(null)}
+                                  placeholder="+91 XXXXX XXXXX"
+                                  required
+                                  className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
+                                />
                               </motion.div>
-                              <PulseGlow color="#304AC0" className="flex-1">
-                                <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} className="h-full">
-                                  <Button
-                                    type="submit"
-                                    size="lg"
-                                    disabled={loading}
-                                    className="w-full bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider py-3 rounded-md group transition-all duration-300"
-                                  >
-                                    {loading ? (
-                                      <span className="flex items-center gap-2">
-                                        <svg
-                                          className="animate-spin h-4 w-4"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          fill="none"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <circle
-                                            className="opacity-25"
-                                            cx="12"
-                                            cy="12"
-                                            r="10"
-                                            stroke="currentColor"
-                                            strokeWidth="4"
-                                          />
-                                          <path
-                                            className="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                                          />
-                                        </svg>
-                                        Sending...
-                                      </span>
-                                    ) : (
-                                      <span className="flex items-center gap-2">
-                                        Send Inquiry
-                                        <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                                      </span>
-                                    )}
-                                  </Button>
-                                </motion.div>
-                              </PulseGlow>
                             </div>
+
+                            {/* Email Address */}
+                            <div className="sm:col-span-2">
+                              <label
+                                htmlFor="email"
+                                className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
+                              >
+                                Email Address
+                              </label>
+                              <motion.div
+                                animate={{
+                                  boxShadow: focusedField === "email"
+                                    ? "0 0 0 3px rgba(48,74,192,0.1)"
+                                    : "0 0 0 0px rgba(48,74,192,0)"
+                                }}
+                                transition={{ duration: 0.2 }}
+                                className="rounded-md"
+                              >
+                                <Input
+                                  id="email"
+                                  name="email"
+                                  type="email"
+                                  value={formData.email}
+                                  onChange={handleChange}
+                                  onFocus={() => setFocusedField("email")}
+                                  onBlur={() => setFocusedField(null)}
+                                  placeholder="you@example.com"
+                                  className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
+                                />
+                              </motion.div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Business Information */}
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-[#718096] mb-3">
+                            Business Information
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Business Name */}
+                            <div>
+                              <label
+                                htmlFor="businessName"
+                                className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
+                              >
+                                Business Name
+                              </label>
+                              <motion.div
+                                animate={{
+                                  boxShadow: focusedField === "businessName"
+                                    ? "0 0 0 3px rgba(48,74,192,0.1)"
+                                    : "0 0 0 0px rgba(48,74,192,0)"
+                                }}
+                                transition={{ duration: 0.2 }}
+                                className="rounded-md"
+                              >
+                                <Input
+                                  id="businessName"
+                                  name="businessName"
+                                  value={formData.businessName}
+                                  onChange={handleChange}
+                                  onFocus={() => setFocusedField("businessName")}
+                                  onBlur={() => setFocusedField(null)}
+                                  placeholder="Your business name"
+                                  className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
+                                />
+                              </motion.div>
+                            </div>
+
+                            {/* Business Type / Industry */}
+                            <div>
+                              <label
+                                htmlFor="businessType"
+                                className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
+                              >
+                                Business Type / Industry
+                              </label>
+                              <Select
+                                value={formData.businessType}
+                                onValueChange={(value) => setFormData((prev) => ({ ...prev, businessType: value }))}
+                              >
+                                <SelectTrigger className="w-full border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300">
+                                  <SelectValue placeholder="Select your industry" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                                  <SelectItem value="Trading">Trading</SelectItem>
+                                  <SelectItem value="Export/Import">Export/Import</SelectItem>
+                                  <SelectItem value="Retail">Retail</SelectItem>
+                                  <SelectItem value="Services">Services</SelectItem>
+                                  <SelectItem value="Real Estate">Real Estate</SelectItem>
+                                  <SelectItem value="Healthcare">Healthcare</SelectItem>
+                                  <SelectItem value="Education">Education</SelectItem>
+                                  <SelectItem value="Hospitality">Hospitality</SelectItem>
+                                  <SelectItem value="Other">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Funding Requirement */}
+                            <div className="sm:col-span-2">
+                              <label
+                                htmlFor="fundingRequirement"
+                                className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
+                              >
+                                Funding Requirement in &#8377;
+                              </label>
+                              <motion.div
+                                animate={{
+                                  boxShadow: focusedField === "fundingRequirement"
+                                    ? "0 0 0 3px rgba(48,74,192,0.1)"
+                                    : "0 0 0 0px rgba(48,74,192,0)"
+                                }}
+                                transition={{ duration: 0.2 }}
+                                className="rounded-md"
+                              >
+                                <Input
+                                  id="fundingRequirement"
+                                  name="fundingRequirement"
+                                  value={formData.fundingRequirement}
+                                  onChange={handleChange}
+                                  onFocus={() => setFocusedField("fundingRequirement")}
+                                  onBlur={() => setFocusedField(null)}
+                                  placeholder="e.g., 50,00,000"
+                                  className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300"
+                                />
+                              </motion.div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Message */}
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-[#718096] mb-3">
+                            Message
+                          </p>
+                          <label
+                            htmlFor="message"
+                            className="block text-sm font-medium text-[#304AC0] mb-1.5 transition-all duration-300"
+                          >
+                            Describe your requirement
+                          </label>
+                          <motion.div
+                            animate={{
+                              boxShadow: focusedField === "message"
+                                ? "0 0 0 3px rgba(48,74,192,0.1)"
+                                : "0 0 0 0px rgba(48,74,192,0)"
+                            }}
+                            transition={{ duration: 0.2 }}
+                            className="rounded-md"
+                          >
+                            <Textarea
+                              id="message"
+                              name="message"
+                              value={formData.message}
+                              onChange={handleChange}
+                              onFocus={() => setFocusedField("message")}
+                              onBlur={() => setFocusedField(null)}
+                              placeholder="Tell us about your funding requirement..."
+                              rows={4}
+                              className="border-[#E8ECF0] focus:border-[#304AC0] focus:ring-[#304AC0]/20 focus:ring-4 transition-all duration-300 resize-none"
+                            />
                           </motion.div>
-                        )}
+                        </div>
+
+                        {/* Submit */}
+                        <PulseGlow color="#304AC0" className="w-full">
+                          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} className="w-full">
+                            <Button
+                              type="submit"
+                              size="lg"
+                              disabled={loading}
+                              className="w-full bg-[#304AC0] hover:bg-[#13277E] text-white font-medium text-sm uppercase tracking-wider py-3 rounded-md group transition-all duration-300"
+                            >
+                              {loading ? (
+                                <span className="flex items-center gap-2">
+                                  <svg
+                                    className="animate-spin h-4 w-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    />
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                    />
+                                  </svg>
+                                  Sending...
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-2">
+                                  Send Inquiry
+                                  <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                </span>
+                              )}
+                            </Button>
+                          </motion.div>
+                        </PulseGlow>
                       </form>
                     </>
                   )}

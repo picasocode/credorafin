@@ -81,29 +81,26 @@ const comparisonData = [
 export default function ProductsPage() {
   return (
     <PageTransition>
-      {/* ─── Page Hero with Hexagon Grid Pattern ─── */}
+      {/* ─── Page Hero with Clean Background Image ─── */}
       <section className="relative overflow-hidden bg-[#F0F4FF]">
-        {/* Subtle Indian team background image */}
+        {/* Indian team background image (visible, no pattern overlay) */}
         <Image
           src="/images/pages/hero-indian-team.png"
           alt=""
           fill
           sizes="100vw"
-          className="object-cover opacity-[0.08] pointer-events-none"
+          className="object-cover object-center opacity-20 pointer-events-none"
           aria-hidden="true"
         />
-        {/* SVG Hexagon Grid Pattern Background */}
-        <div className="absolute inset-0 opacity-[0.07]">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="hexGrid" width="56" height="100" patternUnits="userSpaceOnUse" patternTransform="scale(1.2)">
-                <path d="M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100" fill="none" stroke="#1C1D62" strokeWidth="1" />
-                <path d="M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34" fill="none" stroke="#1C1D62" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hexGrid)" />
-          </svg>
-        </div>
+        {/* Soft gradient overlay for text readability */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(240,244,255,0.95) 0%, rgba(240,244,255,0.75) 55%, rgba(240,244,255,0.45) 100%)",
+          }}
+          aria-hidden="true"
+        />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-20">
           <SmoothReveal>
@@ -187,16 +184,8 @@ export default function ProductsPage() {
                         style={{ backgroundColor: product.color }}
                       />
 
-                      {/* Background pattern with product color */}
+                      {/* Card content area (clean, no pattern overlay) */}
                       <div className="relative flex-1 flex flex-col">
-                        <div
-                          className="absolute inset-0 opacity-[0.03]"
-                          style={{
-                            backgroundImage: `radial-gradient(circle at 80% 20%, ${product.color} 1px, transparent 1px)`,
-                            backgroundSize: "24px 24px",
-                          }}
-                        />
-
                         <div className="relative p-6 flex flex-col flex-1">
                           {/* Icon in Hexagonal Container + Products Count */}
                           <div className="flex items-start justify-between mb-5">

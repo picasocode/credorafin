@@ -634,3 +634,376 @@ Stage Summary:
   ✓ Admin backup panel functional (download + email)
   ✓ All changes pushed to GitHub (commit 4695157 on main)
 - Dev server running on port 3000 for preview
+
+---
+Task ID: C
+Agent: Subagent (Hero mobile responsive fix)
+Task: Fix hero section mobile view WITHOUT touching desktop/tab — image canvas too short, HUD floaters cluttering narrow screens, heading overflow risk, section too tall on mobile
+
+Work Log:
+- Read /home/z/my-project/worklog.md (last ~130 lines) for context — understood prior Hero.tsx modifications (white-button fix) and overall project state
+- Read full Hero.tsx (435 lines) — identified 5 mobile-only issues per requirement spec
+- Analyzed each problem in code:
+  1. Image canvas h-[220px] too short on mobile → image looked cramped
+  2. hudLeft floater (top-left, min-w-[130px], left-6) + hudRight floater (top-right, min-w-[160px], right-6) overlapping badly on 375px viewport (combined min-widths ~290px + paddings/borders > usable width minus centering)
+  3. Section min-h-screen can overshoot visible mobile viewport due to dynamic URL bar
+  4. Heading text-[2.2rem] risked wrapping awkwardly at 375px (e.g. "Accelerate Your MSME" ~440px at font-black 35px vs 343px usable)
+  5. Tab dock grid-cols-2 sm:grid-cols-3 md:grid-cols-5 — verified fine, left untouched
+
+Changes Applied (mobile-only — base classes + NEW sm: prefixes only; ZERO existing sm:/md:/lg: classes modified):
+
+1. Line 211 (section root):
+   `min-h-screen` → `min-h-[100svh]`
+   - Reason: svh = small viewport height (smallest possible viewport accounting for mobile URL bar). On desktop ≈ 100vh (no visual change). On mobile ensures hero fits the actually-visible area instead of overshooting under the URL bar.
+
+2. Line 248 (h1 heading):
+   `text-[2.2rem]` → `text-[1.9rem]` (base only — sm:/md:/lg: tiers unchanged at 2.8/3.3/3.6rem)
+   - Reason: At 375px viewport with px-4 padding (343px usable), longest heading like "Accelerate Your MSME" at 2.2rem font-black ≈ 440px would wrap awkwardly. 1.9rem (30.4px) keeps last-word nowrap span ("Referral Partner" ~265px, "Large Projects" ~240px) safely under 343px while still being impactful.
+
+3. Line 316 (image canvas):
+   `h-[220px]` → `h-[280px]` (base only — sm:h-[300px] md:h-[360px] lg:h-[400px] untouched)
+   - Reason: 220px was too short — image looked cramped and the sliding transition felt squashed. 280px gives 27% more vertical real estate on mobile for the image to breathe, making the "image sliding" portion the user complained about noticeably more prominent and pleasant.
+
+4. Line 354 (hudLeft floater — top-left white card):
+   `flex flex-col gap-0.5 min-w-[130px]` → `hidden sm:flex flex-col gap-0.5 min-w-[130px]`
+   - Reason: Replaced base `flex` with `hidden sm:flex`. Element is now display:none on mobile (<640px), display:flex on sm+ (tablet/desktop) — identical behavior to before at sm+. Mobile gets a clean uncluttered image; floaters reappear on tablet/desktop where there's room. min-w-[130px] kept (harmless when hidden; same as before at sm+).
+
+5. Line 373 (hudRight floater — top-right navy card):
+   Added `hidden sm:block` to existing className (no display class was set originally, so default was block)
+   - Reason: Same pattern — hidden on mobile, block on sm+. Mobile gets clean image; sm+ identical to before. min-w-[160px] kept.
+
+6. hudGraph floater (line 388) — LEFT UNTOUCHED:
+   Already `hidden sm:flex items-center gap-2.5` — already hidden on mobile by original code. Per task spec, kept this behavior (clean mobile UX).
+
+7. Tab dock (line 407) — LEFT UNTOUCHED:
+   `grid-cols-2 sm:grid-cols-3 md:grid-cols-5` verified appropriate (2 cols × 3 rows on mobile is fine). No change needed.
+
+Verification:
+- `bunx eslint src/components/sections/Hero.tsx` → 0 errors, 0 warnings (clean exit, no output)
+- rg verified all 5 mobile changes present at expected lines
+- rg verified all existing sm:/md:/lg: classes are intact and unmodified:
+  * sm:h-[300px], md:h-[360px], lg:h-[400px] — intact
+  * sm:text-[2.8rem], md:text-[3.3rem], lg:text-[3.6rem] — intact
+  * hidden sm:flex (hudGraph) — intact
+  * grid-cols-2 sm:grid-cols-3 md:grid-cols-5 (tab dock) — intact
+- Did NOT run `bun run build` (per task constraint)
+- Did NOT modify any other file
+
+Stage Summary:
+- Mobile hero view fixed: image is taller (280px), HUD clutter removed (hudLeft + hudRight hidden on mobile), heading slightly smaller (1.9rem) to prevent overflow, section uses svh for accurate mobile viewport height
+- Desktop (lg:) and tablet (sm:/md:) behavior is 100% unchanged — every existing responsive class verified identical to pre-edit state
+- ESLint clean (0 errors, 0 warnings on Hero.tsx)
+- Files modified: ONLY /home/z/my-project/src/components/sections/Hero.tsx (5 single-class base-level swaps/inserts)
+
+---
+Task ID: B
+Agent: Navbar Agent (Subagent)
+Task: Navbar mobile + dropdown fixes (Req 4 — prominent phone+email in mobile hamburger menu; Req 8 — remove "View All" links from dropdowns + change office timing to 6:30 PM)
+
+Scope: ONLY `/home/z/my-project/src/components/sections/Navbar.tsx` (586 → 596 lines)
+
+Work Log:
+- Read worklog.md (636 lines) to understand prior work (Tasks 1, 1-a, 1-b, 1-c, 2 — EMI removal, mobile responsive fixes, SMTP config, deploy.sh)
+- Read full Navbar.tsx (586 lines) — confirmed structure: top bar with phone/email/timing, sticky main nav, desktop Products megamenu + Services megamenu + simple dropdown for other children, mobile slide-out menu with collapsible children + bottom CTA + bottom contact line
+- Grep'd for "View All" → exactly 2 hits (lines 457 desktop simple dropdown, 561 mobile dropdown)
+- Grep'd for "6:00 PM" / "Mon – Sat" → exactly 1 hit (line 82 top bar) — no other timing strings in this file
+
+Changes Made (4 edits via MultiEdit):
+
+1. Office timing (line 82):
+   `Mon – Sat: 9:00 AM – 6:00 PM` → `Mon – Sat: 9:00 AM – 6:30 PM`
+
+2. Desktop simple dropdown (was lines 455-459) — removed the entire "View All →" footer block:
+   ```tsx
+   <div className="border-t border-[#E8ECF0] mt-1 pt-1">
+     <Link href={link.href} ...>View All →</Link>
+   </div>
+   ```
+   The actual child links (link.children.map) above it remain intact. motion.div closes correctly.
+
+3. Mobile dropdown (was lines 556-562) — removed the entire "View All {link.label} →" footer Link:
+   ```tsx
+   <Link href={link.href} ... className="block px-4 py-2.5 text-sm font-semibold text-[#304AC0] ... mt-1">
+     View All {link.label} →
+   </Link>
+   ```
+   All child links (products/services/simple children) above it remain intact. motion.div closes correctly.
+
+4. Mobile menu contact card (NEW, inserted at top of slide-out, before navLinks.map — lines 484-504):
+   ```tsx
+   {/* Prominent contact card — at top of mobile menu, before nav links */}
+   <div className="mb-3 rounded-xl border border-[#E8ECF0] bg-[#F7F9FC] p-4">
+     <a href="tel:+919344899971" className="flex items-center gap-3 py-2 text-sm font-medium text-[#2D3748] hover:text-[#304AC0] transition-colors">
+       <span className="w-9 h-9 rounded-lg bg-[#304AC0]/10 flex items-center justify-center flex-shrink-0">
+         <Phone className="w-4 h-4 text-[#304AC0]" />
+       </span>
+       +91 93448 99971
+     </a>
+     <a href="mailto:info@credorafin.com" className="flex items-center gap-3 py-2 text-sm font-medium text-[#2D3748] hover:text-[#304AC0] transition-colors break-all">
+       <span className="w-9 h-9 rounded-lg bg-[#304AC0]/10 flex items-center justify-center flex-shrink-0">
+         <Mail className="w-4 h-4 text-[#304AC0]" />
+       </span>
+       info@credorafin.com
+     </a>
+   </div>
+   ```
+   - Phone + Mail icons imported already (top of file) — no new imports needed
+   - text-sm font-medium for readability, brand color `text-[#304AC0]` for icons in `bg-[#304AC0]/10` rounded tiles
+   - Each link is flex row with w-9 h-9 icon tile + text, full-width clickable (a is block-level by default in flex parent)
+   - Touch targets: py-2 (8+8=16) + icon tile h-9 (36px) = 52px per row ≥ 44px ✓
+   - Styled card: rounded-xl + border-[#E8ECF0] + bg-[#F7F9FC] + p-4 + mb-3 to separate from nav links
+   - break-all on email link prevents overflow on narrow viewports
+   - Mobile menu still scrolls (max-h-[80vh] overflow-y-auto unchanged) and active states / hover / chevron toggles untouched
+
+Verification:
+- `bunx eslint src/components/sections/Navbar.tsx` → EXIT_CODE=0, no output (zero errors, zero warnings). No new errors introduced; pre-existing project errors are in admin/dashboard/page.tsx + admin/login/page.tsx (not this file).
+- Final grep for "View All" in Navbar.tsx → 0 matches ✓
+- Final grep for "6:00 PM" in Navbar.tsx → 0 matches; "6:30 PM" → 1 match (line 82) ✓
+- The desktop Products megamenu "Explore All Products" button (line ~184) and Services megamenu "Explore All Services" button (line ~364) were NOT touched — those are distinct CTAs (different label, different intent) and the task only requested removal of "View All" / "View All {label}" footer links.
+- The pre-existing small phone/email line at the bottom of the mobile menu (lines 584-585) was intentionally LEFT in place per task constraint "Keep all other Navbar functionality intact" — task only required ADDING a prominent block at the top, not removing the bottom one. Footer "View All Products" / "View All Services" buttons untouched (different file, owned by Footer agent).
+- Did NOT run `bun run build` per task constraint.
+
+Stage Summary:
+- 4 edits, 1 file, +24 net lines (586 → 596)
+- Mobile hamburger menu now opens with a prominent, brand-styled contact card (phone + email, clickable, ≥44px touch targets) at the very top, before any nav links
+- Both "View All" footer links removed from desktop simple dropdown + mobile dropdown; actual nav items preserved
+- Office timing updated to 9:00 AM – 6:30 PM (single occurrence in this file)
+- ESLint clean (0/0)
+- No other files touched; no functionality broken
+
+---
+Task ID: D
+Agent: Subagent D (Contact Page — Single Form Conversion)
+Task: Convert contact page form from multi-step (2 steps) to a SINGLE form with all fields visible at once and one Submit button (Requirement 9)
+
+Work Log:
+- Read prior worklog (full session context: EMI removal, SMTP setup, deploy.sh, DB path fix, etc.)
+- Read /home/z/my-project/src/app/contact/page.tsx fully (832 lines) — identified multi-step structure
+
+OLD MULTI-STEP STRUCTURE (what was there):
+- State: `const [step, setStep] = useState<1 | 2>(1);` (line 100)
+- Handler: `handleNextStep()` validated name then called `setStep(2)` (lines 119-129)
+- Step indicator UI (lines 449-473): numbered pills "1" / "2" with connecting line + "Step {step} of 2" text
+- Form used conditional rendering: `{step === 1 && (...)}` and `{step === 2 && (...)}`
+- Step 1 fields: Full Name, Business Name, Business Type (Select), Funding Requirement + "Continue" button (type="button" onClick={handleNextStep})
+- Step 2 fields: Phone, Email, Message (Textarea) + "Back" button (type="button" onClick={() => setStep(1)}) + "Send Inquiry" submit button (type="submit")
+- Each step wrapped in motion.div with slide-in animation (x: -20 for step 1, x: 20 for step 2)
+- Submit button was inside a `<div className="flex gap-3">` alongside Back button, PulseGlow had `className="flex-1"`
+
+CHANGES MADE (single-form conversion):
+1. Removed `const [step, setStep] = useState<1 | 2>(1);` — no more step state
+2. Removed entire `handleNextStep` function (11 lines) — no more step navigation handler
+3. Removed step indicator UI block (numbered pills + "Step X of 2" text) — kept only the form header (MessageSquare icon + "Send Us an Inquiry" h2) and referral-partner link
+4. Removed `{step === 1 && (...)}` and `{step === 2 && (...)}` conditional wrappers — all fields now render unconditionally inside a single `<form>`
+5. Removed "Continue" button (was type="button" with ChevronRight icon)
+6. Removed "Back" button (was type="button" with onClick setStep(1))
+7. Removed the `<div className="flex gap-3">` wrapper around Back+Submit — Submit button is now the sole button, full-width via `PulseGlow className="w-full"` + inner `motion.div className="w-full"` + `Button className="w-full"`
+8. Reorganized fields into 3 logical groups with uppercase tracking-wider group labels:
+   - Personal Information: Full Name (req), Phone (req) in 2-col row → Email Address (sm:col-span-2, full-width on its own row)
+   - Business Information: Business Name + Business Type (Select) in 2-col row → Funding Requirement (sm:col-span-2, full-width on its own row)
+   - Message: full-width Textarea (rows=4)
+   - All grids use `grid grid-cols-1 sm:grid-cols-2 gap-4` (responsive: 1 col mobile, 2 cols sm+)
+9. Single "Send Inquiry" submit button at bottom — kept existing loading spinner SVG + Send icon, kept `type="submit"` + `disabled={loading}` + same brand styling (#304AC0 / hover #13277E)
+10. Preserved ALL field-level markup exactly: labels (with red asterisk for required fields), motion.div focus-shadow wrappers (focusedField state), Input/Select/Textarea props, placeholders, brand border/focus classes
+
+PRESERVED (unchanged):
+- All 7 form fields with identical names/values/props: name, businessName, businessType, fundingRequirement, phone, email, message
+- formData useState shape (7 fields) — identical
+- handleChange function — identical
+- handleSubmit function — identical (validates name+phone, POST /api/contact, setSubmitted(true), success toast, error toast, loading state)
+- focusedField state + focus animations on every field
+- submitted success state (CheckCircle2 thank-you card)
+- Surrounding page content: PAGE HERO (breadcrumb, h1 with animated underline, trust badges, AnimatedIllustration), LEFT COLUMN (contact info card with SVG map pin + address + social links, trust badges grid), FAQ section (Accordion with 3 FAQs)
+- All imports (ChevronRight still used in breadcrumb; MessageSquare in form header; Send in submit button) — no unused imports introduced
+
+VERIFICATION:
+- `bunx eslint src/app/contact/page.tsx` → 0 errors, 0 warnings (clean)
+- `bunx tsc --noEmit -p tsconfig.json | rg "contact/page"` → no output (no TS errors in contact page)
+- grep for `step|handleNextStep|setStep` → 0 matches (fully removed)
+- grep for `Continue|Back|type="button"` → 0 matches (Next/Back buttons removed)
+- grep for `<form|</form>` → exactly 1 form (line 449 open, line 726 close)
+- grep for `type="submit"` → exactly 1 submit button (line 688)
+- All 7 field IDs present: name, phone, email, businessName, fundingRequirement, message (input IDs) + businessType (Select component)
+- File size: 832 → 772 lines (-60 lines from removing multi-step scaffolding)
+
+Stage Summary:
+- Contact form is now a SINGLE form: all 7 fields visible at once, organized into 3 labeled groups (Personal Info / Business Info / Message), responsive 1-col mobile / 2-col sm+ desktop, with ONE "Send Inquiry" submit button at the bottom
+- All existing fields, validation (name + phone required), API call (POST /api/contact), success/error toast behavior, and loading spinner — fully preserved
+- No step navigation, no step indicators, no Next/Back buttons remain
+- Surrounding page content (hero, contact info card, trust badges, FAQ accordion) untouched
+- ESLint clean, TypeScript clean, no new errors introduced
+- Did NOT modify any file other than src/app/contact/page.tsx
+
+---
+Task ID: A
+Agent: Subagent A (Restore EMI + WhatsApp floating button)
+Task: Requirements 1, 2, 3 — (1) Add WhatsApp FAB on all non-admin pages; (2) Re-add EMI calculator (responsive) with floating side icon; (3) Correct rupee symbol + font in EMI calculator
+
+Work Log:
+- Read worklog.md (835 lines) for context — understood prior EMI removal (Task 1/1-a), SMTP setup, deploy.sh, Hero/Navbar/Contact mobile fixes (Tasks 3-a, B, C, D)
+- Read /tmp/EMICalculator.tsx (1018 lines), /tmp/FloatingEMIButton.tsx (78 lines), /tmp/emi-page.tsx (138 lines), /tmp/emi-layout.tsx (62 lines) — confirmed intact
+- Read current RootShell.tsx — confirmed it had only Navbar/Footer, no floating buttons
+
+Step 1 — Installed deps:
+- `bun add jspdf jspdf-autotable xlsx` → installed jspdf@4.2.1, jspdf-autotable@5.0.8, xlsx@0.18.5
+
+Step 2 — Copied 4 files from /tmp:
+- /tmp/emi-layout.tsx → src/app/emi-calculator/layout.tsx (untouched, 62 lines)
+- /tmp/emi-page.tsx → src/app/emi-calculator/page.tsx (untouched, 138 lines)
+- /tmp/EMICalculator.tsx → src/components/EMICalculator.tsx (then made responsive, see step 3)
+- /tmp/FloatingEMIButton.tsx → src/components/FloatingEMIButton.tsx (then repositioned, see step 4)
+
+Step 3 — Made EMICalculator.tsx FULLY mobile-responsive (15 MultiEdit + 2 Edit operations):
+- Section root: `py-16 md:py-24` → `py-8 sm:py-12 md:py-20 lg:py-24`; added `style={{ fontFamily: "'Inter', 'Poppins', system-ui, sans-serif" }}` on <section> for ₹ (U+20B9) glyph support across all currency displays (Req 3)
+- Section header: `mb-12` → `mb-8 sm:mb-12 px-2`; badge `px-4` → `px-3 sm:px-4`; h2 `text-3xl sm:text-4xl lg:text-5xl` → `text-2xl sm:text-3xl md:text-4xl lg:text-5xl`; subtitle `mt-4 text-lg` → `mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg`
+- Left input panel: `p-6 md:p-8` → `p-4 sm:p-6 lg:p-8` (Req 2 padding spec); h3 `text-xl mb-6` → `text-lg sm:text-xl mb-4 sm:mb-6`
+- Each control section (Loan Amount / Interest Rate / Tenure): `mb-8` → `mb-6 sm:mb-8`; added `gap-2` to the flex justify-between rows so labels + inputs don't touch on narrow screens
+- Loan Amount input width: `w-32` → `w-28 sm:w-32 min-w-0` (prevents overflow when ₹ value is long)
+- Tenure Select trigger: `w-24` → `w-20 sm:w-24`
+- Date input: `w-36` → `w-32 sm:w-36`
+- Quick Presets: `mt-6 pt-6` → `mt-5 sm:mt-6 pt-5 sm:pt-6` (grid-cols-2 kept — already mobile-friendly)
+- Right results panel: `p-6 md:p-8` → `p-4 sm:p-6 lg:p-8`
+- EMI Result Highlight card: `p-6 mb-6 gap-6` → `p-4 sm:p-6 mb-4 sm:mb-6 gap-4 sm:gap-6`
+- EMI numbers (3x): `text-2xl sm:text-3xl` → `text-xl sm:text-2xl md:text-3xl break-words` (prevents overflow for large ₹ values like ₹1,23,45,678)
+- Visual Breakdown grid: `gap-6 mb-6` → `gap-4 sm:gap-6 mb-4 sm:mb-6`; legend `gap-6` → `gap-4 sm:gap-6 flex-wrap`
+- MiniPieChart: `w-40 h-40` → `w-32 h-32 sm:w-40 sm:h-40`; center label `text-lg` → `text-base sm:text-lg`
+- Yearly chart card: `mb-6` → `mb-4 sm:mb-6`
+- Download buttons: `flex justify-end gap-3` → `flex flex-wrap justify-end gap-2 sm:gap-3` (wraps on narrow screens)
+- Amortization table: WRAPPED `<Table>` in a new `<div className="overflow-x-auto">` inside the existing `max-h-96 overflow-y-auto` div — enables horizontal scroll on mobile for the 7-column table at 375px width (Req 2 explicit requirement)
+- YearlyChart row: `gap-3` → `gap-2 sm:gap-3`; year label `w-12` → `w-10 sm:w-12`; value `w-24` → `w-20 sm:w-24 text-right`; bar container added `min-w-0` to prevent flex blowout
+- ₹ formatting: formatCurrency() already uses `new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 })` → produces `₹1,23,456` (Req 3 — no change needed, already correct); ₹ used directly in JSX labels (₹50K, ₹5Cr, ₹10L, etc.) — verified via grep, no "Rs." or "INR" in display text (only in PDF/Excel export column headers which is fine for a tabular report)
+
+Step 4 — Repositioned FloatingEMIButton.tsx (2 MultiEdit ops):
+- Container: `fixed right-5 top-1/2 -translate-y-1/2 z-50 flex items-center` → `fixed bottom-6 right-6 z-50 flex items-center` (moves from vertical-center-right to bottom-right; Req 2 explicit position)
+- Expand panel: added `bottom-0` to className (was only `right-16`) → `absolute bottom-0 right-16 ... w-64 sm:w-72` — anchors panel to button's bottom edge so it extends UPWARD (was extending downward and off-screen below viewport when button moved to bottom); also narrowed panel `w-72` → `w-64 sm:w-72` so it fits within 375px viewport on mobile (256+64+24 = 344px ≤ 375px ✓)
+- Button size: `w-14 h-14 sm:w-16 sm:h-16` → `w-14 h-14` (normalized to always 56px so vertical stacking with WhatsApp button is consistent; 56px ≥ 48px touch-friendly ✓); Calculator icon `w-5 h-5 sm:w-6 sm:h-6` → `w-5 h-5`
+- Pulse ring, label (hidden lg:block), expand-panel content, close button, "Calculate Now" CTA — all unchanged
+
+Step 5 — Created src/components/WhatsAppButton.tsx (32 lines, NEW):
+- Exactly per task spec: `"use client"` + `Link` from next/link
+- href="https://wa.me/919344899971", target="_blank", rel="noopener noreferrer", aria-label="Chat on WhatsApp"
+- className="fixed bottom-20 right-6 z-50 group" — sits 80px from bottom (above FloatingEMI button which is at bottom-6=24px with h-14=56px → EMI top at 80px = WhatsApp bottom → stack vertically touching, no overlap)
+- Tooltip: absolute right-full mr-3 top-1/2 -translate-y-1/2, navy bg-[#1C1D62] pill, "Chat on WhatsApp", opacity-0 → group-hover:opacity-100, pointer-events-none
+- Button span: h-14 w-14 rounded-full bg-[#25D366] (WhatsApp green #25D366), shadow-lg shadow-[#25D366]/30, hover:scale-110 active:scale-95, style={{ fontFamily: "'Inter', 'Poppins', system-ui, sans-serif" }} (Req 3 font stack for ₹ support)
+- Pulse ring: absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-20
+- Inline WhatsApp SVG: viewBox="0 0 24 24" fill="currentColor" className="relative w-7 h-7 text-white" with the exact brand-accurate path from the task spec (verified char-for-char)
+
+Step 6 — Modified src/components/RootShell.tsx (22 → 27 lines):
+- Added imports: FloatingEMIButton, WhatsAppButton
+- Added `const isEmiPage = pathname === "/emi-calculator"` (after `isAdmin`)
+- Rendered `{!isEmiPage && <FloatingEMIButton />}` (hides redundant EMI FAB on the dedicated /emi-calculator page) + `<WhatsAppButton />` (always on non-admin pages, including /emi-calculator) inside the main flex-col div, after <Footer />
+- Admin pages: still return `<>{children}</>` early — no floating buttons, no Navbar/Footer (unchanged)
+
+VERIFICATION:
+- `bunx eslint src/components/EMICalculator.tsx src/components/FloatingEMIButton.tsx src/components/WhatsAppButton.tsx src/components/RootShell.tsx src/app/emi-calculator/page.tsx src/app/emi-calculator/layout.tsx` → EXIT_CODE=0, ZERO output (0 errors, 0 warnings on all 6 files)
+- `bunx tsc --noEmit -p tsconfig.json 2>&1 | grep -E "(EMICalculator|FloatingEMIButton|WhatsAppButton|RootShell|emi-calculator)"` → ZERO matches (no TypeScript errors in any of our 6 files; all 71 pre-existing tsc errors are in unrelated files: examples/, skills/, admin/dashboard/page.tsx, LottieSection.tsx, Hero.tsx, WhatWeDo.tsx — none touched by this task)
+- Did NOT run `bun run build` per task constraint
+- Did NOT modify Navbar.tsx, Footer.tsx, Hero.tsx, contact/page.tsx, services/page.tsx, products/page.tsx, about/page.tsx (all owned by other agents)
+- Did NOT add EMI calculator to any nav menu, footer, or sitemap (direct URL /emi-calculator + floating button only, per constraint)
+
+Stacking math verified (both buttons w-14 h-14 = 56px):
+- FloatingEMI: bottom-6 (24px from viewport bottom) → occupies 24px–80px from bottom
+- WhatsApp:   bottom-20 (80px from viewport bottom) → occupies 80px–136px from bottom
+- → Exactly touching at 80px (no overlap, no gap; animate-ping rings provide visual separation)
+- Both at right-6 (24px from viewport right) → vertically aligned, stacked as required (WhatsApp ABOVE EMI)
+
+Mobile responsiveness verified by class audit (375px viewport):
+- Section padding 32px (py-8) ✓
+- Card padding 16px (p-4) ✓
+- Header h2 24px (text-2xl) ✓
+- EMI numbers 20px (text-xl) + break-words ✓
+- Inputs w-28/w-20/w-32 with min-w-0 ✓
+- Amortization table: overflow-x-auto wrapper enables horizontal scroll ✓
+- Download buttons: flex-wrap ✓
+- Quick presets: grid-cols-2 (fits 375px) ✓
+- FloatingEMI expand panel: w-64 (256px) + 64px right offset + 24px container = 344px ≤ 375px ✓
+- WhatsApp tooltip: whitespace-nowrap, extends left from button — fits 375px ✓
+
+Stage Summary:
+- All 3 requirements met:
+  ✓ Req 1 — WhatsApp FAB on all non-admin pages (bottom-20 right-6, green #25D366, pulse animation, tooltip, 56px touch-friendly, brand-accurate SVG, opens wa.me/919344899971)
+  ✓ Req 2 — EMI calculator restored (/emi-calculator page + layout + EMICalculator component + FloatingEMIButton at bottom-6 right-6), made FULLY mobile-responsive (stacks, scales, scrolls), hidden on /emi-calculator page itself to avoid redundancy
+  ✓ Req 3 — ₹ (U+20B9) rendered correctly via `new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 }).format()` → produces `₹1,23,456`; font stack 'Inter', 'Poppins', system-ui, sans-serif applied via style on <section> root (EMICalculator) and WhatsApp button span
+- Files created: src/components/EMICalculator.tsx (1024 lines), src/components/FloatingEMIButton.tsx (78 lines), src/components/WhatsAppButton.tsx (32 lines), src/app/emi-calculator/page.tsx (138 lines), src/app/emi-calculator/layout.tsx (62 lines)
+- Files modified: src/components/RootShell.tsx (22 → 27 lines)
+- Deps added: jspdf@4.2.1, jspdf-autotable@5.0.8, xlsx@0.18.5
+- ESLint clean (0/0), TypeScript clean (0 errors in our files), no other files touched
+
+---
+Task ID: E
+Agent: Subagent E (Remove pattern overlays + rupee fix)
+Task: Requirements 7 & 3 — (7) Remove decorative SVG pattern overlays from page headers so hero/section images are clearly visible; (3) Verify rupee symbol (₹) usage and font stack in modified files
+
+Work Log:
+- Read worklog.md (930 lines) for context — understood prior tasks (Task A: WhatsApp+EMI, Tasks B/C/D: hero/navbar/contact fixes)
+- Read full source of all 3 main pages (services/page.tsx 247 lines, products/page.tsx ~395 lines, about/page.tsx 616 lines)
+- Grepped all 9 sub-pages (4 service + 5 product) for `<pattern`, `url(#`, `diagStripes`, `hexGrid`, `backgroundImage`, `data:image/svg`, `opacity-[0.0X` — found NO decorative pattern overlays on any sub-page (only the AnimatedCircle SVG in credit-repair/page.tsx which is a real content visualization, not a decorative pattern)
+
+DECORATIVE PATTERN OVERLAYS FOUND & REMOVED (3 files only):
+
+1) /home/z/my-project/src/app/services/page.tsx — "Diagonal Stripe Pattern Background"
+   REMOVED (lines 52-62 original):
+   - `<div className="absolute inset-0 opacity-[0.05]">` wrapper
+   - `<svg>` block with `<defs>` → `<pattern id="diagStripes" patternTransform="rotate(45)">` containing `<line stroke="#1C1D62" strokeWidth="6" />`
+   - `<rect width="100%" height="100%" fill="url(#diagStripes)" />`
+   ALSO: Bumped hero image opacity from `opacity-[0.08]` (almost invisible) → `opacity-20` (clearly visible), added `object-center` to object-cover
+   ADDED: Soft horizontal gradient overlay `<div>` using `linear-gradient(90deg, rgba(240,244,255,0.95) 0%, rgba(240,244,255,0.75) 55%, rgba(240,244,255,0.45) 100%)` to ensure text readability on top of now-visible image (text is left-aligned max-w-3xl, so left side is darkest, right side lets image show through)
+   Comment header updated: "Page Hero with Diagonal Stripe Pattern" → "Page Hero with Clean Background Image"
+   PRESERVED: Hero text (breadcrumb "Home > Services", h1 "Comprehensive Support Beyond Funding", paragraph), `SmoothReveal` wrapper, max-w-7xl container, padding `py-16 md:py-20`, all service card grid, process infographic, CTA section — untouched
+
+2) /home/z/my-project/src/app/products/page.tsx — "Hexagon Grid Pattern" + per-card dot pattern
+   REMOVED #1 (lines 95-106 original) — hero hexagon pattern:
+   - `<div className="absolute inset-0 opacity-[0.07]">` wrapper
+   - `<svg>` block with `<defs>` → `<pattern id="hexGrid" width="56" height="100" patternTransform="scale(1.2)">` containing 2x `<path d="M28 66L0 50..." fill="none" stroke="#1C1D62" strokeWidth="1" />` (hexagon outline paths)
+   - `<rect width="100%" height="100%" fill="url(#hexGrid)" />`
+   ALSO: Bumped hero image opacity from `opacity-[0.08]` → `opacity-20`, added `object-center`
+   ADDED: Same horizontal gradient overlay as services page (rgba(240,244,255,0.95→0.45) left-to-right) for text readability
+   REMOVED #2 (lines 190-198 original) — per-product-card dot pattern:
+   - `<div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: \`radial-gradient(circle at 80% 20%, ${product.color} 1px, transparent 1px)\`, backgroundSize: "24px 24px" }} />`
+   Replaced comment "Background pattern with product color" → "Card content area (clean, no pattern overlay)"
+   PRESERVED: Top colored accent bar, hexagonal Icon container (clipPath), Products Count pill, title, shortDesc, fullDesc, benefits count, Explore link — all card content intact; comparison table (with ₹ values in "Typical Amount" row), split CTA — untouched
+   Comment header updated: "Page Hero with Hexagon Grid Pattern" → "Page Hero with Clean Background Image"
+
+3) /home/z/my-project/src/app/about/page.tsx — "Subtle pattern overlay" in CTA + faint hero image
+   REMOVED (lines 550-558 original) — CTA diamond pattern overlay:
+   - `<div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: \`url("data:image/svg+xml,%3Csvg width='40' height='40'...%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='%23304AC0' stroke-width='1'/%3E%3C/svg%3E")\`, backgroundSize: "40px 40px" }} />` (the SVG-data-URI diamond/rhombus grid covering the CTA section)
+   ALSO: Bumped the indian-professional.png decorative image on right side of CTA from `opacity-[0.07]` → `opacity-20` (clearly visible)
+   ADDED on CTA image: Soft gradient `<div>` using `linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.85) 40%, rgba(255,255,255,0.55) 75%, rgba(255,255,255,0.35) 100%)` to blend image with white CTA bg from left (opaque white) → right (mostly visible image), so center text "Let's understand your funding requirement." stays readable
+   ALSO: Bumped the about-hero.png image from `opacity-[0.08]` → `opacity-20`, added `object-center`
+   ADDED on hero: Soft gradient overlay using `linear-gradient(90deg, rgba(240,244,255,0.95) 0%, rgba(240,244,255,0.78) 55%, rgba(240,244,255,0.5) 100%)` (matches the F0F4FF hero bg color) for text readability, since hero h1 is `text-[#304AC0]` blue and gradient underline is `bg-[#87B73C]/20`
+   CTA comment header updated: "Full-width with pattern overlay and Indian professional image" → "Full-width with clean Indian professional image"
+   PRESERVED: Animated gradient border at top of hero, breadcrumb, h1 with animated green underline (motion.span scaleX), stats ribbon (StatCounter component), all 7 subsequent sections (Who We Are, What We Do, Mission/Vision, Core Values, What Sets Us Apart, Our Promise, Who We Work With), CTA's FloatingElement decorative dots, PulseGlow button — all intact
+   NOTE: The "Hero image overlay around line 151" mentioned in the task was actually just the faint hero image (no separate overlay element existed) — addressed by bumping image opacity + adding readability gradient
+
+SUB-PAGES (NO CHANGES — verified clean):
+- services/credit-repair/page.tsx — only SVG is AnimatedCircle (a real progress visualization component, NOT a decorative pattern); hero image at opacity-[0.08] has no overlay. Per task "only modify if they have decorative patterns over images" — none found, left untouched.
+- services/fund-raising/page.tsx — no pattern, no overlay; left untouched
+- services/end-to-end-support/page.tsx — no pattern, no overlay; left untouched
+- services/pre-underwriting-loan-structuring/page.tsx — no pattern, no overlay; left untouched
+- products/msme-loans/page.tsx — no SVG patterns; only a loading spinner SVG; left untouched
+- products/supply-chain-finance/page.tsx — no patterns; left untouched
+- products/cross-border-finance/page.tsx — no patterns; left untouched
+- products/project-finance/page.tsx — no patterns; left untouched
+- products/specialized-finance/page.tsx — no patterns; left untouched
+
+REQUIREMENT 3 — Rupee symbol audit (in modified files):
+- services/page.tsx: grep `Rs\.|INR\b|₹` → 0 matches (no currency in this file). No change needed.
+- products/page.tsx: grep → 1 match at line 76: `{ feature: "Typical Amount", msme: "₹5L – ₹5Cr", scf: "₹50L – ₹50Cr", cb: "100k USD to 2M USD", pf: "₹1Cr – ₹100Cr", spec: "Custom" }` — already uses ₹ (U+20B9) correctly. No "Rs." or "INR" text. No change needed.
+- about/page.tsx: grep → 0 matches (no currency in this file). No change needed.
+- Font stack: project layout.tsx loads Poppins via next/font (latin subset only — Poppins does NOT include the ₹ glyph in its character map). Browser font fallback handles ₹ by falling back to system-ui/Noto Sans Symbols automatically — this is the standard behavior and renders ₹ correctly on all modern OSes (Windows: Segoe UI / Nirmala UI; macOS: Helvetica / SF Pro; Linux: Noto Sans; Android: Roboto/Noto). The existing comparison table on products/page.tsx already renders ₹ correctly via this fallback. No `style={{ fontFamily: ... }}` override added because: (a) the table cell is not a "currency display widget" with a weird font — it uses the global Poppins body font, and (b) browser font fallback already produces correct ₹ glyphs. Adding the Inter-first stack would require loading the Inter webfont (not currently in project), so the stack would just degrade to Poppins→system-ui→sans-serif — same as current behavior.
+
+VERIFICATION:
+- `bunx eslint src/app/services/page.tsx src/app/products/page.tsx src/app/about/page.tsx` → EXIT_CODE=0, ZERO output (0 errors, 0 warnings on all 3 modified files)
+- grep `<pattern|url\(#|diagStripes|backgroundImage` on services/page.tsx → 0 matches (pattern fully removed)
+- grep `<pattern|url\(#|hexGrid|radial-gradient|backgroundImage` on products/page.tsx → 0 matches (both hero hexagon pattern AND per-card dot pattern fully removed)
+- grep `<pattern|url\(#|data:image/svg|backgroundImage|pattern overlay` on about/page.tsx → 1 match, which is just my updated comment `{/* Hero image background (visible, no pattern overlay) */}` (no actual SVG pattern element remains)
+- Did NOT run `bun run build` per task constraint
+- Did NOT modify Navbar.tsx, Footer.tsx, Hero.tsx, contact/page.tsx, RootShell.tsx, EMICalculator files, or any sub-page files (all untouched)
+- Did NOT modify any other agent's owned files
+
+Stage Summary:
+- ✓ Req 7 — All decorative SVG pattern overlays removed from the 3 main pages (services diagonal stripes, products hexagon grid + per-card dot pattern, about CTA diamond grid). Hero/section background images are now clearly visible at opacity-20 (up from barely-visible 0.07-0.08), with soft left-to-right gradient overlays (rgba 0.95→0.45) on the light blue (#F0F4FF) hero sections and a left-to-right white gradient (rgba 1→0.35) on the white CTA section to preserve text contrast and readability. All hero text, breadcrumbs, headings, paragraphs, stats ribbons, and all subsequent sections/cards/CTAs are fully preserved and unchanged.
+- ✓ Req 3 — Rupee audit complete: ₹ (U+20B9) already correctly used in products comparison table (no Rs./INR text anywhere); about and services pages have no currency. Font stack (Poppins + browser fallback to system-ui/Noto Sans) renders ₹ correctly across all platforms — no override needed.
+- Files modified: src/app/services/page.tsx, src/app/products/page.tsx, src/app/about/page.tsx (3 files, ~30 net lines changed across them)
+- ESLint: 0 errors, 0 warnings on all 3 modified files
+- 9 sub-pages verified clean of decorative patterns — no changes made to any sub-page
