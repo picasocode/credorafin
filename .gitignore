@@ -80,3 +80,6 @@ standalone/
 
 # Deploy script runtime
 .server.pid
+
+# PM2 logs (production runtime logs, not for VCS)
+/logs/
