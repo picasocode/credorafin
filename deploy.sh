@@ -24,6 +24,7 @@
 #   ./deploy.sh --no-seed             # skip DB seed (keep existing data)
 #   ./deploy.sh --no-nginx            # skip nginx configuration
 #   ./deploy.sh --no-build            # skip the build step (reuse existing .next)
+#   ./deploy.sh --build               # force rebuild (skip the interactive prompt)
 #   ./deploy.sh --help
 #
 # The port is always cleared before starting (re-runs replace the old server).
@@ -44,6 +45,7 @@ DOMAIN="credorafin.com"   # production domain (override with --domain=)
 DO_SEED=1
 DO_NGINX=1
 DO_BUILD=1
+BUILD_FLAG=""   # "force" (--build), "skip" (--no-build), or "" (ask interactively)
 
 # ── Pretty logging ──────────────────────────────────────────────────────────
 if [[ -t 1 ]]; then
@@ -65,7 +67,8 @@ for arg in "$@"; do
   case "$arg" in
     --no-seed)  DO_SEED=0 ;;
     --no-nginx) DO_NGINX=0 ;;
-    --no-build) DO_BUILD=0 ;;
+    --no-build) DO_BUILD=0; BUILD_FLAG="skip" ;;
+    --build)    DO_BUILD=1; BUILD_FLAG="force" ;;
     --domain=*) DOMAIN="${arg#*=}" ;;
     --restart)  ;;  # accepted for backwards compat (now the default behavior)
     --help|-h)
@@ -116,10 +119,16 @@ port_open() {     # port_open <port>
 
 wait_for() {        # wait_for <url> <label>
   local url="$1" label="$2" elapsed=0
+  printf "  ${C_GRAY}probing" >&2
   while ! curl -sf "$url" >/dev/null 2>&1; do
+    printf "." >&2
     sleep 2; elapsed=$((elapsed + 2))
-    [[ $elapsed -ge $MAX_WAIT_SECS ]] && die "$label did not come up within ${MAX_WAIT_SECS}s"
+    if [[ $elapsed -ge $MAX_WAIT_SECS ]]; then
+      printf "${C_RESET}\n" >&2
+      die "$label did not come up within ${MAX_WAIT_SECS}s"
+    fi
   done
+  printf "${C_RESET} done\n" >&2
 }
 
 kill_port() {       # kill_port <port>
@@ -452,6 +461,27 @@ fi
 # ============================================================================
 # STEP 6 — Build Next.js standalone production bundle
 # ============================================================================
+# Interactive: ASK the user whether to build (unless --no-build or --build flag
+# was passed). Building takes 1-3 min on a small EC2 instance, so on re-runs
+# where only config/env changed, the user can skip it and reuse .next/.
+if [[ "$BUILD_FLAG" != "force" && "$BUILD_FLAG" != "skip" ]]; then
+  # No explicit flag — ask interactively if a build already exists
+  if [[ -f ".next/standalone/server.js" ]]; then
+    if [[ -t 0 ]]; then
+      echo ""
+      echo -e "  ${C_BOLD}A standalone build already exists at .next/standalone/${C_RESET}"
+      echo -e "  ${C_GRAY}(last modified: $(date -r .next/standalone/server.js '+%Y-%m-%d %H:%M'))${C_RESET}"
+      echo -e "  ${C_YELLOW}Rebuild now? This takes 1-3 min.${C_RESET}"
+      read -r -p "  Rebuild? [y/N] " _build_answer
+      case "${_build_answer,,}" in
+        y|yes) DO_BUILD=1 ;;
+        *)     DO_BUILD=0 ;;
+      esac
+    fi
+    # If non-interactive (piped stdin), keep DO_BUILD=1 (build by default)
+  fi
+fi
+
 if [[ $DO_BUILD -eq 1 ]]; then
   step "Step 6/8 — Building Next.js standalone production bundle"
   # Build with bun. next.config.ts has output: "standalone" which produces a
@@ -466,7 +496,12 @@ if [[ $DO_BUILD -eq 1 ]]; then
     die "next build failed — see /tmp/build.log for full output. Tip: try --no-build to reuse an existing .next/"
   fi
 else
-  step "Step 6/8 — (skipped: --no-build)"
+  if [[ -f ".next/standalone/server.js" ]]; then
+    step "Step 6/8 — (skipped: reusing existing .next/standalone build)"
+    ok "standalone build ready at .next/standalone/"
+  else
+    die "no existing build found and build was skipped. Run: ./deploy.sh --build"
+  fi
 fi
 
 # ============================================================================
@@ -485,16 +520,44 @@ fi
 # Start the standalone production server with bun (faster startup + lower
 # memory than node). The standalone server.js is self-contained — it bundles
 # all Node modules needed to run, so we don't need node_modules in production.
+#
+# CRITICAL: fully detach the background process so it doesn't hold the
+# terminal's stdin (which would make the health-check loop appear to hang).
+# Redirect stdin from /dev/null, use setsid for a new session, and disown.
 log "starting production server with bun (logs → server.log)..."
-NODE_ENV=production nohup bun .next/standalone/server.js > server.log 2>&1 &
-echo $! > .server.pid
-ok "production server PID: $(cat .server.pid)"
+NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000 \
+  setsid nohup bun .next/standalone/server.js > server.log 2>&1 < /dev/null &
+SERVER_PID=$!
+echo "$SERVER_PID" > .server.pid
+disown "$SERVER_PID" 2>/dev/null || true
+ok "production server PID: $SERVER_PID"
 
-# Wait for the app health endpoint to respond. The production server boots
-# fast (no on-demand compilation) — typically under 5 seconds.
+# ── Phase 1: wait for the TCP port to accept connections ────────────────────
+# The server prints "Ready in Xms" but the port may not be bound for a few
+# hundred ms after. Poll the port first (cheap) before hitting the HTTP health
+# endpoint (which would return ECONNREFUSED repeatedly during startup).
+log "waiting for port ${APP_PORT} to accept connections..."
+_port_elapsed=0
+while ! port_open "$APP_PORT"; do
+  sleep 1; _port_elapsed=$((_port_elapsed + 1))
+  if [[ $_port_elapsed -ge 30 ]]; then
+    err "port ${APP_PORT} did not open within 30s. Recent server.log:"
+    tail -n 20 server.log >&2 || true
+    die "server failed to bind port ${APP_PORT}"
+  fi
+  # If the process died immediately, show why
+  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+    err "server process exited unexpectedly. Recent server.log:"
+    tail -n 30 server.log >&2 || true
+    die "server process crashed on startup"
+  fi
+done
+ok "port ${APP_PORT} is accepting connections (after ${_port_elapsed}s)"
+
+# ── Phase 2: wait for the HTTP health endpoint to return 200 ────────────────
 log "waiting for app to respond at ${HEALTH_URL}..."
 wait_for "$HEALTH_URL" "Production server"
-ok "production server is healthy"
+ok "production server is healthy (HTTP 200 from /api/health)"
 
 # ============================================================================
 # STEP 8 — Configure Nginx reverse proxy for the domain
