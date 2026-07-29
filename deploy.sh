@@ -1,730 +1,85 @@
 #!/usr/bin/env bash
 # ============================================================================
-# CredoraFin — One-command deployment script (SQLite + Nginx + PRODUCTION edition)
+# CredoraFin — one-command deploy / update (PM2 + Bun, no Docker)
 # ----------------------------------------------------------------------------
-# SQLite needs NO server process, NO Docker, and NO external services — the
-# database is just a file on disk (db/app.db). Nginx is auto-installed and
-# configured as a reverse proxy. The Next.js app is built as a standalone
-# production bundle and served with bun (fast startup, low memory).
-#
-# Steps:
-#   0. Verify prerequisites (bun, curl, nginx — auto-install missing)
-#   1. Ensure .env exists (create from .env.example, force correct values)
-#   2. Install npm deps (ALWAYS — clean wipe + fresh install)
-#   3. Generate Prisma client
-#   4. Push DB schema (creates the SQLite file + all tables)
-#   5. Seed DB (admin user + 6 positions + 5 hero slides + 6 blog posts)
-#   6. Build Next.js standalone production bundle
-#   7. Clear port 3000 + start production server with bun
-#   8. Configure Nginx reverse proxy for the domain + reload
-#
 # Usage:
-#   ./deploy.sh                       # full deploy (domain: credorafin.com)
-#   ./deploy.sh --domain=example.com  # use a custom domain
-#   ./deploy.sh --no-seed             # skip DB seed (keep existing data)
-#   ./deploy.sh --no-nginx            # skip nginx configuration
-#   ./deploy.sh --no-build            # skip the build step (reuse existing .next)
-#   ./deploy.sh --build               # force rebuild (skip the interactive prompt)
-#   ./deploy.sh --help
+#   ./deploy.sh            # full update: pull → install → build → reload
+#   ./deploy.sh --no-pull  # skip git pull (build + reload only)
 #
-# The port is always cleared before starting (re-runs replace the old server).
-# Idempotent: safe to re-run. Exit code 0 = success.
+# Pinned versions (see .nvmrc, .bun-version, DEPLOY.md):
+#   Node 22.11.0 LTS · Bun 1.3.14 · PM2 5.4.2
 # ============================================================================
-
 set -euo pipefail
 
-# ── Config ──────────────────────────────────────────────────────────────────
-APP_NAME="credorafin"
-APP_PORT="3000"
-HEALTH_URL="http://127.0.0.1:${APP_PORT}/api/health"
-MAX_WAIT_SECS=90          # max time to wait for the prod server to come up
-DB_FILE="db/app.db"       # relative to project root
-DOMAIN="credorafin.com"   # production domain (override with --domain=)
-
-# Flags from argv
-DO_SEED=1
-DO_NGINX=1
-DO_BUILD=1
-BUILD_FLAG=""   # "force" (--build), "skip" (--no-build), or "" (ask interactively)
-
-# ── Pretty logging ──────────────────────────────────────────────────────────
-if [[ -t 1 ]]; then
-  C_RESET='\033[0m'; C_BOLD='\033[1m'; C_GREEN='\033[32m'; C_YELLOW='\033[33m'
-  C_RED='\033[31m'; C_BLUE='\033[34m'; C_GRAY='\033[90m'
-else
-  C_RESET=''; C_BOLD=''; C_GREEN=''; C_YELLOW=''; C_RED=''; C_BLUE=''; C_GRAY=''
-fi
-
-log()  { echo -e "${C_BLUE}▸${C_RESET} $*"; }
-ok()   { echo -e "  ${C_GREEN}✓${C_RESET} $*"; }
-warn() { echo -e "  ${C_YELLOW}!${C_RESET} $*"; }
-err()  { echo -e "  ${C_RED}✗${C_RESET} $*" >&2; }
-step() { echo -e "\n${C_BOLD}${C_BLUE}[$(date +%H:%M:%S)]${C_RESET} ${C_BOLD}$*${C_RESET}"; }
-die()  { err "$*"; exit 1; }
-
-# ── Parse args ──────────────────────────────────────────────────────────────
-for arg in "$@"; do
-  case "$arg" in
-    --no-seed)  DO_SEED=0 ;;
-    --no-nginx) DO_NGINX=0 ;;
-    --no-build) DO_BUILD=0; BUILD_FLAG="skip" ;;
-    --build)    DO_BUILD=1; BUILD_FLAG="force" ;;
-    --domain=*) DOMAIN="${arg#*=}" ;;
-    --restart)  ;;  # accepted for backwards compat (now the default behavior)
-    --help|-h)
-      sed -n '2,30p' "$0"
-      exit 0
-      ;;
-    *) die "Unknown flag: $arg (try --help)" ;;
-  esac
-done
-
-# ── Discover user-installed bun when run via sudo ───────────────────────────
-# bun installs to ~/.bun/bin by default. Under sudo, $HOME becomes /root and
-# the invoking user's tool dir drops off PATH. Add common locations so 'have
-# bun' passes regardless of who runs the script.
-for _d in \
-  "$HOME/.bun/bin" \
-  "/root/.bun/bin" \
-  "/home/${SUDO_USER:-}/.bun/bin" \
-  /home/*/.bun/bin \
-  "$HOME/.local/bin" \
-  "/home/${SUDO_USER:-}/.local/bin" \
-  /home/*/.local/bin \
-  /usr/local/bin; do
-  [[ -d "$_d" ]] || continue
-  case ":$PATH:" in
-    *":$_d:"*) ;;
-    *) PATH="$_d:$PATH" ;;
-  esac
-done
-export PATH
-unset _d
-
-# ── Helpers ─────────────────────────────────────────────────────────────────
-have() { command -v "$1" >/dev/null 2>&1; }
-
-# Check if a TCP port is accepting connections (lsof → ss → /dev/tcp fallback)
-port_open() {     # port_open <port>
-  local port="$1"
-  if have lsof; then
-    lsof -i tcp:"$port" >/dev/null 2>&1 && return 0
-  elif have ss; then
-    ss -ltn "sport = :$port" 2>/dev/null | grep -q ":$port" && return 0
-  else
-    (echo > "/dev/tcp/127.0.0.1/$port") >/dev/null 2>&1 && return 0
-  fi
-  return 1
-}
-
-wait_for() {        # wait_for <url> <label>
-  local url="$1" label="$2" elapsed=0
-  printf "  ${C_GRAY}probing" >&2
-  while ! curl -sf "$url" >/dev/null 2>&1; do
-    printf "." >&2
-    sleep 2; elapsed=$((elapsed + 2))
-    if [[ $elapsed -ge $MAX_WAIT_SECS ]]; then
-      printf "${C_RESET}\n" >&2
-      die "$label did not come up within ${MAX_WAIT_SECS}s"
-    fi
-  done
-  printf "${C_RESET} done\n" >&2
-}
-
-kill_port() {       # kill_port <port>
-  local port="$1" pids=""
-  if have lsof; then
-    pids=$(lsof -ti tcp:"$port" 2>/dev/null || true)
-  elif have ss; then
-    pids=$(ss -ltnp "sport = :$port" 2>/dev/null | grep -oP 'pid=\K[0-9]+' | sort -u || true)
-  fi
-  [[ -n "$pids" ]] && kill -9 $pids 2>/dev/null || true
-}
-
-# Run a command as root (use sudo when not already root)
-as_root() {
-  if [[ $(id -u) -eq 0 ]]; then "$@"; else sudo "$@"; fi
-}
-
-# ============================================================================
-# STEP 0 — Prerequisites (bun, curl, nginx — auto-install missing)
-# ============================================================================
-step "Step 0/8 — Checking prerequisites"
-
-# Heads-up: nginx + apt installs need root. The app itself (port 3000) does
-# not. Running with sudo is recommended so nginx can be installed/configured.
-if [[ $(id -u) -ne 0 ]]; then
-  warn "not running as root — nginx install/config steps will use sudo"
-fi
-
-have bun    || die "bun not found in PATH. Install: curl -fsSL https://bun.sh/install | bash"
-have curl   || die "curl not found"
-ok "bun: $(bun --version)"
-ok "curl: $(curl --version | head -1 | awk '{print $1,$2}')"
-
-# ── Swap (auto-create if RAM < 2GB — prevents OOM during next build/start) ──
-# Next.js standalone + Prisma + React 19 can use 1-2GB RAM. On a 1GB EC2
-# instance, the OOM killer will fire during page rendering. A 2GB swapfile
-# is a cheap safety net. Skip if swap is already configured or RAM ≥ 2GB.
-TOTAL_RAM_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
-CURRENT_SWAP_KB="$(grep SwapTotal /proc/meminfo | awk '{print $2}')"
-if [[ ${CURRENT_SWAP_KB:-0} -lt 1048576 ]] && [[ ${TOTAL_RAM_KB:-0} -lt 2097152 ]]; then
-  warn "low RAM (${TOTAL_RAM_KB} kB) and minimal swap (${CURRENT_SWAP_KB} kB) — creating 2GB swapfile"
-  if [[ ! -f /swapfile ]]; then
-    as_root fallocate -l 2G /swapfile 2>/dev/null || as_root dd if=/dev/zero of=/swapfile bs=1M count=2048
-    as_root chmod 600 /swapfile
-    as_root mkswap /swapfile >/dev/null 2>&1
-  fi
-  as_root swapon /swapfile 2>/dev/null || true
-  # Persist in fstab so it survives reboot
-  if ! grep -q "^/swapfile" /etc/fstab 2>/dev/null; then
-    echo "/swapfile none swap sw 0 0" | as_root tee -a /etc/fstab >/dev/null
-  fi
-  ok "2GB swapfile enabled (persists across reboots)"
-else
-  ok "RAM: $((TOTAL_RAM_KB / 1024))MB, Swap: $((CURRENT_SWAP_KB / 1024))MB — sufficient"
-fi
-
-# ── Nginx (auto-install if missing) ─────────────────────────────────────────
-if have nginx; then
-  ok "nginx: $(nginx -v 2>&1 | sed 's|nginx version: ||')"
-else
-  warn "nginx not found — installing automatically"
-  install_nginx() {
-    if have apt-get; then
-      as_root apt-get update -y >/dev/null 2>&1 || true
-      as_root apt-get install -y nginx >/dev/null 2>&1 || return 1
-    elif have yum; then
-      as_root yum install -y nginx >/dev/null 2>&1 || return 1
-    elif have dnf; then
-      as_root dnf install -y nginx >/dev/null 2>&1 || return 1
-    else
-      return 1
-    fi
-    have nginx
-  }
-  if install_nginx; then
-    ok "nginx installed: $(nginx -v 2>&1 | sed 's|nginx version: ||')"
-    # Start + enable on boot
-    as_root systemctl start nginx 2>/dev/null || as_root service nginx start 2>/dev/null || true
-    as_root systemctl enable nginx 2>/dev/null || true
-  else
-    die "nginx auto-install failed. Install manually: sudo apt-get install -y nginx"
-  fi
-fi
-
-# Ensure nginx is running
-if ! as_root systemctl is-active --quiet nginx 2>/dev/null; then
-  log "starting nginx daemon..."
-  as_root systemctl start nginx 2>/dev/null || as_root service nginx start 2>/dev/null || true
-fi
-ok "nginx daemon is running"
-
 cd "$(dirname "$0")"
-ok "working dir: $(pwd)"
-ok "domain: ${DOMAIN}"
-ok "mode: PRODUCTION (standalone build + bun)"
 
-# ============================================================================
-# STEP 1 — Environment file
-# ============================================================================
-step "Step 1/8 — Ensuring .env exists"
+# ── Ensure we are on the Node version pinned in .nvmrc ──────────────────────
+if command -v nvm >/dev/null 2>&1; then
+  nvm use --silent 2>/dev/null || true
+elif [ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]; then
+  # shellcheck disable=SC1091
+  . "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
+  nvm use --silent 2>/dev/null || true
+fi
 
-if [[ ! -f .env ]]; then
-  if [[ -f .env.example ]]; then
-    cp .env.example .env
-    ok "created .env from .env.example"
-  else
-    : > .env
-    ok "created empty .env (no .env.example found)"
-  fi
-  [[ -f .env ]] || die "failed to create .env"
+LOG_DIR="./logs"
+mkdir -p "$LOG_DIR"
+
+step() { printf "\n\033[1;36m▶ %s\033[0m\n" "$1"; }
+ok()   { printf "\033[1;32m  ✓ %s\033[0m\n" "$1"; }
+
+PULL=1
+[[ "${1:-}" == "--no-pull" ]] && PULL=0
+
+# Pre-flight: PM2 must be installed
+if ! command -v pm2 >/dev/null 2>&1; then
+  echo "✖ pm2 not found. Install it once with:"
+  echo "    npm install -g pm2@5.4.2"
+  exit 1
+fi
+
+if [[ "$PULL" == "1" ]]; then
+  step "Pulling latest code"
+  git pull --ff-only
+  ok "up to date"
+fi
+
+step "Installing dependencies (frozen lockfile)"
+bun install --frozen-lockfile
+ok "dependencies ready"
+
+step "Generating Prisma client"
+bunx prisma generate
+ok "prisma client generated"
+
+step "Syncing database schema (db push)"
+bunx prisma db push --skip-generate
+ok "schema in sync"
+
+step "Building Next.js (standalone output)"
+bun run build
+ok "build complete"
+
+step "Reloading PM2 app (zero-downtime)"
+pm2 startOrReload ecosystem.config.cjs --update-env
+pm2 save
+ok "app reloaded & process list saved"
+
+step "Health check"
+sleep 3
+if curl -sf http://127.0.0.1:3000/api/health >/dev/null 2>&1; then
+  ok "http://127.0.0.1:3000/api/health → 200 OK"
 else
-  ok ".env already exists"
+  echo "  ⚠ health check did not return 200 yet — check: pm2 logs credorafin"
 fi
 
-# Force DATABASE_URL to the SQLite file (overwrites stale postgresql URLs from
-# the old Supabase setup, and ensures it's always set on a fresh box).
-force_env_var() {   # force_env_var <key> <value>
-  local key="$1" value="$2"
-  if grep -q "^${key}=" .env; then
-    sed -i.bak "s|^${key}=.*|${key}=\"${value}\"|" .env && rm -f .env.bak
-  else
-    echo "${key}=\"${value}\"" >> .env
-  fi
-}
+cat <<EOF
 
-# Resolve the DB file to an ABSOLUTE path. This is critical: Prisma CLI
-# (db push / migrate) resolves relative `file:` URLs against the schema.prisma
-# location (prisma/), while the Prisma Client at runtime resolves them against
-# the process cwd. A relative path therefore writes the seed to prisma/db/app.db
-# but the app reads from ./db/app.db → empty database, login fails. An absolute
-# path makes both sides agree on the same file.
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
-DB_ABS_PATH="${PROJECT_ROOT}/${DB_FILE}"
-force_env_var "DATABASE_URL" "file:${DB_ABS_PATH}"
-force_env_var "NEXTAUTH_URL" "http://${DOMAIN}"
-force_env_var "NODE_ENV" "production"
-# ── SMTP (Gmail) auto-configuration ──────────────────────────────────────
-# Force the non-secret SMTP defaults so backups + lead notifications work
-# out of the box. The password is handled separately (see below) because it
-# must NOT live in this committed script.
-force_env_var "SMTP_HOST" "smtp.gmail.com"
-force_env_var "SMTP_PORT" "587"
-force_env_var "SMTP_USER" "credorafintechpvtltd@gmail.com"
-force_env_var "SMTP_FROM" "CredoraFin <credorafintechpvtltd@gmail.com>"
-force_env_var "BACKUP_EMAILS" "credorafintechpvtltd@gmail.com"
-force_env_var "NOTIFY_EMAILS" "credorafintechpvtltd@gmail.com"
-ok "DATABASE_URL = file:${DB_ABS_PATH} (absolute — CLI & runtime agree)"
-ok "NEXTAUTH_URL = http://${DOMAIN}"
-ok "SMTP_HOST = smtp.gmail.com (Gmail)"
-
-# ── SMTP_PASS handling ───────────────────────────────────────────────────
-# The Gmail App Password is a secret — it is NOT hardcoded in this script.
-# Resolution order:
-#   1. If .env already has a non-empty SMTP_PASS (not the placeholder), keep it.
-#   2. Else if the DEPLOY_SMTP_PASS env var is set, write that into .env.
-#   3. Else write a placeholder and warn the user with a copy-paste command.
-# This makes re-deploys truly single-command (password persists in .env),
-# and the first deploy can be single-command too via:
-#   DEPLOY_SMTP_PASS=xxxx ./deploy.sh
-SMTP_PASS_REGEX='^SMTP_PASS="(.+)"$'
-CURRENT_SMTP_PASS=""
-if grep -qE '^SMTP_PASS=' .env; then
-  CURRENT_SMTP_PASS="$(grep -E '^SMTP_PASS=' .env | sed -E 's/^SMTP_PASS="([^"]*)".*$/\1/')"
-fi
-if [[ -n "${CURRENT_SMTP_PASS}" && "${CURRENT_SMTP_PASS}" != "REPLACE_WITH_GMAIL_APP_PASSWORD" ]]; then
-  ok "SMTP_PASS already set in .env (preserved)"
-elif [[ -n "${DEPLOY_SMTP_PASS:-}" ]]; then
-  force_env_var "SMTP_PASS" "${DEPLOY_SMTP_PASS}"
-  ok "SMTP_PASS written from DEPLOY_SMTP_PASS env var"
-else
-  force_env_var "SMTP_PASS" "REPLACE_WITH_GMAIL_APP_PASSWORD"
-  warn "SMTP_PASS not set — email backups & lead notifications will be DISABLED"
-  warn "  Fix with ONE of these (then re-run ./deploy.sh):"
-  warn "    A)  nano .env  →  set SMTP_PASS="<your-16-char-gmail-app-password>""
-  warn "    B)  DEPLOY_SMTP_PASS=<app-password> ./deploy.sh"
-  warn "  Generate an app password: https://myaccount.google.com/apppasswords"
-fi
-
-# Ensure the db/ directory exists (SQLite needs the dir to exist before write)
-mkdir -p "$(dirname "$DB_FILE")"
-
-# Fix ownership: a prior 'sudo ./deploy.sh' run may have created db/ and
-# db/app.db as root. When now running as a regular user, SQLite can read the
-# file but can't create its -journal/-wal sidecar files in the root-owned
-# directory → "attempt to write a readonly database" (SQLITE_READONLY) on the
-# first real write. Ensure the real user owns the db dir + file. This is a
-# no-op if ownership is already correct.
-REAL_USER="${SUDO_USER:-$(whoami)}"
-REAL_GROUP="$(id -gn "$REAL_USER" 2>/dev/null || id -gn)"
-DB_DIR="$(dirname "$DB_FILE")"
-if [[ "$REAL_USER" != "root" ]]; then
-  _cur_owner="$(stat -c %U "$DB_DIR" 2>/dev/null || echo "")"
-  if [[ -n "$_cur_owner" && "$_cur_owner" != "$REAL_USER" ]]; then
-    warn "db/ owned by '$_cur_owner' (leftover from a prior sudo run) — reclaiming ownership for '$REAL_USER'"
-    if [[ $(id -u) -eq 0 ]]; then
-      chown -R "$REAL_USER:$REAL_GROUP" "$DB_DIR" 2>/dev/null || true
-    else
-      sudo chown -R "$REAL_USER:$REAL_GROUP" "$DB_DIR" 2>/dev/null || true
-    fi
-    ok "db/ ownership transferred to '$REAL_USER'"
-  fi
-  # Also fix the db file itself if it exists and is root-owned
-  if [[ -f "$DB_FILE" ]]; then
-    _file_owner="$(stat -c %U "$DB_FILE" 2>/dev/null || echo "")"
-    if [[ -n "$_file_owner" && "$_file_owner" != "$REAL_USER" ]]; then
-      if [[ $(id -u) -eq 0 ]]; then
-        chown "$REAL_USER:$REAL_GROUP" "$DB_FILE" 2>/dev/null || true
-      else
-        sudo chown "$REAL_USER:$REAL_GROUP" "$DB_FILE" 2>/dev/null || true
-      fi
-      ok "db file ownership transferred to '$REAL_USER'"
-    fi
-  fi
-fi
-unset _cur_owner _file_owner
-
-# Verify the db dir is actually writable (catches edge cases the chown above
-# might miss, e.g. ACLs or read-only filesystems) and fail fast with a clear
-# message instead of letting Prisma hit "readonly database" deep in the seed.
-if ! (touch "$DB_DIR/.write_test" 2>/dev/null && rm -f "$DB_DIR/.write_test" 2>/dev/null); then
-  die "db directory '$DB_DIR' is not writable by '$REAL_USER'. Fix with: sudo chown -R \$USER:\$USER $DB_DIR"
-fi
-ok "db directory ready: $DB_DIR/ (owner: $(stat -c %U "$DB_DIR" 2>/dev/null || echo '?'))"
-
-# Re-source so the rest of this script sees the values
-# shellcheck disable=SC1091
-set -a; source .env 2>/dev/null || true; set +a
-
-# ============================================================================
-# STEP 2 — Install dependencies (clean install — refresh stale Prisma client)
-# ============================================================================
-step "Step 2/8 — Installing dependencies"
-
-# Wipe node_modules BEFORE installing. A stale/corrupted node_modules (from the
-# old postgresql setup, a partial install, or root-owned files left by a prior
-# `sudo ./deploy.sh` run) causes `bun install` to fail with EEXIST link errors
-# and AccessDenied on nested folders. A clean slate fixes all of that. bun
-# caches downloaded tarballs globally (~/.bun/install/cache) so re-installing
-# from scratch is still fast — only the linking step runs.
-if [[ -d node_modules ]]; then
-  log "removing stale node_modules (avoids EEXIST / AccessDenied link errors)..."
-  if ! rm -rf node_modules 2>/dev/null; then
-    # Some files may be owned by root (from a prior sudo run). Fall back to sudo.
-    warn "regular rm failed (likely root-owned files) — retrying with sudo"
-    as_root rm -rf node_modules
-  fi
-  ok "node_modules cleared"
-fi
-
-# Also clear bun's lockfile-internal cache marker so it doesn't reuse a
-# half-written state. (We keep bun.lock/bun.lockb — they're the source of truth.)
-rm -rf .bun-cache 2>/dev/null || true
-
-log "running bun install (fresh install for SQLite Prisma client)..."
-# Don't use --frozen-lockfile here: if the lockfile is slightly out of sync
-# with package.json (e.g. after a git pull that touched deps), we want bun to
-# reconcile it rather than fail. A plain `bun install` is idempotent.
-if bun install; then
-  ok "dependencies installed"
-else
-  err "bun install failed. Re-running with verbose output:"
-  bun install 2>&1 | tail -n 40 >&2 || true
-  die "bun install failed — see output above. Try manually: rm -rf node_modules && bun install"
-fi
-
-# ============================================================================
-# STEP 3 — Generate Prisma client
-# ============================================================================
-step "Step 3/8 — Generating Prisma client"
-
-# Try generate; if it fails, show the real error and retry with a fresh install
-# (a stale node_modules/.prisma from the old postgresql setup can cause this).
-if bunx prisma generate >/dev/null 2>&1; then
-  ok "Prisma client generated"
-else
-  warn "prisma generate failed — showing real error and retrying with fresh deps"
-  err "first attempt output:"
-  bunx prisma generate 2>&1 | tail -n 30 >&2 || true
-  log "reinstalling dependencies (clearing stale prisma client cache)..."
-  rm -rf node_modules/.prisma node_modules/@prisma/client 2>/dev/null || true
-  bun install 2>/dev/null || true
-  if bunx prisma generate 2>&1 | tail -n 30; then
-    ok "Prisma client generated (after fresh install)"
-  else
-    die "prisma generate failed — see output above. Try: rm -rf node_modules && bun install && bunx prisma generate"
-  fi
-fi
-
-# ============================================================================
-# STEP 4 — Push schema to database (creates the SQLite file + tables)
-# ============================================================================
-step "Step 4/8 — Pushing DB schema (creating all tables)"
-
-# shellcheck disable=SC1091
-set -a; source .env 2>/dev/null || true; set +a
-export DATABASE_URL
-
-if bunx prisma db push --accept-data-loss >/dev/null 2>&1; then
-  ok "schema pushed to SQLite (${DB_FILE})"
-else
-  err "prisma db push failed. Re-running with output:"
-  bunx prisma db push --accept-data-loss 2>&1 | tail -n 30 >&2 || true
-  die "prisma db push failed — see output above"
-fi
-
-# ============================================================================
-# STEP 5 — Seed the database
-# ============================================================================
-if [[ $DO_SEED -eq 1 ]]; then
-  step "Step 5/8 — Seeding database (admin + positions + hero slides + blog posts)"
-  if bun run scripts/seed.ts >/dev/null 2>&1; then
-    ok "seed complete (idempotent — existing data preserved)"
-    ok "admin login: admin@credora.in / credora@admin123"
-  else
-    err "db seed failed. Re-running with output:"
-    seed_out="$(bun run scripts/seed.ts 2>&1 || true)"
-    echo "$seed_out" | tail -n 30 >&2
-    # Detect the classic "readonly database" ownership issue and give an
-    # actionable hint (the chown in Step 1 should normally prevent this, but
-    # be defensive in case of ACLs or a manually-created db file).
-    if echo "$seed_out" | grep -qi "readonly database"; then
-      die "db seed failed: SQLite database is readonly. The db file/dir is likely owned by root. Fix with: sudo chown -R \$USER:\$USER $(dirname "$DB_FILE") && ./deploy.sh"
-    fi
-    die "db seed failed — see output above"
-  fi
-else
-  step "Step 5/8 — (skipped: --no-seed)"
-fi
-
-# ============================================================================
-# STEP 6 — Build Next.js standalone production bundle
-# ============================================================================
-# Interactive: ASK the user whether to build (unless --no-build or --build flag
-# was passed). Building takes 1-3 min on a small EC2 instance, so on re-runs
-# where only config/env changed, the user can skip it and reuse .next/.
-if [[ "$BUILD_FLAG" != "force" && "$BUILD_FLAG" != "skip" ]]; then
-  # No explicit flag — ask interactively if a build already exists
-  if [[ -f ".next/standalone/server.js" ]]; then
-    if [[ -t 0 ]]; then
-      echo ""
-      echo -e "  ${C_BOLD}A standalone build already exists at .next/standalone/${C_RESET}"
-      echo -e "  ${C_GRAY}(last modified: $(date -r .next/standalone/server.js '+%Y-%m-%d %H:%M'))${C_RESET}"
-      echo -e "  ${C_YELLOW}Rebuild now? This takes 1-3 min.${C_RESET}"
-      read -r -p "  Rebuild? [y/N] " _build_answer
-      case "${_build_answer,,}" in
-        y|yes) DO_BUILD=1 ;;
-        *)     DO_BUILD=0 ;;
-      esac
-    fi
-    # If non-interactive (piped stdin), keep DO_BUILD=1 (build by default)
-  fi
-fi
-
-if [[ $DO_BUILD -eq 1 ]]; then
-  step "Step 6/8 — Building Next.js standalone production bundle"
-  # Build with bun. next.config.ts has output: "standalone" which produces a
-  # self-contained server at .next/standalone/server.js. The build script in
-  # package.json also copies .next/static and public/ into the standalone dir.
-  log "running bun run build (this can take 1-3 min on a small EC2 instance)..."
-  if bun run build > /tmp/build.log 2>&1; then
-    ok "standalone build ready at .next/standalone/"
-  else
-    err "next build failed. Last 50 lines of build output:"
-    tail -n 50 /tmp/build.log >&2 || true
-    die "next build failed — see /tmp/build.log for full output. Tip: try --no-build to reuse an existing .next/"
-  fi
-else
-  if [[ -f ".next/standalone/server.js" ]]; then
-    step "Step 6/8 — (skipped: reusing existing .next/standalone build)"
-    ok "standalone build ready at .next/standalone/"
-  else
-    die "no existing build found and build was skipped. Run: ./deploy.sh --build"
-  fi
-fi
-
-# ============================================================================
-# STEP 7 — Stop any existing server + start production server with bun
-# ============================================================================
-step "Step 7/8 — Clearing port ${APP_PORT} + starting production server"
-
-kill_port "$APP_PORT"
-sleep 1
-if port_open "$APP_PORT"; then
-  warn "port ${APP_PORT} still in use after kill — the new server may fail to bind"
-else
-  ok "port ${APP_PORT} is free"
-fi
-
-# Start the standalone production server with bun (faster startup + lower
-# memory than node). The standalone server.js is self-contained — it bundles
-# all Node modules needed to run, so we don't need node_modules in production.
-#
-# CRITICAL: fully detach the background process so it doesn't hold the
-# terminal's stdin (which would make the health-check loop appear to hang).
-# Redirect stdin from /dev/null, use setsid for a new session, and disown.
-log "starting production server with bun (logs → server.log)..."
-NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000 \
-  setsid nohup bun .next/standalone/server.js > server.log 2>&1 < /dev/null &
-SERVER_PID=$!
-echo "$SERVER_PID" > .server.pid
-disown "$SERVER_PID" 2>/dev/null || true
-ok "production server PID: $SERVER_PID"
-
-# ── Phase 1: wait for the TCP port to accept connections ────────────────────
-# The server prints "Ready in Xms" but the port may not be bound for a few
-# hundred ms after. Poll the port first (cheap) before hitting the HTTP health
-# endpoint (which would return ECONNREFUSED repeatedly during startup).
-log "waiting for port ${APP_PORT} to accept connections..."
-_port_elapsed=0
-while ! port_open "$APP_PORT"; do
-  sleep 1; _port_elapsed=$((_port_elapsed + 1))
-  if [[ $_port_elapsed -ge 30 ]]; then
-    err "port ${APP_PORT} did not open within 30s. Recent server.log:"
-    tail -n 20 server.log >&2 || true
-    die "server failed to bind port ${APP_PORT}"
-  fi
-  # If the process died immediately, show why
-  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
-    err "server process exited unexpectedly. Recent server.log:"
-    tail -n 30 server.log >&2 || true
-    die "server process crashed on startup"
-  fi
-done
-ok "port ${APP_PORT} is accepting connections (after ${_port_elapsed}s)"
-
-# ── Phase 2: wait for the HTTP health endpoint to return 200 ────────────────
-log "waiting for app to respond at ${HEALTH_URL}..."
-wait_for "$HEALTH_URL" "Production server"
-ok "production server is healthy (HTTP 200 from /api/health)"
-
-# ============================================================================
-# STEP 8 — Configure Nginx reverse proxy for the domain
-# ============================================================================
-if [[ $DO_NGINX -eq 1 ]]; then
-  step "Step 8/8 — Configuring Nginx for ${DOMAIN}"
-
-  NGINX_SITE_FILE="/etc/nginx/sites-available/${DOMAIN}"
-  NGINX_ENABLED_LINK="/etc/nginx/sites-enabled/${DOMAIN}"
-
-  as_root mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled /var/www/html
-
-  # Use the version-controlled HTTP-only config from the repo as the base.
-  # This is the PRE-certbot config: it serves ACME challenges on /.well-known/
-  # and proxies everything else to the production server. After deploy.sh
-  # finishes, the user runs `certbot --nginx` which rewrites this file to add
-  # the 443 block + HTTP→HTTPS redirect automatically.
-  #
-  # SAFETY: if certbot already ran (live config has 'listen 443'), do NOT
-  # overwrite — that would wipe the SSL cert paths certbot added. Just patch
-  # the broken /_next/static/ block if present (the chunked-encoding bug).
-  NGINX_REPO_CONF="nginx/credorafin.com.http.conf"
-  _existing_has_https=0
-  if [[ -f "$NGINX_SITE_FILE" ]] && grep -q "listen 443" "$NGINX_SITE_FILE" 2>/dev/null; then
-    _existing_has_https=1
-  fi
-
-  if [[ $_existing_has_https -eq 1 ]]; then
-    # Certbot already configured HTTPS — don't overwrite, just fix the static
-    # block bug if it still exists (missing proxy_http_version 1.1).
-    if grep -q "location /_next/static/" "$NGINX_SITE_FILE" 2>/dev/null; then
-      warn "live nginx config has HTTPS (certbot) — patching the /_next/static/ chunked-encoding bug in-place"
-      # Remove the broken static block (it will be handled by location / instead)
-      as_root sed -i '/location \/_next\/static\//,/^[[:space:]]*}/d' "$NGINX_SITE_FILE"
-      as_root nginx -t 2>/dev/null && ok "nginx config patched (removed broken static block)" || warn "nginx config test failed after patch — check manually"
-    else
-      ok "live nginx config already correct (HTTPS + no broken static block) — preserving"
-    fi
-  elif [[ -f "$NGINX_REPO_CONF" ]]; then
-    # Fresh install: copy the fixed HTTP-only config from the repo
-    cp "$NGINX_REPO_CONF" "/tmp/${DOMAIN}.conf"
-    sed -i "s|credorafin.com|${DOMAIN}|g" "/tmp/${DOMAIN}.conf"
-    as_root cp "/tmp/${DOMAIN}.conf" "$NGINX_SITE_FILE"
-    rm -f "/tmp/${DOMAIN}.conf"
-    ok "nginx site config copied from ${NGINX_REPO_CONF}"
-  else
-    # Fallback: generate inline (for clones that don't have the nginx/ dir)
-    warn "nginx/credorafin.com.http.conf not found in repo — generating inline"
-    cat > "/tmp/${DOMAIN}.conf" <<'NGINX_CONF'
-server {
-    listen 80;
-    listen [::]:80;
-    server_name __DOMAIN__ www.__DOMAIN__;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www/html;
-        try_files $uri =404;
-    }
-
-    client_max_body_size 20M;
-
-    location /_next/webpack-hmr {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 300s;
-        proxy_send_timeout 300s;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_connect_timeout 60s;
-        proxy_read_timeout 300s;
-        proxy_send_timeout 300s;
-    }
-}
-NGINX_CONF
-    sed -i "s|__DOMAIN__|${DOMAIN}|g" "/tmp/${DOMAIN}.conf"
-    as_root cp "/tmp/${DOMAIN}.conf" "$NGINX_SITE_FILE"
-    rm -f "/tmp/${DOMAIN}.conf"
-    ok "nginx site config generated inline: ${NGINX_SITE_FILE}"
-  fi
-
-  # Enable the site (symlink) and disable the default site to avoid conflicts
-  as_root ln -sf "$NGINX_SITE_FILE" "$NGINX_ENABLED_LINK"
-  as_root rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
-  ok "site enabled: ${DOMAIN}"
-
-  # Test the nginx config before reloading
-  if as_root nginx -t 2>/dev/null; then
-    ok "nginx config test passed"
-  else
-    err "nginx config test failed. Output:"
-    as_root nginx -t 2>&1 | tail -n 20 >&2 || true
-    die "nginx config test failed — site not activated (app is still running on port ${APP_PORT})"
-  fi
-
-  # Reload nginx to pick up the new config
-  if as_root systemctl reload nginx 2>/dev/null || as_root service nginx reload 2>/dev/null; then
-    ok "nginx reloaded"
-  else
-    warn "nginx reload failed — trying restart"
-    as_root systemctl restart nginx 2>/dev/null || as_root service nginx restart 2>/dev/null || true
-  fi
-  ok "nginx is proxying ${DOMAIN} → 127.0.0.1:${APP_PORT}"
-else
-  step "Step 8/8 — (skipped: --no-nginx)"
-fi
-
-# ============================================================================
-# Done
-# ============================================================================
-echo ""
-echo -e "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-echo -e "${C_BOLD}${C_GREEN}  ✓ CredoraFin production server is running${C_RESET}"
-echo -e "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-echo ""
-if [[ $DO_NGINX -eq 1 ]]; then
-  echo -e "  Public URL:     ${C_BOLD}http://${DOMAIN}${C_RESET}"
-  echo -e "  Nginx proxy:    ${C_BOLD}${DOMAIN}:80 → 127.0.0.1:${APP_PORT}${C_RESET}"
-else
-  echo -e "  App URL:        ${C_BOLD}http://localhost:${APP_PORT}${C_RESET}"
-fi
-echo -e "  Mode:           ${C_BOLD}PRODUCTION (standalone build + bun)${C_RESET}"
-echo -e "  Database:       ${C_BOLD}SQLite at ${DB_FILE} (WAL mode)${C_RESET}"
-echo -e "  Admin login:    ${C_BOLD}admin@credora.in / credora@admin123${C_RESET}"
-# Show email/backup status (re-read .env so the value reflects what we just wrote)
-# shellcheck disable=SC1091
-set -a; source .env 2>/dev/null || true; set +a
-if [[ -n "${SMTP_PASS:-}" && "${SMTP_PASS}" != "REPLACE_WITH_GMAIL_APP_PASSWORD" ]]; then
-  echo -e "  Email/Backups:  ${C_BOLD}ENABLED (Gmail → ${BACKUP_EMAILS:-?})${C_RESET}"
-else
-  echo -e "  Email/Backups:  ${C_YELLOW}${C_BOLD}DISABLED (SMTP_PASS not set)${C_RESET}"
-fi
-echo -e "  Health:         ${C_BOLD}${HEALTH_URL}${C_RESET}"
-echo -e "  Logs:           ${C_BOLD}server.log${C_RESET}"
-echo -e "  PID file:       ${C_BOLD}.server.pid${C_RESET}"
-if [[ $DO_NGINX -eq 1 ]]; then
-  echo -e "  Nginx logs:     ${C_BOLD}/var/log/nginx/access.log & /var/log/nginx/error.log${C_RESET}"
-  echo ""
-  echo -e "  ${C_YELLOW}Next steps:${C_RESET}"
-  echo -e "    1. Point DNS: create an A record for ${C_BOLD}${DOMAIN}${C_RESET} → this server's public IP"
-  echo -e "    2. Open firewall: sudo ufw allow 80/tcp && sudo ufw allow 443/tcp"
-  echo -e "    3. Add HTTPS (apex only — most reliable):"
-  echo -e "         ${C_BOLD}sudo certbot --nginx -d ${DOMAIN} --agree-tos --no-eff-email -m you@example.com${C_RESET}"
-  echo -e "       Only add www AFTER you've created a separate A record for www.${DOMAIN}:"
-  echo -e "         ${C_BOLD}sudo certbot --nginx -d ${DOMAIN} -d www.${DOMAIN}${C_RESET}"
-  echo -e "       (if www DNS points elsewhere, the www challenge will 404 and block the cert)"
-  echo ""
-  echo -e "  ${C_YELLOW}Manage the production server:${C_RESET}"
-  echo -e "    Stop:   ${C_BOLD}kill \$(cat .server.pid)${C_RESET}"
-  echo -e "    Logs:   ${C_BOLD}tail -f server.log${C_RESET}"
-  echo -e "    Restart:${C_BOLD} ./deploy.sh${C_RESET}"
-fi
-echo ""
-exit 0
+  ┌──────────────────────────────────────────────┐
+  │  ✅ Deploy complete                           │
+  │  App:   http://localhost:3000                 │
+  │  Logs:  pm2 logs credorafin                   │
+  │  Stats: pm2 status                            │
+  │  Monit: pm2 monit                             │
+  └──────────────────────────────────────────────┘
+EOF
