@@ -34,9 +34,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+// NOTE: xlsx, jspdf, jspdf-autotable are heavy browser-only libs.
+// They are dynamically imported inside the click handlers (downloadExcel /
+// downloadPDF) so they are never bundled into the SSR/build path — this
+// prevents "Module not found" errors during `next build` on servers where
+// these deprecated CJS packages may not resolve cleanly.
 
 /* ────────────────────────────────────────────
    EMI CALCULATION LOGIC
@@ -246,9 +248,11 @@ export default function EMICalculator() {
   );
 
   /* ─── Excel Export ─── */
-  const downloadExcel = useCallback(() => {
+  const downloadExcel = useCallback(async () => {
     if (schedule.length === 0) return;
-
+    try {
+    // Dynamically import xlsx only when the user actually exports
+    const XLSX = await import("xlsx");
     const wb = XLSX.utils.book_new();
 
     // Summary rows at top
@@ -316,12 +320,19 @@ export default function EMICalculator() {
 
     XLSX.utils.book_append_sheet(wb, ws, "Amortization Schedule");
     XLSX.writeFile(wb, "amortization-schedule.xlsx");
+    } catch (e) {
+      console.error("Excel export failed:", e);
+      alert("Could not generate Excel file. Please try again.");
+    }
   }, [schedule, loanAmount, interestRate, tenure, tenureType, emi, totalInterest, totalPayment]);
 
   /* ─── PDF Export ─── */
-  const downloadPDF = useCallback(() => {
+  const downloadPDF = useCallback(async () => {
     if (schedule.length === 0) return;
-
+    try {
+    // Dynamically import jspdf + jspdf-autotable only when the user exports
+    const { default: jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
     // Title
@@ -419,12 +430,16 @@ export default function EMICalculator() {
     });
 
     // ***END OF REPORT***
-    const finalY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 200;
+    const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 200;
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.text("***END OF REPORT***", 148.5, finalY + 10, { align: "center" });
 
     doc.save("amortization-schedule.pdf");
+    } catch (e) {
+      console.error("PDF export failed:", e);
+      alert("Could not generate PDF file. Please try again.");
+    }
   }, [schedule, loanAmount, interestRate, tenure, tenureType, emi, totalInterest, totalPayment]);
 
   return (
