@@ -446,7 +446,7 @@ export default function EMICalculator() {
     <section
       id="emi-calculator"
       className="py-8 sm:py-12 md:py-20 lg:py-24 bg-[#F7F9FC] relative overflow-hidden"
-      style={{ fontFamily: "'Inter', 'Poppins', 'ArialRupee', Arial, system-ui, sans-serif" }}
+      style={{ fontFamily: "'Inter', 'Poppins', 'OfficialRupee', Arial, system-ui, sans-serif" }}
     >
       {/* Decorative background */}
       <div className="absolute inset-0 pointer-events-none">

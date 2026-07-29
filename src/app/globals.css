@@ -4,15 +4,26 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================
-   RUPEE SYMBOL (₹) — Render in Arial site-wide
-   Uses unicode-range so ONLY the ₹ glyph (U+20B9)
-   is pulled from Arial; all other text stays in
-   Poppins. Arial is resolved locally on the user's
-   OS (available on Windows, macOS, Android, iOS).
+   RUPEE SYMBOL (₹) — Official Government of India glyph
+   ----------------------------------------------------
+   Uses a self-hosted subset of Noto Sans Devanagari
+   (Google's official font with the Govt of India ₹
+   symbol designed by D. Udaya Kumar). The font file
+   is subsetted to ONLY contain the ₹ glyph (U+20B9),
+   so it's just 696 bytes — loads instantly.
+
+   unicode-range ensures ONLY the ₹ character uses
+   this font; all other text stays in Poppins. This
+   renders the official ₹ symbol identically on ALL
+   devices (Windows, Mac, Linux, Android, iOS) — no
+   dependence on locally-installed fonts.
    ============================================ */
 @font-face {
-  font-family: "ArialRupee";
-  src: local("Arial"), local("ArialMT"), local("Arial Unicode MS"), local("Helvetica Neue"), local("Helvetica"), local("sans-serif");
+  font-family: "OfficialRupee";
+  src: url("/fonts/RupeeSymbol.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
   unicode-range: U+20B9;
 }
 
@@ -108,7 +119,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-poppins), "ArialRupee", Arial, sans-serif;
+    font-family: var(--font-poppins), "OfficialRupee", Arial, sans-serif;
   }
   html {
     scroll-behavior: smooth;
