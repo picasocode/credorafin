@@ -572,14 +572,32 @@ if [[ $DO_NGINX -eq 1 ]]; then
 
   # Use the version-controlled HTTP-only config from the repo as the base.
   # This is the PRE-certbot config: it serves ACME challenges on /.well-known/
-  # and proxies everything else to the dev server. After deploy.sh finishes,
-  # the user runs `certbot --nginx` which rewrites this file to add the 443
-  # block + HTTP→HTTPS redirect automatically.
+  # and proxies everything else to the production server. After deploy.sh
+  # finishes, the user runs `certbot --nginx` which rewrites this file to add
+  # the 443 block + HTTP→HTTPS redirect automatically.
+  #
+  # SAFETY: if certbot already ran (live config has 'listen 443'), do NOT
+  # overwrite — that would wipe the SSL cert paths certbot added. Just patch
+  # the broken /_next/static/ block if present (the chunked-encoding bug).
   NGINX_REPO_CONF="nginx/credorafin.com.http.conf"
-  if [[ -f "$NGINX_REPO_CONF" ]]; then
-    # Inject the configured domain (the repo version hardcodes credorafin.com,
-    # but --domain= may override it). Use sed on a temp copy so the repo file
-    # stays pristine.
+  _existing_has_https=0
+  if [[ -f "$NGINX_SITE_FILE" ]] && grep -q "listen 443" "$NGINX_SITE_FILE" 2>/dev/null; then
+    _existing_has_https=1
+  fi
+
+  if [[ $_existing_has_https -eq 1 ]]; then
+    # Certbot already configured HTTPS — don't overwrite, just fix the static
+    # block bug if it still exists (missing proxy_http_version 1.1).
+    if grep -q "location /_next/static/" "$NGINX_SITE_FILE" 2>/dev/null; then
+      warn "live nginx config has HTTPS (certbot) — patching the /_next/static/ chunked-encoding bug in-place"
+      # Remove the broken static block (it will be handled by location / instead)
+      as_root sed -i '/location \/_next\/static\//,/^[[:space:]]*}/d' "$NGINX_SITE_FILE"
+      as_root nginx -t 2>/dev/null && ok "nginx config patched (removed broken static block)" || warn "nginx config test failed after patch — check manually"
+    else
+      ok "live nginx config already correct (HTTPS + no broken static block) — preserving"
+    fi
+  elif [[ -f "$NGINX_REPO_CONF" ]]; then
+    # Fresh install: copy the fixed HTTP-only config from the repo
     cp "$NGINX_REPO_CONF" "/tmp/${DOMAIN}.conf"
     sed -i "s|credorafin.com|${DOMAIN}|g" "/tmp/${DOMAIN}.conf"
     as_root cp "/tmp/${DOMAIN}.conf" "$NGINX_SITE_FILE"
@@ -628,13 +646,6 @@ server {
         proxy_connect_timeout 60s;
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
-    }
-
-    location /_next/static/ {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_cache_bypass $http_upgrade;
-        expires 365d;
-        add_header Cache-Control "public, immutable";
     }
 }
 NGINX_CONF
