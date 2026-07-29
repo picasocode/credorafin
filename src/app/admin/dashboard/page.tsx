@@ -1313,7 +1313,7 @@ export default function AdminDashboard(){
   }
 
   return(
-    <div className="min-h-screen flex" style={{background:"#F9FAFB",fontFamily:"'Inter','DM Sans','OfficialRupee',Arial,system-ui,sans-serif"}}>
+    <div className="min-h-screen flex" style={{background:"#F9FAFB"}}>
 
       {/* ── Desktop sidebar ── */}
       <aside className="hidden lg:flex flex-col w-56 shrink-0 bg-white border-r border-gray-100 h-screen sticky top-0">
