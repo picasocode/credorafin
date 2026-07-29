@@ -600,7 +600,7 @@ export default function EMICalculator() {
                         setTenureType(val)
                       }
                     >
-                      <SelectTrigger className="bg-white/10 border-0 text-white text-xs h-8 w-20 sm:w-24 rounded-lg focus:ring-0">
+                      <SelectTrigger className="bg-white/10 border-0 text-white text-xs h-8 w-24 sm:w-28 rounded-lg focus:ring-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -840,39 +840,39 @@ export default function EMICalculator() {
                             key={row.month}
                             className={`p-3 ${i % 2 === 0 ? "bg-white" : "bg-[#FAFBFD]"}`}
                           >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1C1D62]">
-                                <span className="w-5 h-5 rounded-full bg-[#304AC0]/10 text-[#304AC0] flex items-center justify-center text-[10px] font-bold">
+                            <div className="flex items-center justify-between mb-2 gap-2">
+                              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1C1D62] min-w-0">
+                                <span className="w-5 h-5 rounded-full bg-[#304AC0]/10 text-[#304AC0] flex items-center justify-center text-[10px] font-bold shrink-0">
                                   {row.month}
                                 </span>
-                                {row.dueDate}
+                                <span className="truncate">{row.dueDate}</span>
                               </span>
-                              <span className="text-xs font-bold text-[#304AC0]">
+                              <span className="text-xs font-bold text-[#304AC0] shrink-0">
                                 {formatCurrency(Math.round(row.emi))}
                               </span>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[#718096]">Opening</span>
-                                <span className="font-medium text-[#1C1D62]">
+                              <div className="flex items-center justify-between min-w-0">
+                                <span className="text-[#718096] shrink-0">Open</span>
+                                <span className="font-medium text-[#1C1D62] text-right ml-1 truncate">
                                   {formatNumber(row.openingPrincipal)}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-[#718096]">Closing</span>
-                                <span className="font-medium text-[#1C1D62]">
+                              <div className="flex items-center justify-between min-w-0">
+                                <span className="text-[#718096] shrink-0">Close</span>
+                                <span className="font-medium text-[#1C1D62] text-right ml-1 truncate">
                                   {formatNumber(row.closingPrincipal)}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-[#304AC0]">Principal</span>
-                                <span className="font-medium text-[#304AC0]">
+                              <div className="flex items-center justify-between min-w-0">
+                                <span className="text-[#304AC0] shrink-0">Prin</span>
+                                <span className="font-medium text-[#304AC0] text-right ml-1 truncate">
                                   {formatNumber(row.principal)}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-[#87B73C]">Interest</span>
-                                <span className="font-medium text-[#87B73C]">
+                              <div className="flex items-center justify-between min-w-0">
+                                <span className="text-[#87B73C] shrink-0">Int</span>
+                                <span className="font-medium text-[#87B73C] text-right ml-1 truncate">
                                   {formatNumber(row.interest)}
                                 </span>
                               </div>
@@ -888,11 +888,11 @@ export default function EMICalculator() {
                         {showFullSchedule && (
                           <>
                             <div className="p-3 bg-[#1C1D62] text-white">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-bold uppercase tracking-wider">
+                              <div className="flex items-center justify-between mb-1 gap-2">
+                                <span className="text-xs font-bold uppercase tracking-wider shrink-0">
                                   Total
                                 </span>
-                                <span className="text-xs font-bold">
+                                <span className="text-xs font-bold shrink-0">
                                   {formatCurrency(
                                     Math.round(
                                       schedule.reduce((s, r) => s + r.emi, 0)
@@ -901,17 +901,17 @@ export default function EMICalculator() {
                                 </span>
                               </div>
                               <div className="grid grid-cols-2 gap-x-3 text-[11px]">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-white/60">Principal</span>
-                                  <span className="font-bold text-[#87B73C]">
+                                <div className="flex items-center justify-between min-w-0">
+                                  <span className="text-white/60 shrink-0">Prin</span>
+                                  <span className="font-bold text-[#87B73C] text-right ml-1 truncate">
                                     {formatNumber(
                                       schedule.reduce((s, r) => s + r.principal, 0)
                                     )}
                                   </span>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-white/60">Interest</span>
-                                  <span className="font-bold text-[#87B73C]">
+                                <div className="flex items-center justify-between min-w-0">
+                                  <span className="text-white/60 shrink-0">Int</span>
+                                  <span className="font-bold text-[#87B73C] text-right ml-1 truncate">
                                     {formatNumber(
                                       schedule.reduce((s, r) => s + r.interest, 0)
                                     )}
@@ -928,7 +928,7 @@ export default function EMICalculator() {
 
                       {/* Desktop table view (hidden on mobile) */}
                       <div className="hidden sm:block overflow-x-auto">
-                      <Table>
+                      <Table className="min-w-[640px]">
                         <TableHeader>
                           <TableRow className="bg-[#F0F4FF] hover:bg-[#F0F4FF]">
                             <TableHead className="text-xs font-semibold text-[#1C1D62]">
