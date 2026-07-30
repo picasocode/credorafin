@@ -3,18 +3,24 @@
 # CredoraFin — all-in-one deploy script (PM2 + Bun + Nginx + Certbot)
 # ----------------------------------------------------------------------------
 # Subcommands:
-#   ./deploy.sh              # default: full update (pull → install → build → reload)
+#   ./deploy.sh              # default: full update — pull → install → build →
+#                            #   fix permissions → sync nginx config (if stale) →
+#                            #   reload PM2 → verify CSS/JS/fonts load → 200 check
 #   ./deploy.sh --no-pull    # skip git pull (build + reload only)
 #   ./deploy.sh --setup      # first-time server bootstrap:
 #                            #   • installs nginx + certbot
-#                            #   • syncs nginx site config
+#                            #   • syncs nginx site config (with __APP_ROOT__ substitution)
 #                            #   • creates /var/www/html for ACME challenges
 #                            #   • enables site, disables default, reloads nginx
-#   ./deploy.sh --nginx      # just re-sync nginx config + reload (no app build)
-#   ./deploy.sh --ssl        # run certbot to issue/renew HTTPS cert
+#                            #   • fixes filesystem permissions (chmod o+x ~, o+rX standalone/public)
+#   ./deploy.sh --nginx      # just re-sync nginx config + fix permissions + reload
+#   ./deploy.sh --ssl        # run certbot to issue/renew HTTPS cert (+ DNS check)
 #   ./deploy.sh --health     # just run health check against local app
 #   ./deploy.sh --logs       # tail PM2 logs (Ctrl-C to exit)
 #   ./deploy.sh --help       # show this help
+#
+# Idempotent: ./deploy.sh only reloads nginx if the config actually changed.
+# Safe on dev machines: if nginx isn't installed, the nginx steps are skipped.
 #
 # Pinned versions (see .nvmrc, .bun-version, DEPLOY.md):
 #   Node 22.11.0 LTS · Bun 1.3.14 · PM2 5.4.2
@@ -84,9 +90,41 @@ ensure_apt() {
   fi
 }
 
+# ── Shared helper: fix filesystem permissions so nginx (www-data) can serve ─
+# nginx runs as www-data and serves /_next/static/ + /public/ directly from
+# disk via `alias`. On Ubuntu, /home/<user>/ is mode 750 by default, so
+# www-data gets permission denied (403/404) trying to traverse into it.
+# Fix: grant traversal (o+x) on the home dir + read on standalone/public.
+# o+x = traverse only, NOT list — safe, standard for web serving from $HOME.
+fix_permissions_for_nginx() {
+  local app_root="$1"
+  step "Fixing filesystem permissions for nginx (www-data)"
+
+  local home_dir
+  home_dir="$(eval echo ~"${USER:-$(whoami)}")"
+  if [ -d "$home_dir" ]; then
+    sudo chmod o+x "$home_dir" 2>/dev/null && ok "traversal granted on ${home_dir}" || warn "could not chmod ${home_dir}"
+  fi
+  chmod -R o+rX .next/standalone 2>/dev/null && ok "standalone readable by all" || warn "chmod standalone failed"
+  chmod -R o+rX public 2>/dev/null && ok "public readable by all" || warn "chmod public failed"
+
+  # Verify www-data can actually read a chunk (catches edge cases)
+  local test_chunk
+  test_chunk="${app_root}/.next/standalone/.next/static/chunks/$(ls "${app_root}/.next/standalone/.next/static/chunks" 2>/dev/null | head -1)"
+  if [ -n "$test_chunk" ] && [ -f "$test_chunk" ]; then
+    if sudo -u www-data test -r "$test_chunk" 2>/dev/null; then
+      ok "www-data can read: $(basename "$test_chunk")"
+    else
+      warn "www-data CANNOT read ${test_chunk} — nginx will return 403/404"
+      warn "  fix manually: sudo chmod o+x ~ && chmod -R o+rX .next/standalone public"
+    fi
+  fi
+}
+
 # ── Shared helper: install nginx site config (HTTP-only, certbot upgrades it) ─
 # Substitutes __APP_ROOT__ with the absolute project path so the
 # /_next/static/ and /fonts/ location blocks point to the right place.
+# Also fixes filesystem permissions (calls fix_permissions_for_nginx).
 install_nginx_site() {
   step "Syncing nginx site config for ${DOMAIN}"
 
@@ -96,8 +134,6 @@ install_nginx_site() {
   [ -f "$src" ] || die "nginx config not found: $src"
 
   # Absolute project path — nginx `alias` directives need absolute paths.
-  # This is where .next/standalone/ lives, so nginx can serve static files
-  # directly from the filesystem.
   local app_root
   app_root="$(pwd)"
   ok "app root: ${app_root}"
@@ -137,28 +173,48 @@ install_nginx_site() {
     warn "run ./deploy.sh first to build, then ./deploy.sh --nginx to re-sync config"
   fi
 
-  # CRITICAL — fix filesystem permissions so nginx (www-data) can serve files.
-  # Without this, nginx returns 403/404 on all static assets because Ubuntu's
-  # default /home/<user>/ mode 750 blocks www-data from traversing into it.
-  step "Fixing filesystem permissions for nginx (www-data)"
-  local home_dir
-  home_dir="$(eval echo ~"${USER:-$(whoami)}")"
-  if [ -d "$home_dir" ]; then
-    sudo chmod o+x "$home_dir" 2>/dev/null && ok "traversal granted on ${home_dir}" || true
-  fi
-  chmod -R o+rX .next/standalone 2>/dev/null && ok "standalone readable" || true
-  chmod -R o+rX public 2>/dev/null && ok "public readable" || true
+  # Fix filesystem permissions so nginx can actually read the files
+  fix_permissions_for_nginx "$app_root"
+}
 
-  # Verify www-data can actually read a chunk
-  local test_chunk
-  test_chunk="${app_root}/.next/standalone/.next/static/chunks/$(ls "${app_root}/.next/standalone/.next/static/chunks" 2>/dev/null | head -1)"
-  if [ -n "$test_chunk" ] && [ -f "$test_chunk" ]; then
-    if sudo -u www-data test -r "$test_chunk" 2>/dev/null; then
-      ok "www-data can read: $(basename "$test_chunk")"
-    else
-      warn "www-data CANNOT read chunks — nginx will return 403/404"
-    fi
+# ── Shared helper: sync nginx config ONLY if nginx is installed and config is stale ─
+# Called by do_deploy() — idempotent: if nginx isn't installed (dev machine)
+# or the config is already correct, this is a no-op. Avoids unnecessary
+# nginx reloads on every deploy.
+sync_nginx_if_needed() {
+  # Skip entirely if nginx isn't installed (e.g. local dev, CI)
+  if ! command -v nginx >/dev/null 2>&1; then
+    return 0
   fi
+  # Skip if the site config isn't installed yet (first deploy — user should run --setup first)
+  if [ ! -L "$NGINX_SITE_LINK" ]; then
+    warn "nginx site not installed yet — run: ./deploy.sh --setup"
+    return 0
+  fi
+
+  local app_root
+  app_root="$(pwd)"
+  local src="nginx/${DOMAIN}.http.conf"
+  [ -f "$src" ] || return 0
+
+  # Build what the config SHOULD look like (with __APP_ROOT__ substituted)
+  local expected
+  expected="$(sed "s|__APP_ROOT__|${app_root}|g" "$src")"
+
+  # Compare against what's currently installed
+  local current
+  current="$(sudo cat "$NGINX_SITE_FILE" 2>/dev/null || echo "")"
+
+  if [ "$expected" = "$current" ]; then
+    ok "nginx config already in sync (path: ${app_root})"
+    # Still fix permissions — they can drift if build recreated .next/standalone
+    fix_permissions_for_nginx "$app_root"
+    return 0
+  fi
+
+  # Config is stale (path changed, or source config was updated) — re-sync
+  step "nginx config is stale — re-syncing"
+  install_nginx_site
 }
 
 # ============================================================================
@@ -371,31 +427,15 @@ do_deploy() {
   ok "standalone static chunks present ($(ls "${standalone_static}/chunks" 2>/dev/null | wc -l) files)"
   ok "standalone public present ($(ls "$standalone_public" 2>/dev/null | wc -l) entries)"
 
-  # ── 5b. CRITICAL — filesystem permissions for nginx ──────────────────────
+  # ── 5b. CRITICAL — filesystem permissions + nginx config sync ───────────
   # nginx runs as www-data and serves /_next/static/ + /public/ directly from
-  # disk via `alias`. On Ubuntu, /home/<user>/ is mode 750 by default, so
-  # www-data gets permission denied (403/404) trying to traverse into it.
-  # Fix: grant traversal (o+x) on the home dir + read on standalone/public.
-  # o+x = traverse only, NOT list — safe, standard for web serving from $HOME.
-  step "Fixing filesystem permissions for nginx (www-data)"
-  local home_dir
-  home_dir="$(eval echo ~"${USER:-$(whoami)}")"
-  if [ -d "$home_dir" ]; then
-    sudo chmod o+x "$home_dir" 2>/dev/null && ok "traversal granted on ${home_dir}" || warn "could not chmod ${home_dir}"
-  fi
-  chmod -R o+rX .next/standalone 2>/dev/null && ok "standalone readable by all" || warn "chmod standalone failed"
-  chmod -R o+rX public 2>/dev/null && ok "public readable by all" || warn "chmod public failed"
-
-  # Verify www-data can actually read a chunk (catches edge cases)
-  local test_chunk="${standalone_static}/chunks/$(ls "${standalone_static}/chunks" 2>/dev/null | head -1)"
-  if [ -n "$test_chunk" ] && [ -f "$test_chunk" ]; then
-    if sudo -u www-data test -r "$test_chunk" 2>/dev/null; then
-      ok "www-data can read: $(basename "$test_chunk")"
-    else
-      warn "www-data CANNOT read ${test_chunk} — nginx will return 403/404"
-      warn "  fix manually: sudo chmod o+x ~ && chmod -R o+rX .next/standalone public"
-    fi
-  fi
+  # disk via `alias`. Two things must be true:
+  #   1. Filesystem permissions allow www-data to traverse /home/<user>/ and
+  #      read .next/standalone/ + public/. (Ubuntu default mode 750 blocks this.)
+  #   2. nginx site config must point at the correct absolute app path.
+  # sync_nginx_if_needed() handles both — it re-syncs the config if stale AND
+  # always fixes permissions. If nginx isn't installed (dev machine), it's a no-op.
+  sync_nginx_if_needed
 
   # ── 6. Reload PM2 (zero-downtime) ─────────────────────────────────────────
   step "Reloading PM2 app (zero-downtime)"
@@ -449,13 +489,6 @@ do_deploy() {
       ok "font ${font_ref} → 200"
     else
       warn "font ${font_ref} → ${code} (expected 200)"
-    fi
-  fi
-
-  # Remind to re-sync nginx config if app path changed
-  if [ -L "$NGINX_SITE_LINK" ]; then
-    if ! grep -q "$(pwd)" "$NGINX_SITE_FILE" 2>/dev/null; then
-      warn "nginx config has stale app path — run: ./deploy.sh --nginx"
     fi
   fi
 
