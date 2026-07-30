@@ -136,6 +136,29 @@ install_nginx_site() {
     warn "static dir NOT found: ${static_dir}"
     warn "run ./deploy.sh first to build, then ./deploy.sh --nginx to re-sync config"
   fi
+
+  # CRITICAL — fix filesystem permissions so nginx (www-data) can serve files.
+  # Without this, nginx returns 403/404 on all static assets because Ubuntu's
+  # default /home/<user>/ mode 750 blocks www-data from traversing into it.
+  step "Fixing filesystem permissions for nginx (www-data)"
+  local home_dir
+  home_dir="$(eval echo ~"${USER:-$(whoami)}")"
+  if [ -d "$home_dir" ]; then
+    sudo chmod o+x "$home_dir" 2>/dev/null && ok "traversal granted on ${home_dir}" || true
+  fi
+  chmod -R o+rX .next/standalone 2>/dev/null && ok "standalone readable" || true
+  chmod -R o+rX public 2>/dev/null && ok "public readable" || true
+
+  # Verify www-data can actually read a chunk
+  local test_chunk
+  test_chunk="${app_root}/.next/standalone/.next/static/chunks/$(ls "${app_root}/.next/standalone/.next/static/chunks" 2>/dev/null | head -1)"
+  if [ -n "$test_chunk" ] && [ -f "$test_chunk" ]; then
+    if sudo -u www-data test -r "$test_chunk" 2>/dev/null; then
+      ok "www-data can read: $(basename "$test_chunk")"
+    else
+      warn "www-data CANNOT read chunks — nginx will return 403/404"
+    fi
+  fi
 }
 
 # ============================================================================
@@ -347,6 +370,32 @@ do_deploy() {
   fi
   ok "standalone static chunks present ($(ls "${standalone_static}/chunks" 2>/dev/null | wc -l) files)"
   ok "standalone public present ($(ls "$standalone_public" 2>/dev/null | wc -l) entries)"
+
+  # ── 5b. CRITICAL — filesystem permissions for nginx ──────────────────────
+  # nginx runs as www-data and serves /_next/static/ + /public/ directly from
+  # disk via `alias`. On Ubuntu, /home/<user>/ is mode 750 by default, so
+  # www-data gets permission denied (403/404) trying to traverse into it.
+  # Fix: grant traversal (o+x) on the home dir + read on standalone/public.
+  # o+x = traverse only, NOT list — safe, standard for web serving from $HOME.
+  step "Fixing filesystem permissions for nginx (www-data)"
+  local home_dir
+  home_dir="$(eval echo ~"${USER:-$(whoami)}")"
+  if [ -d "$home_dir" ]; then
+    sudo chmod o+x "$home_dir" 2>/dev/null && ok "traversal granted on ${home_dir}" || warn "could not chmod ${home_dir}"
+  fi
+  chmod -R o+rX .next/standalone 2>/dev/null && ok "standalone readable by all" || warn "chmod standalone failed"
+  chmod -R o+rX public 2>/dev/null && ok "public readable by all" || warn "chmod public failed"
+
+  # Verify www-data can actually read a chunk (catches edge cases)
+  local test_chunk="${standalone_static}/chunks/$(ls "${standalone_static}/chunks" 2>/dev/null | head -1)"
+  if [ -n "$test_chunk" ] && [ -f "$test_chunk" ]; then
+    if sudo -u www-data test -r "$test_chunk" 2>/dev/null; then
+      ok "www-data can read: $(basename "$test_chunk")"
+    else
+      warn "www-data CANNOT read ${test_chunk} — nginx will return 403/404"
+      warn "  fix manually: sudo chmod o+x ~ && chmod -R o+rX .next/standalone public"
+    fi
+  fi
 
   # ── 6. Reload PM2 (zero-downtime) ─────────────────────────────────────────
   step "Reloading PM2 app (zero-downtime)"
