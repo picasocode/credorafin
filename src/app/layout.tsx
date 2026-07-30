@@ -125,7 +125,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           data={[organizationSchema(), localBusinessSchema(), websiteSchema()]}
         />
       </head>
-      <body className={`${poppins.variable} antialiased bg-background text-foreground`} suppressHydrationWarning>
+      <body className={`${poppins.variable} font-sans antialiased bg-background text-foreground`} suppressHydrationWarning>
         <RootShell>{children}</RootShell>
         <Toaster />
         <Analytics />

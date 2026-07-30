@@ -34,11 +34,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// NOTE: xlsx, jspdf, jspdf-autotable are heavy browser-only libs.
-// They are dynamically imported inside the click handlers (downloadExcel /
-// downloadPDF) so they are never bundled into the SSR/build path — this
-// prevents "Module not found" errors during `next build` on servers where
-// these deprecated CJS packages may not resolve cleanly.
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 /* ────────────────────────────────────────────
    EMI CALCULATION LOGIC
@@ -248,11 +246,9 @@ export default function EMICalculator() {
   );
 
   /* ─── Excel Export ─── */
-  const downloadExcel = useCallback(async () => {
+  const downloadExcel = useCallback(() => {
     if (schedule.length === 0) return;
-    try {
-    // Dynamically import xlsx only when the user actually exports
-    const XLSX = await import("xlsx");
+
     const wb = XLSX.utils.book_new();
 
     // Summary rows at top
@@ -320,19 +316,12 @@ export default function EMICalculator() {
 
     XLSX.utils.book_append_sheet(wb, ws, "Amortization Schedule");
     XLSX.writeFile(wb, "amortization-schedule.xlsx");
-    } catch (e) {
-      console.error("Excel export failed:", e);
-      alert("Could not generate Excel file. Please try again.");
-    }
   }, [schedule, loanAmount, interestRate, tenure, tenureType, emi, totalInterest, totalPayment]);
 
   /* ─── PDF Export ─── */
-  const downloadPDF = useCallback(async () => {
+  const downloadPDF = useCallback(() => {
     if (schedule.length === 0) return;
-    try {
-    // Dynamically import jspdf + jspdf-autotable only when the user exports
-    const { default: jsPDF } = await import("jspdf");
-    const { default: autoTable } = await import("jspdf-autotable");
+
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
     // Title
@@ -430,23 +419,18 @@ export default function EMICalculator() {
     });
 
     // ***END OF REPORT***
-    const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 200;
+    const finalY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 200;
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.text("***END OF REPORT***", 148.5, finalY + 10, { align: "center" });
 
     doc.save("amortization-schedule.pdf");
-    } catch (e) {
-      console.error("PDF export failed:", e);
-      alert("Could not generate PDF file. Please try again.");
-    }
   }, [schedule, loanAmount, interestRate, tenure, tenureType, emi, totalInterest, totalPayment]);
 
   return (
     <section
       id="emi-calculator"
       className="py-8 sm:py-12 md:py-20 lg:py-24 bg-[#F7F9FC] relative overflow-hidden"
-      style={{ fontFamily: "'Inter', 'Poppins', 'OfficialRupee', Arial, system-ui, sans-serif" }}
     >
       {/* Decorative background */}
       <div className="absolute inset-0 pointer-events-none">
@@ -600,7 +584,7 @@ export default function EMICalculator() {
                         setTenureType(val)
                       }
                     >
-                      <SelectTrigger className="bg-white/10 border-0 text-white text-xs h-8 w-24 sm:w-28 rounded-lg focus:ring-0">
+                      <SelectTrigger className="bg-white/10 border-0 text-white text-xs h-8 w-20 sm:w-24 rounded-lg focus:ring-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -830,105 +814,8 @@ export default function EMICalculator() {
 
                   <div className="border border-[#E8ECF0] rounded-xl overflow-hidden">
                     <div className="max-h-96 overflow-y-auto">
-                      {/* Mobile card view (hidden on sm+) */}
-                      <div className="sm:hidden divide-y divide-[#E8ECF0]">
-                        {(showFullSchedule
-                          ? schedule
-                          : schedule.slice(0, 6)
-                        ).map((row, i) => (
-                          <div
-                            key={row.month}
-                            className={`p-3 ${i % 2 === 0 ? "bg-white" : "bg-[#FAFBFD]"}`}
-                          >
-                            <div className="flex items-center justify-between mb-2 gap-2">
-                              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1C1D62] min-w-0">
-                                <span className="w-5 h-5 rounded-full bg-[#304AC0]/10 text-[#304AC0] flex items-center justify-center text-[10px] font-bold shrink-0">
-                                  {row.month}
-                                </span>
-                                <span className="truncate">{row.dueDate}</span>
-                              </span>
-                              <span className="text-xs font-bold text-[#304AC0] shrink-0">
-                                {formatCurrency(Math.round(row.emi))}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
-                              <div className="flex items-center justify-between min-w-0">
-                                <span className="text-[#718096] shrink-0">Open</span>
-                                <span className="font-medium text-[#1C1D62] text-right ml-1 truncate">
-                                  {formatNumber(row.openingPrincipal)}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between min-w-0">
-                                <span className="text-[#718096] shrink-0">Close</span>
-                                <span className="font-medium text-[#1C1D62] text-right ml-1 truncate">
-                                  {formatNumber(row.closingPrincipal)}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between min-w-0">
-                                <span className="text-[#304AC0] shrink-0">Prin</span>
-                                <span className="font-medium text-[#304AC0] text-right ml-1 truncate">
-                                  {formatNumber(row.principal)}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between min-w-0">
-                                <span className="text-[#87B73C] shrink-0">Int</span>
-                                <span className="font-medium text-[#87B73C] text-right ml-1 truncate">
-                                  {formatNumber(row.interest)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {!showFullSchedule && schedule.length > 6 && (
-                          <div className="p-3 text-center text-xs text-[#718096]">
-                            + {schedule.length - 6} more months — tap &quot;Show
-                            All Months&quot; to view full schedule
-                          </div>
-                        )}
-                        {showFullSchedule && (
-                          <>
-                            <div className="p-3 bg-[#1C1D62] text-white">
-                              <div className="flex items-center justify-between mb-1 gap-2">
-                                <span className="text-xs font-bold uppercase tracking-wider shrink-0">
-                                  Total
-                                </span>
-                                <span className="text-xs font-bold shrink-0">
-                                  {formatCurrency(
-                                    Math.round(
-                                      schedule.reduce((s, r) => s + r.emi, 0)
-                                    )
-                                  )}
-                                </span>
-                              </div>
-                              <div className="grid grid-cols-2 gap-x-3 text-[11px]">
-                                <div className="flex items-center justify-between min-w-0">
-                                  <span className="text-white/60 shrink-0">Prin</span>
-                                  <span className="font-bold text-[#87B73C] text-right ml-1 truncate">
-                                    {formatNumber(
-                                      schedule.reduce((s, r) => s + r.principal, 0)
-                                    )}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between min-w-0">
-                                  <span className="text-white/60 shrink-0">Int</span>
-                                  <span className="font-bold text-[#87B73C] text-right ml-1 truncate">
-                                    {formatNumber(
-                                      schedule.reduce((s, r) => s + r.interest, 0)
-                                    )}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-3 text-center text-xs font-bold text-[#1C1D62] tracking-wider">
-                              ***END OF REPORT***
-                            </div>
-                          </>
-                        )}
-                      </div>
-
-                      {/* Desktop table view (hidden on mobile) */}
-                      <div className="hidden sm:block overflow-x-auto">
-                      <Table className="min-w-[640px]">
+                      <div className="overflow-x-auto">
+                      <Table>
                         <TableHeader>
                           <TableRow className="bg-[#F0F4FF] hover:bg-[#F0F4FF]">
                             <TableHead className="text-xs font-semibold text-[#1C1D62]">
