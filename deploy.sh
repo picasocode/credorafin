@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
 # ============================================================================
-# CredoraFin — one-command deploy / update (PM2 + Bun, no Docker)
+# CredoraFin — all-in-one deploy script (PM2 + Bun + Nginx + Certbot)
 # ----------------------------------------------------------------------------
-# Usage:
-#   ./deploy.sh            # full update: pull → install → build → reload
-#   ./deploy.sh --no-pull  # skip git pull (build + reload only)
+# Subcommands:
+#   ./deploy.sh              # default: full update (pull → install → build → reload)
+#   ./deploy.sh --no-pull    # skip git pull (build + reload only)
+#   ./deploy.sh --setup      # first-time server bootstrap:
+#                            #   • installs nginx + certbot
+#                            #   • syncs nginx site config
+#                            #   • creates /var/www/html for ACME challenges
+#                            #   • enables site, disables default, reloads nginx
+#   ./deploy.sh --nginx      # just re-sync nginx config + reload (no app build)
+#   ./deploy.sh --ssl        # run certbot to issue/renew HTTPS cert
+#   ./deploy.sh --health     # just run health check against local app
+#   ./deploy.sh --logs       # tail PM2 logs (Ctrl-C to exit)
+#   ./deploy.sh --help       # show this help
 #
 # Pinned versions (see .nvmrc, .bun-version, DEPLOY.md):
 #   Node 22.11.0 LTS · Bun 1.3.14 · PM2 5.4.2
@@ -13,84 +23,342 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-# ── Ensure we are on the Node version pinned in .nvmrc ──────────────────────
-if command -v nvm >/dev/null 2>&1; then
-  nvm use --silent 2>/dev/null || true
-elif [ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]; then
+# ── Color helpers ────────────────────────────────────────────────────────────
+step()  { printf "\n\033[1;36m▶ %s\033[0m\n" "$1"; }
+ok()    { printf "\033[1;32m  ✓ %s\033[0m\n" "$1"; }
+warn()  { printf "\033[1;33m  ⚠ %s\033[0m\n" "$1"; }
+err()   { printf "\033[1;31m  ✖ %s\033[0m\n" "$1"; }
+die()   { err "$1"; exit 1; }
+
+# ── Load nvm so `node`, `bun`, `pm2` are on PATH on fresh SSH sessions ───────
+load_nvm() {
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  [ -s "$NVM_DIR/nvm.sh" ] || return 0
   # shellcheck disable=SC1091
-  . "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
+  . "$NVM_DIR/nvm.sh"
   nvm use --silent 2>/dev/null || true
-fi
+}
+load_nvm
 
+# ── Load bun into PATH (bun installer adds ~/.bun/bin) ───────────────────────
+export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
+[ -d "$BUN_INSTALL/bin" ] && export PATH="$BUN_INSTALL/bin:$PATH"
+
+# ── Constants ────────────────────────────────────────────────────────────────
+DOMAIN="credorafin.com"
+APP_PORT=3000
+APP_NAME="credorafin"
+NGINX_SITE_FILE="/etc/nginx/sites-available/${DOMAIN}"
+NGINX_SITE_LINK="/etc/nginx/sites-enabled/${DOMAIN}"
+ACME_ROOT="/var/www/html"
 LOG_DIR="./logs"
-mkdir -p "$LOG_DIR"
 
-step() { printf "\n\033[1;36m▶ %s\033[0m\n" "$1"; }
-ok()   { printf "\033[1;32m  ✓ %s\033[0m\n" "$1"; }
+# ── Parse subcommand ─────────────────────────────────────────────────────────
+SUBCMD="${1:-deploy}"
+case "$SUBCMD" in
+  --help|-h) SUBCMD="help" ;;
+  --no-pull) SUBCMD="deploy" ; NO_PULL=1 ;;
+  --setup)   SUBCMD="setup" ;;
+  --nginx)   SUBCMD="nginx" ;;
+  --ssl)     SUBCMD="ssl" ;;
+  --health)  SUBCMD="health" ;;
+  --logs)    SUBCMD="logs" ;;
+  *)         SUBCMD="deploy" ;;
+esac
 
-PULL=1
-[[ "${1:-}" == "--no-pull" ]] && PULL=0
+show_help() {
+  sed -n '2,28p' "$0"
+  exit 0
+}
 
-# Pre-flight: PM2 must be installed
-if ! command -v pm2 >/dev/null 2>&1; then
-  echo "✖ pm2 not found. Install it once with:"
-  echo "    npm install -g pm2@5.4.2"
-  exit 1
-fi
+# ── Shared helper: ensure apt package installed ──────────────────────────────
+ensure_apt() {
+  local pkg="$1"
+  if dpkg -s "$pkg" >/dev/null 2>&1; then
+    ok "$pkg already installed"
+  else
+    step "Installing $pkg via apt"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "$pkg"
+    ok "$pkg installed"
+  fi
+}
 
-if [[ "$PULL" == "1" ]]; then
-  step "Pulling latest code"
-  git pull --ff-only
-  ok "up to date"
-fi
+# ── Shared helper: install nginx site config (HTTP-only, certbot upgrades it) ─
+install_nginx_site() {
+  step "Syncing nginx site config for ${DOMAIN}"
 
-step "Installing dependencies"
-# Reset any local lockfile drift so we install exactly what's committed.
-# A prior non-frozen `bun install` on the server can leave bun.lock modified
-# in the working tree, which `git pull --ff-only` preserves — causing
-# `--frozen-lockfile` to fail. `git checkout -- bun.lock` restores the
-# committed version so the frozen check passes deterministically.
-# Falls back to a regular install only if the committed lockfile itself
-# needs reconciliation (e.g. package.json was updated but lockfile wasn't).
-git checkout -- bun.lock 2>/dev/null || true
-if ! bun install --frozen-lockfile; then
-  echo "  ⚠ frozen lockfile mismatch — reconciling with regular install..."
-  bun install
-fi
-ok "dependencies ready"
+  # Use the HTTP-only config as the base. certbot --nginx will rewrite it
+  # to add the 443 block + 80→443 redirect when --ssl runs.
+  local src="nginx/${DOMAIN}.http.conf"
+  [ -f "$src" ] || die "nginx config not found: $src"
 
-step "Generating Prisma client"
-bunx prisma generate
-ok "prisma client generated"
+  # Ensure sites-{available,enabled} dirs exist (older nginx may lack them)
+  sudo mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
 
-step "Syncing database schema (db push)"
-bunx prisma db push --skip-generate
-ok "schema in sync"
+  sudo cp "$src" "$NGINX_SITE_FILE"
+  sudo ln -sf "$NGINX_SITE_FILE" "$NGINX_SITE_LINK"
 
-step "Building Next.js (standalone output)"
-bun run build
-ok "build complete"
+  # Disable the default site if present (avoids stealing port 80)
+  if [ -L /etc/nginx/sites-enabled/default ]; then
+    sudo rm -f /etc/nginx/sites-enabled/default
+    ok "removed default site symlink"
+  fi
 
-step "Reloading PM2 app (zero-downtime)"
-pm2 startOrReload ecosystem.config.cjs --update-env
-pm2 save
-ok "app reloaded & process list saved"
+  # ACME challenge webroot
+  sudo mkdir -p "$ACME_ROOT"
+  sudo chown -R www-data:www-data "$ACME_ROOT" 2>/dev/null || true
 
-step "Health check"
-sleep 3
-if curl -sf http://127.0.0.1:3000/api/health >/dev/null 2>&1; then
-  ok "http://127.0.0.1:3000/api/health → 200 OK"
-else
-  echo "  ⚠ health check did not return 200 yet — check: pm2 logs credorafin"
-fi
+  # Test config
+  if ! sudo nginx -t; then
+    die "nginx config test failed — fix errors above before continuing"
+  fi
+  ok "nginx config valid"
 
-cat <<EOF
+  sudo systemctl reload nginx
+  ok "nginx reloaded"
+}
 
-  ┌──────────────────────────────────────────────┐
-  │  ✅ Deploy complete                           │
-  │  App:   http://localhost:3000                 │
-  │  Logs:  pm2 logs credorafin                   │
-  │  Stats: pm2 status                            │
-  │  Monit: pm2 monit                             │
-  └──────────────────────────────────────────────┘
+# ============================================================================
+# SUBCOMMAND: setup — first-time server bootstrap
+# ============================================================================
+do_setup() {
+  step "Server bootstrap: nginx + certbot + acme webroot"
+
+  # nginx
+  ensure_apt nginx
+  # certbot + the nginx plugin (so `certbot --nginx` can auto-edit configs)
+  ensure_apt certbot
+  ensure_apt python3-certbot-nginx
+
+  install_nginx_site
+
+  cat <<EOF
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  ✅ Nginx + Certbot installed & site is live on HTTP          │
+  │                                                               │
+  │  Next steps:                                                  │
+  │   1. Point DNS A record for ${DOMAIN} → this server's public IP  │
+  │   2. Wait for DNS to propagate (dig +short ${DOMAIN})           │
+  │   3. Run:  ./deploy.sh --ssl                                  │
+  │      ↑ issues Let's Encrypt cert + enables HTTPS + redirect    │
+  │   4. Run:  ./deploy.sh          ← deploy the app                │
+  └──────────────────────────────────────────────────────────────┘
 EOF
+}
+
+# ============================================================================
+# SUBCOMMAND: nginx — re-sync nginx config + reload (no app build)
+# ============================================================================
+do_nginx() {
+  ensure_apt nginx
+  install_nginx_site
+  ok "nginx config synced & reloaded"
+}
+
+# ============================================================================
+# SUBCOMMAND: ssl — run certbot to issue/renew HTTPS cert
+# ============================================================================
+do_ssl() {
+  step "Issuing/renewing Let's Encrypt cert for ${DOMAIN}"
+
+  command -v certbot >/dev/null 2>&1 || ensure_apt certbot
+  command -v certbot >/dev/null 2>&1 || die "certbot still not installed"
+  dpkg -s python3-certbot-nginx >/dev/null 2>&1 || ensure_apt python3-certbot-nginx
+
+  # The site config must already be live on port 80 for the HTTP-01 challenge
+  [ -L "$NGINX_SITE_LINK" ] || install_nginx_site
+
+  # DNS check — fail fast with a helpful message if DNS isn't pointed here
+  step "Verifying DNS for ${DOMAIN}"
+  LOCAL_IP="$(curl -s4 ifconfig.me 2>/dev/null || curl -s4 icanhazip.com 2>/dev/null || echo "")"
+  DNS_IP="$(dig +short "$DOMAIN" A 2>/dev/null | head -1 || echo "")"
+  if [ -n "$LOCAL_IP" ] && [ -n "$DNS_IP" ]; then
+    if [ "$LOCAL_IP" = "$DNS_IP" ]; then
+      ok "DNS OK: ${DOMAIN} → ${DNS_IP} (matches this server)"
+    else
+      warn "DNS mismatch: ${DOMAIN} → ${DNS_IP}, this server → ${LOCAL_IP}"
+      warn "certbot will likely fail. Fix DNS first."
+    fi
+  else
+    warn "could not verify DNS automatically — continuing anyway"
+  fi
+
+  # Get the email from .env if present, else prompt
+  CERT_EMAIL="${CERTBOT_EMAIL:-}"
+  if [ -z "$CERT_EMAIL" ] && [ -f .env ]; then
+    CERT_EMAIL="$(grep -E '^SMTP_USER=' .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"' || true)"
+  fi
+
+  step "Running certbot"
+  if [ -n "$CERT_EMAIL" ]; then
+    sudo certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" \
+      --agree-tos --no-eff-email -m "$CERT_EMAIL" --redirect --non-interactive
+  else
+    sudo certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" \
+      --agree-tos --no-eff-email --redirect
+  fi
+
+  ok "certbot finished"
+
+  # Set up auto-renewal timer (certbot installs this, but make sure)
+  sudo systemctl enable --now certbot.timer 2>/dev/null || true
+
+  # Final reload
+  sudo nginx -t && sudo systemctl reload nginx
+  ok "nginx reloaded with TLS"
+
+  cat <<EOF
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  ✅ HTTPS is live for ${DOMAIN}                                 │
+  │  Auto-renewal: certbot.timer (checked twice daily)            │
+  │  Test renewal:  sudo certbot renew --dry-run                  │
+  └──────────────────────────────────────────────────────────────┘
+EOF
+}
+
+# ============================================================================
+# SUBCOMMAND: health — curl local app health endpoint
+# ============================================================================
+do_health() {
+  step "Health check (local app on :${APP_PORT})"
+  sleep 2
+  if curl -sf "http://127.0.0.1:${APP_PORT}/api/health" >/dev/null 2>&1; then
+    ok "http://127.0.0.1:${APP_PORT}/api/health → 200 OK"
+    return 0
+  else
+    warn "health check did not return 200 — check: pm2 logs ${APP_NAME}"
+    return 1
+  fi
+}
+
+# ============================================================================
+# SUBCOMMAND: logs — tail PM2 logs
+# ============================================================================
+do_logs() {
+  command -v pm2 >/dev/null 2>&1 || die "pm2 not installed"
+  exec pm2 logs "$APP_NAME"
+}
+
+# ============================================================================
+# SUBCOMMAND: deploy — full update (pull → install → build → reload)
+# ============================================================================
+do_deploy() {
+  mkdir -p "$LOG_DIR"
+
+  # Pre-flight: PM2 must be installed
+  if ! command -v pm2 >/dev/null 2>&1; then
+    die "pm2 not found. Install once with: npm install -g pm2@5.4.2"
+  fi
+  # Pre-flight: bun must be installed
+  if ! command -v bun >/dev/null 2>&1; then
+    die "bun not found. Install once with: curl -fsSL https://bun.sh/install | bash -s bun-v1.3.14"
+  fi
+
+  # ── 1. Pull ───────────────────────────────────────────────────────────────
+  if [ "${NO_PULL:-0}" != "1" ]; then
+    step "Pulling latest code"
+    git pull --ff-only
+    ok "up to date"
+  fi
+
+  # ── 2. Install deps (deterministic) ───────────────────────────────────────
+  step "Installing dependencies"
+  # Reset any local lockfile drift so we install exactly what's committed.
+  # A prior non-frozen `bun install` on the server can leave bun.lock modified
+  # in the working tree, which `git pull --ff-only` preserves — causing
+  # `--frozen-lockfile` to fail. `git checkout -- bun.lock` restores the
+  # committed version so the frozen check passes deterministically.
+  git checkout -- bun.lock 2>/dev/null || true
+  if ! bun install --frozen-lockfile; then
+    warn "frozen lockfile mismatch — reconciling with regular install..."
+    bun install
+  fi
+  ok "dependencies ready"
+
+  # ── 3. Prisma ─────────────────────────────────────────────────────────────
+  step "Generating Prisma client"
+  bunx prisma generate
+  ok "prisma client generated"
+
+  step "Syncing database schema (db push)"
+  bunx prisma db push --skip-generate
+  ok "schema in sync"
+
+  # ── 4. Build (standalone output) ──────────────────────────────────────────
+  step "Building Next.js (standalone output)"
+  bun run build
+  ok "build complete"
+
+  # ── 5. CRITICAL — verify static assets landed in standalone dir ───────────
+  # This is the #1 cause of 500s on /_next/static/chunks/*.js and *.css.
+  # Next.js standalone produces .next/standalone/server.js but does NOT copy
+  # .next/static or public/ into it. The build script (package.json "build")
+  # copies them, but `cp -r` into an existing target dir can nest incorrectly
+  # (static/static). We verify here and fix if needed.
+  step "Verifying standalone static assets"
+  local standalone_static=".next/standalone/.next/static"
+  local standalone_public=".next/standalone/public"
+
+  # Detect the nesting bug: if .next/standalone/.next/static/static exists,
+  # the previous cp -r nested. Wipe and re-copy cleanly.
+  if [ -d "${standalone_static}/static" ]; then
+    warn "detected nested static/static (cp -r nesting bug) — fixing"
+    rm -rf "$standalone_static"
+  fi
+  if [ ! -d "$standalone_static" ] || [ -z "$(ls -A "$standalone_static" 2>/dev/null)" ]; then
+    warn "standalone static missing — copying fresh"
+    mkdir -p .next/standalone/.next
+    cp -R .next/static .next/standalone/.next/static
+  fi
+  if [ ! -d "$standalone_public" ] || [ -z "$(ls -A "$standalone_public" 2>/dev/null)" ]; then
+    warn "standalone public missing — copying fresh"
+    cp -R public .next/standalone/public
+  fi
+
+  # Final existence checks
+  if [ ! -f "${standalone_static}/css" ] && [ ! -d "${standalone_static}/css" ]; then
+    # css may not exist if no CSS — but chunks must
+    :
+  fi
+  if [ ! -d "${standalone_static}/chunks" ]; then
+    die "verification failed: ${standalone_static}/chunks not found — the app will serve 500s on CSS/JS"
+  fi
+  ok "standalone static chunks present ($(ls "${standalone_static}/chunks" 2>/dev/null | wc -l) files)"
+  ok "standalone public present ($(ls "$standalone_public" 2>/dev/null | wc -l) entries)"
+
+  # ── 6. Reload PM2 (zero-downtime) ─────────────────────────────────────────
+  step "Reloading PM2 app (zero-downtime)"
+  pm2 startOrReload ecosystem.config.cjs --update-env
+  pm2 save
+  ok "app reloaded & process list saved"
+
+  # ── 7. Health check ───────────────────────────────────────────────────────
+  do_health || true
+
+  cat <<EOF
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  ✅ Deploy complete                                           │
+  │  App:    http://localhost:${APP_PORT}                           │
+  │  Public: https://${DOMAIN}                                       │
+  │  Logs:   pm2 logs ${APP_NAME}                                    │
+  │  Status: pm2 status                                            │
+  │  Monit:  pm2 monit                                             │
+  └──────────────────────────────────────────────────────────────┘
+EOF
+}
+
+# ── Dispatch ─────────────────────────────────────────────────────────────────
+case "$SUBCMD" in
+  help)    show_help ;;
+  setup)   do_setup ;;
+  nginx)   do_nginx ;;
+  ssl)     do_ssl ;;
+  health)  do_health ;;
+  logs)    do_logs ;;
+  deploy)  do_deploy ;;
+  *)       die "unknown subcommand: $SUBCMD (try --help)" ;;
+esac
