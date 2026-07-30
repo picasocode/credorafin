@@ -1612,3 +1612,47 @@ Stage Summary:
 - ⚠ 2 minor dev-mode warnings on admin login (Next/Image aspect-ratio for credora-logo.png + credora-logo-full.png) — cosmetic only, do not affect rendering
 - Screenshots saved at /home/z/my-project/verify-styling-shots/{home,home-full,admin-login}.png (total 1.7 MB) for visual reference
 - Page description: Home shows a rotating hero carousel (5 product slides with HUD overlay cards: +18% market forecast, Tier-1 sourcing channel, 9.5% interest rate, ₹100 Cr max allocation, "Syndicated | Multi-Bank Framework Active"), followed by "Why Choose Us" 4-card section (Disciplined Pre-Underwriting, 70+ Financial Institutions, Tailored Solutions, Cash Flow & Long-Term Growth), then "What We Do" products cards section (MSME Loans, Supply Chain Finance, Cross Border Finance, etc.). Admin login shows a 2-pane layout: left form panel ("Admin Console / Sign in" with email + password fields, navy "Sign in" button) + right brand panel (Credora logo, "Manage everything from one place." h2)
+
+---
+Task ID: verify-hero-clean
+Agent: general-purpose
+Task: Verify hero slide image overlay cards were removed
+
+Work Log:
+- Read /home/z/my-project/worklog.md (1614 lines) for prior context — understood Task 6-MULTI (Task O) claimed to have removed 3 HUD overlay cards from Hero.tsx, and Task verify-styling found the cards were STILL rendering (snapshot listed "+18% market forecast, Tier-1 sourcing channel, 9.5% interest rate, ₹100 Cr max allocation"). This task is a fresh visual + DOM verification of current state.
+- Inspected src/components/sections/Hero.tsx — confirmed JSX no longer renders hudLeft/hudRight/hudGraph cards. Image canvas (lines 311-343) contains only: <Image> element + a subtle gradient overlay (bg-gradient-to-t from-[#1A2255]/15 via-transparent to-transparent pointer-events-none). The hudLeft/hudRight/hudGraph fields still exist in the PublicHeroSlide interface + DEFAULT_SLIDES for type compatibility, but are NOT consumed in JSX.
+- Verified dev server up: curl http://localhost:3000/ → HTTP 200, title "Credora Fintech — Enrich Your Cashflow".
+- Invoked agent-browser skill. Launched Chromium with viewport 1440x900.
+- Navigated to http://localhost:3000/, waited for networkidle.
+- Captured screenshots → /home/z/my-project/verify-hero-clean-shots/:
+  * hero-top.png (1440x900 viewport, top of page)
+  * home-full.png (full-page)
+  * slide-1-msme.png through slide-5-credit.png (cycled through each of the 5 hero slides by clicking tabs @e27..@e31)
+  * hero-full-1280.png (1440x1280 viewport)
+  * hero-with-tabs-scrolled.png (scrolled 200px to bring tabs into viewport)
+- DOM inspection (agent-browser eval) on the live hero:
+  * Image canvas child elements: 5 absolutely-positioned children, ALL transparent (backgroundColor: rgba(0,0,0,0)) — only the AnimatePresence motion.div wrappers, the <Image>, and the subtle gradient overlay. ZERO solid-color cards.
+  * svgCountInCanvas: 0 — confirms NO Percent icon, NO Clock icon, NO HUD icons of any kind inside the image canvas.
+  * HUD text pattern scan: searched hero.innerText for 17 HUD-specific strings ("+18%", "Tier-1", "9.5% p.a.", "₹100 Cr", "₹50 Crores", "Max Liquidity", "Sourcing Channel", "Market Forecast", "Average Interest", "Maximum Allocation", "Multi-Bank Framework", "CIBIL Score Shift", "Payment Cycle", "Commission Slab", "Payout Cycle", "Referral Earning", "Annual SCF Limit") → 0 matches found.
+  * Hero img loaded: naturalWidth 1344 x naturalHeight 768, complete:true, rendered at 1272x392px.
+  * Hero elements all present: badge (e.g. "WORKING CAPITAL UNLOCKED"), h1 (e.g. "Optimize Cash Flow with SCF Solutions"), subtitle, 2 CTA buttons (e.g. ["Get SCF", "Contact us"]), 5 tab buttons (["MSME Loan", "Project Finance", "Supply Chain Finance", "Referral Partner", "Credit Repair Services"]).
+- VLM (z-ai vision, glm-5v-turbo) visual analysis on hero-with-tabs-scrolled.png confirmed:
+  * Hero image visible: YES
+  * Top-left white card with Percent icon: ABSENT
+  * Top-right dark navy card: ABSENT
+  * Bottom-left white pill with Clock icon: ABSENT
+  * Badge + heading + subtitle + 2 CTA buttons visible: YES
+  * 5 tab buttons visible (MSME/Project/Supply/Referral/Credit): YES
+  * Other visual note: FloatingEMIButton (separate fixed-position widget at top-1/2 right-4 z-50, text "EMI CALC") overlaps the right edge of the hero image visually — this is an INTENDED global page-level widget (added in earlier Task G-K per worklog, src/components/FloatingEMIButton.tsx), NOT one of the 3 HUD overlay cards being verified. It is NOT inside the hero section.
+- Console: only React DevTools download suggestion + [HMR] connected (normal dev mode). Zero runtime errors. Zero page errors.
+
+Stage Summary:
+- ✓ Top-left white card with Percent icon (was "+18%" / "Tier-1"): REMOVED (DOM-confirmed: 0 SVGs in canvas, 0 HUD text matches, VLM-confirmed ABSENT)
+- ✓ Top-right dark navy card (was "9.5% p.a." / "₹100 Cr"): REMOVED (DOM-confirmed: 0 solid-color absolutely-positioned children in canvas, VLM-confirmed ABSENT)
+- ✓ Bottom-left white pill with Clock icon (was "₹50 Crores | Max Liquidity..."): REMOVED (DOM-confirmed: 0 SVG icons in canvas, 0 HUD text matches, VLM-confirmed ABSENT)
+- ✓ Hero image is visible and renders cleanly — 1344x768 native image loaded successfully, displayed at 1272x392px in rounded canvas with only a subtle from-[#1A2255]/15 gradient overlay (intended for visual depth, not a HUD card)
+- ✓ All hero chrome intact: badge pill, h1 heading (with animated last-word cursor), subtitle paragraph, 2 CTA buttons (primary navy "Build Finance"/"Raise Capital"/etc. + outline "Contact us"), 5-tab navigation dock (MSME Loan / Project Finance / Supply Chain Finance / Referral Partner / Credit Repair Services) — all present and clickable, auto-rotating through 5 slides every 8.5s
+- ✓ Verified across ALL 5 hero slides (cycled via tab clicks) — none of them render HUD overlay cards
+- Note: FloatingEMIButton (separate fixed widget, "EMI CALC" pill at right edge of viewport) visually overlaps the right edge of the hero image — this is an intended page-level floating widget, NOT one of the 3 HUD overlay cards being verified. Not a regression.
+- Screenshots saved at /home/z/my-project/verify-hero-clean-shots/ (8 PNG files, ~5 MB total) for visual reference
+- Conclusion: The 3 HUD overlay cards have been successfully removed from the hero slide image. The hero now displays a clean plain image with all expected chrome (badge/heading/subtitle/CTAs/tabs) intact. Task 6-MULTI (Task O) removal is verified complete and effective — the discrepancy noted in the earlier verify-styling task (which saw the cards still rendering) is no longer reproducible.
