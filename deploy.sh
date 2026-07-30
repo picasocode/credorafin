@@ -13,8 +13,11 @@
 #                            #   • creates /var/www/html for ACME challenges
 #                            #   • enables site, disables default, reloads nginx
 #                            #   • fixes filesystem permissions (chmod o+x ~, o+rX standalone/public)
-#   ./deploy.sh --nginx      # just re-sync nginx config + fix permissions + reload
-#   ./deploy.sh --ssl        # run certbot to issue/renew HTTPS cert (+ DNS check)
+#   ./deploy.sh --nginx          # just re-sync nginx config + fix permissions + reload
+#                                  # (safe: skips if certbot/SSL is active)
+#   ./deploy.sh --nginx-rebuild   # FORCE reinstall nginx config + re-run certbot
+#                                  # (use when alias lines are missing from SSL config)
+#   ./deploy.sh --ssl             # run certbot to issue/renew HTTPS cert (+ DNS check)
 #   ./deploy.sh --health     # just run health check against local app
 #   ./deploy.sh --logs       # tail PM2 logs (Ctrl-C to exit)
 #   ./deploy.sh --help       # show this help
@@ -65,8 +68,9 @@ case "$SUBCMD" in
   --help|-h) SUBCMD="help" ;;
   --no-pull) SUBCMD="deploy" ; NO_PULL=1 ;;
   --setup)   SUBCMD="setup" ;;
-  --nginx)   SUBCMD="nginx" ;;
-  --ssl)     SUBCMD="ssl" ;;
+  --nginx)          SUBCMD="nginx" ;;
+  --nginx-rebuild)  SUBCMD="nginx-rebuild" ;;
+  --ssl)            SUBCMD="ssl" ;;
   --health)  SUBCMD="health" ;;
   --logs)    SUBCMD="logs" ;;
   *)         SUBCMD="deploy" ;;
@@ -178,37 +182,57 @@ install_nginx_site() {
 }
 
 # ── Shared helper: sync nginx config ONLY if nginx is installed and config is stale ─
-# Called by do_deploy() — idempotent: if nginx isn't installed (dev machine)
-# or the config is already correct, this is a no-op. Avoids unnecessary
-# nginx reloads on every deploy.
+# Called by do_deploy() — idempotent and SAFE for certbot-managed configs.
+#
+# CRITICAL: If certbot has added SSL (listen 443 / ssl_certificate) to the
+# config, we NEVER overwrite it — that would destroy the HTTPS cert. Instead
+# we just fix permissions and verify the alias lines are present.
 sync_nginx_if_needed() {
   # Skip entirely if nginx isn't installed (e.g. local dev, CI)
   if ! command -v nginx >/dev/null 2>&1; then
     return 0
   fi
-  # Skip if the site config isn't installed yet (first deploy — user should run --setup first)
-  if [ ! -L "$NGINX_SITE_LINK" ]; then
+  # Skip if the site config isn't installed yet (first deploy)
+  if [ ! -L "$NGINX_SITE_LINK" ] && [ ! -f "$NGINX_SITE_FILE" ]; then
     warn "nginx site not installed yet — run: ./deploy.sh --setup"
     return 0
   fi
 
   local app_root
   app_root="$(pwd)"
+
+  # ALWAYS fix permissions — they drift every time the build recreates
+  # .next/standalone/ (new files may not have o+r).
+  fix_permissions_for_nginx "$app_root"
+
+  # ── Check if the installed config has been modified by certbot ──────────
+  # If it has SSL (listen 443 or ssl_certificate), certbot manages it.
+  # NEVER overwrite — that would destroy the HTTPS cert and break the site.
+  if sudo grep -qE 'listen[[:space:]]+443|ssl_certificate[[:space:]]' "$NGINX_SITE_FILE" 2>/dev/null; then
+    # Config has SSL — certbot-managed. Verify alias lines are present.
+    if sudo grep -q 'alias.*\.next/standalone' "$NGINX_SITE_FILE" 2>/dev/null; then
+      ok "nginx config is SSL-enabled with static alias lines (certbot-managed, not overwriting)"
+    else
+      warn "nginx config has SSL but is MISSING 'alias' lines for static file serving"
+      warn "  This causes 404/500 errors on /_next/static/chunks/*.js and *.css"
+      warn "  Fix: run  ./deploy.sh --nginx-rebuild"
+      warn "  (reinstalls config + re-runs certbot to restore HTTPS)"
+    fi
+    return 0
+  fi
+
+  # ── Config is HTTP-only (no SSL yet) — safe to compare and update ──────
   local src="nginx/${DOMAIN}.http.conf"
   [ -f "$src" ] || return 0
 
-  # Build what the config SHOULD look like (with __APP_ROOT__ substituted)
   local expected
   expected="$(sed "s|__APP_ROOT__|${app_root}|g" "$src")"
 
-  # Compare against what's currently installed
   local current
   current="$(sudo cat "$NGINX_SITE_FILE" 2>/dev/null || echo "")"
 
   if [ "$expected" = "$current" ]; then
     ok "nginx config already in sync (path: ${app_root})"
-    # Still fix permissions — they can drift if build recreated .next/standalone
-    fix_permissions_for_nginx "$app_root"
     return 0
   fi
 
@@ -248,11 +272,88 @@ EOF
 
 # ============================================================================
 # SUBCOMMAND: nginx — re-sync nginx config + reload (no app build)
+# SAFE: if certbot/SSL is active, this skips the overwrite and just fixes
+# permissions. Use --nginx-rebuild to force a reinstall when alias lines are
+# missing from an SSL config.
 # ============================================================================
 do_nginx() {
   ensure_apt nginx
+
+  # If SSL is active, don't overwrite — just fix permissions + verify
+  if sudo grep -qE 'listen[[:space:]]+443|ssl_certificate[[:space:]]' "$NGINX_SITE_FILE" 2>/dev/null; then
+    if sudo grep -q 'alias.*\.next/standalone' "$NGINX_SITE_FILE" 2>/dev/null; then
+      ok "nginx config already has SSL + alias lines — nothing to do"
+    else
+      warn "nginx config has SSL but is MISSING alias lines for static serving"
+      warn "run:  ./deploy.sh --nginx-rebuild"
+      warn "  (reinstalls config + re-runs certbot to restore HTTPS)"
+    fi
+    fix_permissions_for_nginx "$(pwd)"
+    return 0
+  fi
+
+  # No SSL — safe to install the HTTP-only config
   install_nginx_site
   ok "nginx config synced & reloaded"
+}
+
+# ============================================================================
+# SUBCOMMAND: nginx-rebuild — FORCE reinstall nginx config + re-run certbot
+# Use this when the nginx config is missing alias lines (causes 404/500 on
+# /_next/static/chunks/*.js and *.css) but certbot/SSL is already active.
+#
+# Flow:
+#   1. Install the HTTP-only config (with __APP_ROOT__ + alias lines)
+#   2. Reload nginx (site briefly on HTTP only)
+#   3. Re-run certbot --nginx to restore the 443 block + SSL cert + redirect
+#   4. Reload nginx again
+# ============================================================================
+do_nginx_rebuild() {
+  step "FORCE rebuild nginx config (preserves SSL via certbot re-run)"
+
+  ensure_apt nginx
+  command -v certbot >/dev/null 2>&1 || ensure_apt certbot
+  dpkg -s python3-certbot-nginx >/dev/null 2>&1 || ensure_apt python3-certbot-nginx
+
+  # Step 1: Install the HTTP-only config with alias lines
+  install_nginx_site
+
+  # Step 2: Check if SSL was active before. If so, re-run certbot to restore it.
+  # certbot --nginx with an existing cert will reconfigure nginx to use it
+  # (adds the 443 block, ssl_certificate lines, and 80→443 redirect).
+  step "Re-running certbot to restore HTTPS"
+  local cert_email=""
+  if [ -f .env ]; then
+    cert_email="$(grep -E '^SMTP_USER=' .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"' || true)"
+  fi
+
+  if [ -n "$cert_email" ]; then
+    sudo certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" \
+      --agree-tos --no-eff-email -m "$cert_email" --redirect --non-interactive
+  else
+    sudo certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" \
+      --agree-tos --no-eff-email --redirect
+  fi
+
+  sudo nginx -t && sudo systemctl reload nginx
+  ok "nginx config rebuilt with alias lines + SSL restored"
+
+  # Verify alias lines are now present
+  if sudo grep -q 'alias.*\.next/standalone' "$NGINX_SITE_FILE" 2>/dev/null; then
+    ok "alias lines confirmed in config"
+  else
+    warn "alias lines still missing — check: sudo cat $NGINX_SITE_FILE"
+  fi
+
+  cat <<EOF
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  ✅ Nginx config rebuilt                                       │
+  │  Static alias lines: installed                                 │
+  │  HTTPS: restored via certbot                                   │
+  │  Test: curl -sI https://${DOMAIN}/_next/static/chunks/         │
+  └──────────────────────────────────────────────────────────────┘
+EOF
 }
 
 # ============================================================================
@@ -507,12 +608,13 @@ EOF
 
 # ── Dispatch ─────────────────────────────────────────────────────────────────
 case "$SUBCMD" in
-  help)    show_help ;;
-  setup)   do_setup ;;
-  nginx)   do_nginx ;;
-  ssl)     do_ssl ;;
-  health)  do_health ;;
-  logs)    do_logs ;;
-  deploy)  do_deploy ;;
-  *)       die "unknown subcommand: $SUBCMD (try --help)" ;;
+  help)            show_help ;;
+  setup)           do_setup ;;
+  nginx)           do_nginx ;;
+  nginx-rebuild)   do_nginx_rebuild ;;
+  ssl)             do_ssl ;;
+  health)          do_health ;;
+  logs)            do_logs ;;
+  deploy)          do_deploy ;;
+  *)               die "unknown subcommand: $SUBCMD (try --help)" ;;
 esac
