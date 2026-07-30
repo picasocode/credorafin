@@ -85,6 +85,8 @@ ensure_apt() {
 }
 
 # ── Shared helper: install nginx site config (HTTP-only, certbot upgrades it) ─
+# Substitutes __APP_ROOT__ with the absolute project path so the
+# /_next/static/ and /fonts/ location blocks point to the right place.
 install_nginx_site() {
   step "Syncing nginx site config for ${DOMAIN}"
 
@@ -93,10 +95,18 @@ install_nginx_site() {
   local src="nginx/${DOMAIN}.http.conf"
   [ -f "$src" ] || die "nginx config not found: $src"
 
+  # Absolute project path — nginx `alias` directives need absolute paths.
+  # This is where .next/standalone/ lives, so nginx can serve static files
+  # directly from the filesystem.
+  local app_root
+  app_root="$(pwd)"
+  ok "app root: ${app_root}"
+
   # Ensure sites-{available,enabled} dirs exist (older nginx may lack them)
   sudo mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
 
-  sudo cp "$src" "$NGINX_SITE_FILE"
+  # Substitute __APP_ROOT__ → absolute path, install to sites-available
+  sed "s|__APP_ROOT__|${app_root}|g" "$src" | sudo tee "$NGINX_SITE_FILE" >/dev/null
   sudo ln -sf "$NGINX_SITE_FILE" "$NGINX_SITE_LINK"
 
   # Disable the default site if present (avoids stealing port 80)
@@ -117,6 +127,15 @@ install_nginx_site() {
 
   sudo systemctl reload nginx
   ok "nginx reloaded"
+
+  # Verify the static dir nginx will serve from actually exists
+  local static_dir="${app_root}/.next/standalone/.next/static"
+  if [ -d "$static_dir" ]; then
+    ok "static dir exists: ${static_dir} ($(ls "$static_dir"/chunks 2>/dev/null | wc -l) chunks)"
+  else
+    warn "static dir NOT found: ${static_dir}"
+    warn "run ./deploy.sh first to build, then ./deploy.sh --nginx to re-sync config"
+  fi
 }
 
 # ============================================================================
@@ -335,8 +354,61 @@ do_deploy() {
   pm2 save
   ok "app reloaded & process list saved"
 
-  # ── 7. Health check ───────────────────────────────────────────────────────
-  do_health || true
+  # ── 7. Health check + static-asset verification ──────────────────────────
+  step "Health check (local app on :${APP_PORT})"
+  sleep 2
+  if curl -sf "http://127.0.0.1:${APP_PORT}/api/health" >/dev/null 2>&1; then
+    ok "http://127.0.0.1:${APP_PORT}/api/health → 200 OK"
+  else
+    warn "health check did not return 200 — check: pm2 logs ${APP_NAME}"
+  fi
+
+  # Verify CSS/JS chunks actually load through the server.
+  # This catches the "standalone static missing" 500 issue BEFORE the deploy
+  # is declared done.
+  step "Verifying static assets load through server"
+  local html css_ref js_ref font_ref
+  html="$(curl -s http://127.0.0.1:${APP_PORT}/)"
+  css_ref="$(printf '%s' "$html" | grep -oE '/_next/static/chunks/[a-f0-9]+\.css' | head -1)"
+  js_ref="$(printf '%s' "$html" | grep -oE '/_next/static/chunks/[a-f0-9]+\.js' | head -1)"
+  font_ref="$(printf '%s' "$html" | grep -oE '/_next/static/media/[a-f0-9_-]+\.woff2' | head -1)"
+
+  if [ -n "$css_ref" ]; then
+    code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${APP_PORT}${css_ref}")"
+    if [ "$code" = "200" ]; then
+      ok "CSS chunk ${css_ref} → 200"
+    else
+      warn "CSS chunk ${css_ref} → ${code} (expected 200)"
+      warn "  the standalone server can't find its static files — the page will be unstyled"
+    fi
+  else
+    warn "no CSS chunk reference found in homepage HTML (may be inlined)"
+  fi
+
+  if [ -n "$js_ref" ]; then
+    code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${APP_PORT}${js_ref}")"
+    if [ "$code" = "200" ]; then
+      ok "JS chunk ${js_ref} → 200"
+    else
+      warn "JS chunk ${js_ref} → ${code} (expected 200)"
+    fi
+  fi
+
+  if [ -n "$font_ref" ]; then
+    code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${APP_PORT}${font_ref}")"
+    if [ "$code" = "200" ]; then
+      ok "font ${font_ref} → 200"
+    else
+      warn "font ${font_ref} → ${code} (expected 200)"
+    fi
+  fi
+
+  # Remind to re-sync nginx config if app path changed
+  if [ -L "$NGINX_SITE_LINK" ]; then
+    if ! grep -q "$(pwd)" "$NGINX_SITE_FILE" 2>/dev/null; then
+      warn "nginx config has stale app path — run: ./deploy.sh --nginx"
+    fi
+  fi
 
   cat <<EOF
 
