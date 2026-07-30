@@ -44,8 +44,19 @@ if [[ "$PULL" == "1" ]]; then
   ok "up to date"
 fi
 
-step "Installing dependencies (frozen lockfile)"
-bun install --frozen-lockfile
+step "Installing dependencies"
+# Reset any local lockfile drift so we install exactly what's committed.
+# A prior non-frozen `bun install` on the server can leave bun.lock modified
+# in the working tree, which `git pull --ff-only` preserves — causing
+# `--frozen-lockfile` to fail. `git checkout -- bun.lock` restores the
+# committed version so the frozen check passes deterministically.
+# Falls back to a regular install only if the committed lockfile itself
+# needs reconciliation (e.g. package.json was updated but lockfile wasn't).
+git checkout -- bun.lock 2>/dev/null || true
+if ! bun install --frozen-lockfile; then
+  echo "  ⚠ frozen lockfile mismatch — reconciling with regular install..."
+  bun install
+fi
 ok "dependencies ready"
 
 step "Generating Prisma client"
