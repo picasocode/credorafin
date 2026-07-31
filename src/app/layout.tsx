@@ -45,11 +45,12 @@ export const metadata: Metadata = {
   category: "Finance",
   icons: {
     icon: [
+      { url: "/favicon.png", type: "image/png" },
       { url: "/images/credora-logo.png", type: "image/png" },
       { url: "/logo.svg", type: "image/svg+xml" },
     ],
-    shortcut: "/images/credora-logo.png",
-    apple: "/images/credora-logo.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
   manifest: undefined,
   alternates: {
