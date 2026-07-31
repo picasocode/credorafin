@@ -83,3 +83,10 @@ standalone/
 
 # PM2 logs (production runtime logs, not for VCS)
 /logs/
+
+# User-uploaded files (admin upload endpoint writes here at runtime).
+# Keep the .gitkeep so the directory exists on fresh deploys, but ignore the
+# actual uploaded files — they are runtime data, not source-controlled.
+public/uploads/*/
+!public/uploads/.gitkeep
+

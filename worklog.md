@@ -1685,3 +1685,315 @@ Stage Summary:
 - EMI Calculator amortization table FIXED for mobile: 7 cols → 5 cols on mobile (Opening/Closing Principal hidden until md breakpoint), smaller font + padding, auto-width. No horizontal overflow.
 - Desktop layout preserved: all 7 columns still show on md+ screens.
 - Verified end-to-end via agent-browser on both iPhone 14 (390px) and desktop (1280px) viewports.
+
+---
+Task ID: 1-emi-diagnose
+Agent: general-purpose
+Task: Diagnose EMI Calculator mobile responsiveness issues
+
+Work Log:
+- Read worklog.md for context — most recent prior task (hero-buttons-emi-responsive) had already fixed the amortization table mobile overflow (7→5 columns via `hidden md:table-cell`, text-[10px] font, removed min-w-[640px]). This task is purely diagnostic (no code changes).
+- Invoked agent-browser skill; set viewport device="iPhone 14" (390x844) and desktop viewport 1280x800 for comparison.
+- On mobile, navigated to http://localhost:3000/, scrolled to "Calculate Your EMI" heading (at scrollY≈6938), took 4 stacked-viewport screenshots of the full EMI Calculator section + 1 full-page screenshot.
+- On desktop (1280x800), same — captured viewport + full-page screenshots.
+- Ran getBoundingClientRect + getComputedStyle eval queries on every key element: outer card, grid, input panel, results panel, 4 input fields, 4 labels, Months/Years Select toggle, 4 preset buttons, 2 Download buttons, "Show All Months" toggle, EMI highlight card, 3 EMI value displays (₹1,26,660 / ₹2,79,883 / ₹22,79,883), pie chart SVG, yearly chart bar container, amortization table + th cells + first row td cells, table wrapper, FloatingEMIButton, WhatsApp floating button.
+- Ran VLM (z-ai vision, glm-5v-turbo) analysis on 3 screenshots: mobile-emi-1-inputpanel.png, mobile-emi-2-resultspanel.png, mobile-emi-3-chartandtable.png, and desktop-emi-section-top.png.
+- Cross-checked DOM measurements against source code (src/components/EMICalculator.tsx, lines 478-812) to identify exact Tailwind classes responsible for each issue.
+
+Stage Summary:
+
+**Mobile viewport: 390x844 (iPhone 14) — actual rendered measurements**
+
+LAYOUT (overall good — single-column stack on mobile, 2-col grid on lg+):
+- Outer card: 358w × 1743h (white rounded-3xl, overflow-hidden)
+- Inner grid `grid lg:grid-cols-5 gap-0` (mobile = 1 col stack)
+  - Input panel (lg:col-span-2, dark navy gradient `from-[#1C1D62] to-[#13277E]`): 368w × 537h
+  - Results panel (lg:col-span-3, white): 368w × 1204h
+- **No page-level horizontal scroll**: body.scrollWidth=390 == clientWidth=390 ✓
+- **Section has internal overflow (scrollW=582 > clientW=390)** from decorative bg circles (w-96/w-80 navy+green blobs positioned at corners) — but `overflow-hidden` on section clips them. NOT a bug.
+- Section classes confirmed: `py-8 sm:py-12 md:py-20 lg:py-24 bg-[#F7F9FC] relative overflow-hidden` ✓
+
+TABLE (previous fix is working — no regression):
+- Table width: 334px (fits in 390px viewport)
+- 7 headers in DOM, but 5 visible on mobile (`display: table-cell`): S.No (39w), Due Date (75w), Installment (79w), Principal (73w), Interest (68w)
+- 2 hidden on mobile (`display: none`): Opening Principal, Closing Principal — `hidden md:table-cell` working as intended ✓
+- Cell font: 10px on mobile (`text-[10px] sm:text-xs`), 12px on sm+
+- Cell padding: `px-1.5` on mobile (was already fixed in prior task)
+- Table wrapper: `relative w-full overflow-x-auto` — `overflow-x-auto` IS present but DOES NOT cause page-level horizontal scroll because table fits inside viewport ✓
+- Totals row also hides Opening/Closing Principal cells on mobile ✓
+
+ISSUES FOUND (mobile, with exact code references):
+
+1. **EMI headline result values too small on mobile** (HIGH severity)
+   - Source: src/components/EMICalculator.tsx lines 674, 683, 692
+   - Current: `text-xl sm:text-2xl md:text-3xl font-bold` → renders at 20px on mobile (<640px)
+   - Desktop: 30px on md+ (verified)
+   - Recommendation: change to `text-2xl sm:text-3xl md:text-4xl font-bold` (24px mobile / 30px sm / 36px md)
+
+2. **All 4 input fields have 20px touch height** (HIGH severity — touch target)
+   - Source: lines 488 (text), 524 (number), 563 (number), 621 (date) — wrapper div `bg-white/10 rounded-lg px-3 py-1.5` (line 487, 523, 562, 620)
+   - Inputs use `p-0 h-auto` so wrapper height = py-1.5 (12px) + input text height (20px) = 32px wrapper
+   - Below 44px Apple/Google minimum touch target
+   - Recommendation: change `px-3 py-1.5` → `px-3 py-2.5` (gives ~44px wrapper height); also add `h-11` to Input className
+
+3. **Tenure input is 48px wide — too narrow** (MEDIUM severity)
+   - Source: line 578 `className="bg-transparent border-0 text-right text-white font-semibold text-sm p-0 h-auto focus:ring-0 focus:outline-none w-12"`
+   - `w-12` = 48px; native number spinner arrows leave ~16px for value — barely fits 2 digits
+   - Recommendation: change `w-12` → `w-16` (64px) or `w-20` (80px)
+
+4. **Interest Rate input is 64px wide — tight** (LOW severity)
+   - Source: line 535 `w-16` (64px) — acceptable but tight with the trailing "%" span
+   - Recommendation: `w-20` (80px) would be safer
+
+5. **Months/Years Select toggle text clipped** (MEDIUM severity — VLM saw "Montl" truncation)
+   - Source: line 587 `SelectTrigger className="bg-white/10 border-0 text-white text-xs h-8 w-20 sm:w-24 rounded-lg focus:ring-0"`
+   - `w-20` (80px) with `text-xs` (12px) + chevron icon + padding is too narrow to show "Months" fully
+   - Wrapper height: 32px (`h-8`) — below 44px touch target
+   - Recommendation: change `h-8 w-20 sm:w-24` → `h-11 w-24 sm:w-28` (44px tall, 96px wide)
+
+6. **Quick Presets buttons are 34px tall** (MEDIUM severity — touch target)
+   - Source: line 649 `className="text-xs bg-white/5 hover:bg-white/15 border border-white/10 rounded-lg px-3 py-2 text-white/80 hover:text-white transition-all duration-200 text-left"`
+   - Renders at 164w × 34h on mobile (2x2 grid, fits properly)
+   - Recommendation: change `px-3 py-2` → `px-3 py-2.5` or `px-3 py-3` (raises height to 40-44px)
+
+7. **"Show All Months" toggle is 16px tall** (HIGH severity — almost untappable)
+   - Source: line 802-812 `className="text-xs text-[#304AC0] hover:text-[#13277E] font-medium flex items-center gap-1 transition-colors"`
+   - No padding/height — bare inline-flex text link with chevron icon
+   - Renders at 114w × 16h on mobile
+   - Recommendation: add `py-2 px-2 rounded-md hover:bg-[#304AC0]/10` to expand tap target to ≥36px
+
+8. **Download Excel/PDF buttons are 36px tall** (MEDIUM severity — touch target)
+   - Source: lines 776-791 — uses shadcn `<Button>` with `text-xs` (no explicit height)
+   - Default Button height is 36px (`h-9`), but text-xs makes them feel smaller
+   - Recommendation: add `h-11` to className to bump to 44px
+
+9. **Slider thumbs are 20px (h-5 w-5)** (LOW severity — Radix Slider, not native input)
+   - Source: lines 508, 546, 603 — `[&_[role=slider]]:h-5 [&_[role=slider]]:w-5`
+   - 20px thumb below 44px touch target minimum, but Radix slider hit area is larger than visible thumb
+   - Recommendation (optional): bump to `h-6 w-6` (24px) for better mobile usability
+
+10. **FloatingEMIButton overlaps calculator right edge** (MEDIUM severity — global widget issue, not EMICalculator bug)
+    - FloatingEMIButton: `fixed top-1/2 right-4 sm:right-6 -translate-y-1/2 z-50` (56×56 at x=318-374, y=394-450 on mobile)
+    - Calculator outer card spans x=16-374, so button overlaps right ~56px of card content
+    - VLM confirmed: covers right portion of pie chart, "Total Interest Payable" card, and yearly bar chart value labels
+    - Also WhatsApp button at `fixed bottom-20 right-6 z-50` overlaps bottom-right of amortization table
+    - Recommendation: hide FloatingEMIButton when EMI Calculator section is in viewport (IntersectionObserver), OR add `right-16 sm:right-6` to push it further right on mobile, OR make the button smaller (40×40) on mobile
+
+11. **Pie chart only 128×128 on mobile** (LOW severity — acceptable but small)
+    - Source: MiniPieChart component (not inspected, but inline SVG 128×128 with viewBox 0 0 100 100)
+    - Fits fine, but could be larger (160×160) for better mobile legibility
+
+12. **Yearly chart bars render with very small inner segments** (LOW severity — verified working)
+    - Container: 336w × 120h on mobile (`bg-[#F7F9FC] rounded-xl p-4 mb-4 sm:mb-6`)
+    - Bar rows: 296w × 20h (`flex items-center gap-2 sm:gap-3`)
+    - Bar track: 160w × 20h (`flex-1 flex h-5 rounded-full overflow-hidden bg-[#E8ECF0] min-w-0`)
+    - With 18-month default tenure, only 2 yearly bars (Yr 1, Yr 2) render — that's expected
+    - VLM confirmed: bars visible and properly colored (blue principal, green interest)
+
+**Desktop viewport: 1280x800 (for comparison)**
+- Outer card: 1232w × 967h
+- Grid 2-col layout: input panel 492w + results panel 738w
+- Table: 672w × 279h, all 7 columns visible (`display: table-cell`)
+- EMI big numbers: 30px font (vs 20px on mobile) — confirms `text-xl sm:text-2xl md:text-3xl` resolves to md (30px) on desktop
+- Inputs same heights (20px) — desktop also has touch target issue but less critical since mouse is precise
+- Preset buttons: 210w × 34h — same 34px height as mobile
+- All desktop layout works correctly; no overflow, no clipping
+
+**Verified NON-issues (working correctly):**
+- ✓ No page-level horizontal scroll on mobile
+- ✓ `overflow-x-auto` on table wrapper is NOT causing page-level scroll (table fits)
+- ✓ Table responsive column hiding works (7 cols DOM, 5 visible mobile, 7 visible desktop)
+- ✓ Layout stacks to single column on mobile (< lg breakpoint)
+- ✓ Quick Presets 2x2 grid fits mobile width (164×2 + gap = ~340px in 358px card)
+- ✓ No text clipping inside input fields
+- ✓ All EMI result values render (₹1,26,660 / ₹2,79,883 / ₹22,79,883 visible)
+- ✓ Yearly chart bars render with correct colors
+- ✓ Table cell font (10px) is readable on mobile
+- ✓ Decorative bg circles properly clipped by `overflow-hidden` (no horizontal page scroll)
+
+**Screenshots saved** to /home/z/my-project/upload/emi-diagnose/:
+- mobile-emi-section-top.png (full page top of section, 390x844)
+- mobile-emi-full.png (full page capture)
+- mobile-emi-1-inputpanel.png (input panel view)
+- mobile-emi-2-resultspanel.png (results panel view)
+- mobile-emi-3-chartandtable.png (chart + table view)
+- mobile-emi-4-tablebottom.png (table bottom view)
+- desktop-emi-section-top.png (desktop 1280x800 viewport)
+- desktop-emi-full.png (desktop full page)
+
+**Recommended fix priority order:**
+1. (HIGH) Bump EMI value font: `text-xl sm:text-2xl md:text-3xl` → `text-2xl sm:text-3xl md:text-4xl` (lines 674, 683, 692)
+2. (HIGH) Increase input wrapper touch height: `px-3 py-1.5` → `px-3 py-2.5` (lines 487, 523, 562, 620)
+3. (HIGH) Fix "Show All Months" tiny tap target: add `py-2 px-2 rounded-md hover:bg-[#304AC0]/10` (line 804)
+4. (MEDIUM) Widen tenure input: `w-12` → `w-16` (line 578)
+5. (MEDIUM) Widen Months/Years Select: `h-8 w-20 sm:w-24` → `h-11 w-24 sm:w-28` (line 587)
+6. (MEDIUM) Increase preset button height: `px-3 py-2` → `px-3 py-2.5` (line 649)
+7. (MEDIUM) Increase Download button height: add `h-11` (lines 779, 787)
+8. (MEDIUM) Hide FloatingEMIButton when EMI section is in viewport, OR push right with `right-16 sm:right-6` (src/components/FloatingEMIButton.tsx)
+9. (LOW) Bump slider thumb: `h-5 w-5` → `h-6 w-6` (lines 508, 546, 603)
+10. (LOW) Widen interest rate input: `w-16` → `w-20` (line 535)
+
+**No code was modified** — purely diagnostic. All findings are based on live DOM measurements + computed styles + source code inspection.
+
+---
+Task ID: 5-emi-verify
+Agent: general-purpose
+Task: Verify EMI Calculator mobile responsive fixes after edits
+
+Work Log:
+- Read worklog.md for prior context (Task 1-emi-diagnose identified 8 mobile responsive issues)
+- Launched Chromium via agent-browser; set device "iPhone 14" + viewport 390x844
+- Navigated to http://localhost:3000/ and waited networkidle
+- Scrolled to EMI Calculator section (located via H2 "Calculate Your EMI", section#emi-calculator)
+- Captured screenshots:
+  - /home/z/my-project/upload/emi-verify/mobile-after-1-full.png (full page mobile)
+  - /home/z/my-project/upload/emi-verify/mobile-after-viewport.png (viewport)
+  - /home/z/my-project/upload/emi-verify/mobile-emi-section-view.png (EMI section viewport)
+  - /home/z/my-project/upload/emi-verify/mobile-emi-inputs.png (Loan Parameters card)
+  - /home/z/my-project/upload/emi-verify/mobile-floating-visible.png (top of page, FAB visible)
+  - /home/z/my-project/upload/emi-verify/desktop-after.png (full page desktop 1280x800)
+  - /home/z/my-project/upload/emi-verify/desktop-emi-section.png (desktop EMI section)
+- Ran JS eval checks (via agent-browser eval) for each of fixes #1-7
+- Verified FloatingEMIButton hide behavior by scrolling EMI section into viewport (button removed from DOM via AnimatePresence when IntersectionObserver fires)
+- Verified FloatingEMIButton show behavior by scrolling back to top (button reappears, display:block, opacity:1, 56x56px)
+- Switched viewport to 1280x800 for desktop regression check — values render at md:text-4xl = 36px, input wrappers 40px tall, layout intact
+- Ran VLM (z-ai vision glm-5v-turbo) on mobile-emi-section-view.png and mobile-emi-inputs.png
+- Ran VLM on desktop-emi-section.png for regression check
+
+Stage Summary:
+- Fix #1 EMI value font size — PASS. Mobile: Monthly EMI / Total Interest / Total Payment all 24px (was 20px). Desktop: 36px (md:text-4xl). All ≥ 24px threshold.
+- Fix #2 Input wrapper height — PASS. All 4 navy wrappers (Loan Amount, Interest Rate, Loan Tenure, Loan Start Date) offsetHeight = 40px on both mobile and desktop (was 32px). Class confirmed: "bg-white/10 rounded-lg px-3 py-2.5".
+- Fix #3 "Show All Months" button — PASS. offsetHeight = 44px (was ~16px). Class confirmed contains "py-2 px-2 rounded-md hover:bg-[#304AC0]/10 min-h-[44px]".
+- Fix #4 Tenure input width — PASS. <input type="number"> offsetWidth = 64px (was 48px with w-12; now w-16 = 64px). ≥ 56px threshold.
+- Fix #5 Months/Years Select trigger width — PASS (width). offsetWidth = 96px on mobile (w-24), 112px on desktop (sm:w-28). ≥ 80px threshold.
+   - MINOR REGRESSION NOTED: height renders as 36px (not 44px from `h-11`) because shadcn/ui Select trigger also sets `data-[size=default]:h-9` which has equivalent specificity and is later in the resolved CSS. Width fix is fine; height target of 44px NOT achieved. Recommend either overriding data-size attr or using !h-11 / h-11 !important style.
+- Fix #6 Quick Presets buttons — PASS. All 4 buttons (₹10L/12Mo/12%, ₹20L/18Mo/17%, ₹50L/5Yr/14%, ₹1Cr/10Yr/11%) offsetHeight = 44px. Class confirmed contains "min-h-[44px] flex items-center".
+- Fix #7 Download buttons — PASS. Both Download Excel and Download PDF offsetHeight = 44px. Class confirmed contains "h-11".
+- Fix #8 FloatingEMIButton hide/show — PASS.
+   - When #emi-calculator is in viewport (IntersectionObserver threshold 5%): floating button is removed from DOM entirely (AnimatePresence exit), floatingBtnInDom=false, no element with aria-label="Open EMI Calculator" found.
+   - When scrolled to top of page (section off-screen): button returns to DOM, display=block, opacity=1, offsetH=56, offsetW=56.
+- VLM mobile analysis (section view): Confirmed Monthly EMI/Total Interest/Total Payment values are "large and prominent" with bold heavy font weight and contrasting colors (blue/green/dark-blue). Donut chart and breakdown cards clean. No overlap.
+- VLM mobile analysis (inputs view): Confirmed input boxes are 44-48px tall (meets thumb-tap standard). Quick Presets buttons ~48-52px tall — "excellent tap targets". Layout "very clean, modern, well-organized". No overlap, no truncation. Minor note: slider thumbs ~24-28px (out of scope of these fixes; pre-existing).
+- VLM desktop analysis: Two-column layout intact (left dark panel inputs, right white panel results + charts + breakdown). Alignment "well-aligned horizontally". Bottom "clipping" reported is just the 800px viewport cutoff, not a real regression — section is 1497px tall and scrolls naturally. "N" badge mentioned is the standard Next.js dev tools indicator (expected in dev).
+- No new regressions found beyond the pre-existing slider thumb size note and the Select-trigger h-11 / data-size=default:h-9 CSS conflict (minor — width fix still meets criterion).
+- All 8 fixes verified PASS against their stated thresholds. Only follow-up recommendation: investigate the h-11 vs data-[size=default]:h-9 specificity conflict on the Months/Years Select trigger to also reach the 44px height target (currently 36px) — this is cosmetic and does not break the width criterion.
+
+
+---
+Task ID: 5-admin-upload-verify
+Agent: general-purpose
+Task: Verify admin HeroSlidesPanel image upload widget renders and works
+
+Work Log:
+- Read /home/z/my-project/worklog.md (prior context: confirmed CredoraFin project, ImageUploader component + /api/admin/upload route created in prior task)
+- Verified prerequisites: dev server up (curl http://localhost:3000/admin → 307 redirect to /admin/login — expected without cookie). Confirmed all source files exist: src/app/api/admin/upload/route.ts (3599 bytes), src/components/admin/ImageUploader.tsx (8581 bytes), src/components/admin/HeroSlidesPanel.tsx (31216 bytes). Test image /home/z/my-project/public/images/credora-logo.png exists (13114 bytes). Existing uploads dir /home/z/my-project/public/uploads/hero-slides/ exists with 1 prior file. Created screenshot output dir /home/z/my-project/upload/admin-verify/.
+- Confirmed dev DB has zero hero slides (curl -H "Cookie: ..." http://localhost:3000/api/admin/hero-slides → {"data":[]})
+- Invoked agent-browser skill. Launched Chromium with viewport 1280x800.
+- Navigated to http://localhost:3000/admin → redirected to /admin/login?redirect=%2Fadmin (title "Sign In — Credora Admin").
+- Injected session cookie via eval: `document.cookie = "credora_admin_session=eyJpZCI6InRlc3QtYWRtaW4iLCJlbWFpbCI6InRlc3RAY3JlZG9yYWZpbi5jb20iLCJuYW1lIjoiVGVzdCBBZG1pbiIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImV4cCI6MTc4NTUwMzQxMjMyNX0=; path=/; max-age=3600"`. Cookie persisted.
+- Re-navigated to http://localhost:3000/admin → bypassed login, landed at /admin/dashboard (title "Admin — Credora Fintech").
+- Screenshot → /home/z/my-project/upload/admin-verify/1-dashboard.png (46 KB)
+- Snapshot confirmed sidebar nav items: Overview / Contacts / Referrals / Applications / Brochure Leads / Products / Hero Slides / Blog Posts / Job Positions / Backup & Data / Admin Users + Sign out + View site. Header shows "Test Admin / Super Admin".
+- Clicked "Hero Slides" nav button (@e15) — page transitioned to Hero Slides section (heading "Hero Slides", buttons "Refresh" + "Add slide", empty-state text "No hero slides yet" + "Create your first slide to display it in the homepage hero.").
+- Screenshot → /home/z/my-project/upload/admin-verify/2-hero-list.png (52 KB)
+- Clicked "Add slide" button (@e7) — modal opened.
+- Screenshot → /home/z/my-project/upload/admin-verify/3-editor-modal.png (112 KB) — modal title "Add hero slide" / subtitle "Create a new rotating hero slide". Form fields visible: Badge, Tab label, Heading words, Subtitle, CTA1, CTA2, **Slide image (ImageUploader)**, **Fallback image (ImageUploader)**, HUD fields, accent color, sort order.
+- Snapshot confirmed both ImageUploader widgets render:
+  * Slide image field: "Use URL instead" button (@e30) + drop zone "Click to upload or drag & drop" + "Choose File" button (@e47) + hint "PNG, JPEG, WebP, GIF, SVG · max 10 MB · recommended 1344 × 768"
+  * Fallback image field: "Use URL instead" button (@e32) + drop zone "Click to upload or drag & drop" + "Choose File" button (@e48) + same hint
+- Scrolled first drop zone into viewport center (rect: x=328, y=315, w=306, h=166).
+- Screenshot → /home/z/my-project/upload/admin-verify/4-upload-widget.png (112 KB) — shows both drop zones side by side in 2-column layout, each with cloud upload icon, dashed border, instructional text, and spec hint.
+- Ran eval verification (12.13):
+  * fileInputsCount: 2 (one per field)
+  * accept attribute: "image/png,image/jpeg,image/webp,image/gif,image/avif,image/svg+xml" (matches API spec exactly)
+  * dropZonesCount: 6 (text matches in multiple wrapping elements)
+  * dropZoneText: "Click to upload or drag & drop\n\nPNG, JPEG, WebP, GIF, SVG · max 10 MB · recommended 1344 × 768" ✓
+  * toggleBtnsCount: 2 (both "Use URL instead") ✓
+  * hintMatchExact ("1344 × 768"): true ✓
+- Tested actual upload via `agent-browser upload @e47 /home/z/my-project/public/images/credora-logo.png` (uploaded credora-logo.png to Slide image field's file input).
+- Waited 3s for XHR POST to /api/admin/upload?bucket=hero-slides to complete.
+- Verified upload success via eval:
+  * 1 new preview <img> rendered: src="http://localhost:3000/uploads/hero-slides/1785500272035-msh74b.png", naturalW=300, naturalH=104, complete=true ✓
+  * "Remove" button appeared (1 found) ✓
+  * fileInput.files.length=0 (cleared after upload) ✓
+- Verified uploaded file persisted to disk: ls /home/z/my-project/public/uploads/hero-slides/ → 1785500272035-msh74b.png (13114 bytes — exactly matches source file size). ✓
+- Screenshot → /home/z/my-project/upload/admin-verify/5-after-upload.png (134 KB) — shows uploaded image preview thumbnail in Slide image field with URL text and "Remove" button.
+- Verified form state via eval: upload zone text shows "/uploads/hero-slides/1785500272035-msh74b.png\n\nRemove" (React state holds the URL, not a hidden input — ImageUploader manages state internally).
+- Tested "Use URL instead" toggle on Fallback image field: clicked @e32. After click:
+  * Toggle button text changed to "Upload file instead"
+  * A text input appeared with placeholder "https://images.unsplash.com/… or /images/pages/foo.png"
+  * File input for fallback field was removed from DOM
+  * Slide image field remained in upload mode (still showing preview + Remove)
+- Screenshot → /home/z/my-project/upload/admin-verify/6-url-mode.png (130 KB) — shows the Fallback image field now displaying a text input (URL mode) alongside the Slide image field still showing the uploaded preview.
+- Did NOT click "Save"/"Create slide" — verified form state only (per task constraints to avoid DB mutations).
+- Ran VLM analysis (z-ai vision glm-5v-turbo) on screenshot 4 (upload-widget.png) with prompt: "Describe what you see in the image upload area. Is there a drag-and-drop zone? Is the layout clean and professional? Are the labels and hints readable?" — see Stage Summary for full description.
+- Checked console: only HMR Fast Refresh logs + React DevTools suggestion + 2 minor Next/Image aspect-ratio warnings for credora-logo.png (cosmetic dev warnings about width/height modification, NOT errors). Zero runtime errors.
+- Checked page errors via `agent-browser errors`: EMPTY. Zero page errors during entire flow.
+- Closed browser.
+
+Stage Summary:
+
+**Per-step PASS/FAIL:**
+- Step 1 (Launch Chromium @ 1280x800): PASS
+- Step 2 (Navigate to /admin): PASS — initially redirected to /admin/login (no auth)
+- Step 3 (Inject session cookie via eval): PASS — `document.cookie` set successfully
+- Step 4 (Reload → bypass login → dashboard): PASS — landed at /admin/dashboard, title "Admin — Credora Fintech"
+- Step 5 (Screenshot dashboard): PASS → 1-dashboard.png
+- Step 6 (Find + click "Hero Slides" nav item): PASS — sidebar nav has "Hero Slides" button
+- Step 7 (Screenshot Hero Slides list view): PASS → 2-hero-list.png (empty state — "No hero slides yet")
+- Step 8 (Click "Add slide" — no existing slides): PASS — modal opened in create mode
+- Step 9 (Screenshot editor modal): PASS → 3-editor-modal.png (form has all fields including ImageUploader widgets)
+- Step 10 (Scroll to Slide image + Fallback image fields, confirm ImageUploader rendered): PASS — both widgets render with drop zone, NOT plain text inputs
+- Step 11 (Screenshot focused on upload area): PASS → 4-upload-widget.png
+- Step 12 (eval verify widget elements):
+  * Drop zone text "Click to upload or drag & drop" present: PASS
+  * "Use URL instead" toggle buttons present (2): PASS
+  * File input elements exist (type="file", accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/svg+xml"): PASS — accept matches API spec exactly
+  * Recommended size hint "1344 × 768" visible: PASS
+- Step 13 (Upload credora-logo.png to Slide image field via `agent-browser upload`): PASS — file input accepted file
+- Step 14 (Wait for upload + screenshot preview): PASS → 5-after-upload.png. XHR completed, preview thumbnail rendered.
+- Step 15 (Verify preview <img> with src containing "/uploads/hero-slides/"): PASS — src="http://localhost:3000/uploads/hero-slides/1785500272035-msh74b.png", naturalW=300×naturalH=104, complete=true. File persisted to disk (13114 bytes = source file size).
+- Step 16 (Click "Use URL instead" on Fallback image): PASS — toggle switched to text input with placeholder "https://images.unsplash.com/… or /images/pages/foo.png", button text changed to "Upload file instead". Screenshot → 6-url-mode.png.
+- Step 17 (Verify form state shows uploaded URL — no Save click): PASS — Slide image upload zone text shows "/uploads/hero-slides/1785500272035-msh74b.png" + "Remove" button. React state holds URL internally.
+- Step 18 (VLM analysis on upload widget screenshot): PASS — see description below.
+
+**Did the upload widget render correctly?**
+YES — fully PASS.
+- Drop zone: rendered with dashed border, cloud upload icon, "Click to upload or drag & drop" text, spec hint "PNG, JPEG, WebP, GIF, SVG · max 10 MB · recommended 1344 × 768" — both for Slide image and Fallback image fields.
+- Toggle: "Use URL instead" button rendered next to both image fields; clicking it switches the field to a text input (placeholder "https://images.unsplash.com/… or /images/pages/foo.png") and changes toggle text to "Upload file instead".
+- File input: 2 `<input type="file">` elements with accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/svg+xml" (matches API spec exactly).
+- Preview: after upload, an `<img>` thumbnail with src pointing to /uploads/hero-slides/ is rendered, alongside a "Remove" button.
+- The previous plain text URL inputs in HeroSlidesPanel.tsx (around lines 604-621) have been REPLACED by the ImageUploader widget.
+
+**Did the actual file upload succeed end-to-end?**
+YES — fully PASS.
+- File selected via `agent-browser upload @e47 /home/z/my-project/public/images/credora-logo.png`
+- XHR POST to /api/admin/upload?bucket=hero-slides succeeded
+- Server response included URL `/uploads/hero-slides/1785500272035-msh74b.png`
+- File persisted to disk: /home/z/my-project/public/uploads/hero-slides/1785500272035-msh74b.png (13114 bytes — exactly matches source credora-logo.png size)
+- Preview thumbnail `<img>` rendered with the returned URL, loaded successfully (complete=true, naturalW=300, naturalH=104 — matches credora-logo.png dimensions)
+- "Remove" button appeared alongside preview
+
+**VLM description of the upload widget (z-ai vision glm-5v-turbo on 4-upload-widget.png):**
+> Two identical upload zones side by side (2-column grid layout):
+> - Left zone: "SLIDE IMAGE" (primary image)
+> - Right zone: "FALLBACK IMAGE" (backup image)
+> Each upload area contains: dashed border container with light background, upload icon (cloud with up-arrow) at top, bold instruction text "Click to upload or drag & drop", file specifications in smaller gray text "PNG, JPEG, WebP, GIF, SVG · max 10 MB · recommended 1344 × 768", descriptive subtitles below each zone explaining purpose.
+> Layout: "exceptionally clean and professional" — modal dialog with generous white space, clear visual hierarchy with section headers in uppercase, 2-column grid creates symmetry, consistent spacing, modern rounded corners, professional color scheme (navy blue for primary actions, subtle grays for secondary).
+> Labels: "highly readable" — section headers (PRIMARY CTA, SECONDARY CTA, SLIDE IMAGE) use uppercase with good contrast, input labels positioned clearly above fields, helper text uses lighter gray to distinguish from primary content, font sizes well-proportioned, "Use URL Instead" links visible but don't compete with main actions.
+> Overall: "follows modern UI/UX best practices with excellent visual organization."
+
+**Console errors / issues found:**
+- ZERO runtime errors (agent-browser errors: EMPTY)
+- Console: only HMR Fast Refresh logs + React DevTools download suggestion + 2 minor Next/Image aspect-ratio warnings for credora-logo.png and credora-logo-full.png (these are pre-existing cosmetic dev warnings about width/height modification in the admin layout's logo image — NOT related to the upload widget, NOT errors, do not affect functionality)
+- No issues found with the ImageUploader widget itself. All expected UI elements render, all interactions work (upload, preview, remove, use-URL-instead toggle), file persists to disk, response is consumed correctly.
+
+**Screenshots saved** to /home/z/my-project/upload/admin-verify/ (6 PNG files, ~590 KB total):
+- 1-dashboard.png (admin dashboard after cookie auth bypass)
+- 2-hero-list.png (Hero Slides list view — empty state)
+- 3-editor-modal.png (full Add slide editor modal)
+- 4-upload-widget.png (focused view of both ImageUploader drop zones — used for VLM analysis)
+- 5-after-upload.png (Slide image preview thumbnail after successful upload)
+- 6-url-mode.png (Fallback image field switched to URL text input mode)
+
+**Conclusion:** The new ImageUploader widget in HeroSlidesPanel is fully functional end-to-end. Drop zones render correctly with proper hints and toggle, file upload succeeds via the /api/admin/upload endpoint, file is persisted to /public/uploads/hero-slides/, preview thumbnail renders, "Remove" and "Use URL instead" toggles work as designed. No Save was clicked to avoid DB mutations, but the form state correctly holds the uploaded URL. No code changes were made — verification only.

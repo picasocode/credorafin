@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { apiFetch, type AdminUser, canEdit } from "@/lib/admin-client";
 import { getIcon, ICON_OPTIONS } from "@/lib/icon-registry";
+import ImageUploader from "@/components/admin/ImageUploader";
 
 /* ─── Types ─── */
 interface AdminHeroSlide {
@@ -601,22 +602,22 @@ function SlideFormModal({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label="Image URL / path">
-              <input
-                value={form.image}
-                onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
-                placeholder="/images/pages/hero-indian-team.png"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Fallback image URL">
-              <input
-                value={form.fallbackImage}
-                onChange={(e) => setForm((f) => ({ ...f, fallbackImage: e.target.value }))}
-                placeholder="https://images.unsplash.com/…"
-                className={inputCls}
-              />
-            </Field>
+            <ImageUploader
+              label="Slide image"
+              value={form.image}
+              onChange={(url) => setForm((f) => ({ ...f, image: url }))}
+              bucket="hero-slides"
+              recommendedSize="1344 × 768"
+              hint="Used as the main hero slide background image."
+            />
+            <ImageUploader
+              label="Fallback image"
+              value={form.fallbackImage}
+              onChange={(url) => setForm((f) => ({ ...f, fallbackImage: url }))}
+              bucket="hero-slides"
+              recommendedSize="1344 × 768"
+              hint="Shown if the primary image fails to load."
+            />
           </div>
 
           {/* HUD left */}

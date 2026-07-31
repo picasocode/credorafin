@@ -484,7 +484,7 @@ export default function EMICalculator() {
                     <IndianRupee className="w-3.5 h-3.5" />
                     Loan Amount
                   </label>
-                  <div className="bg-white/10 rounded-lg px-3 py-1.5">
+                  <div className="bg-white/10 rounded-lg px-3 py-2.5">
                     <Input
                       type="text"
                       value={formatCurrency(loanAmount)}
@@ -520,7 +520,7 @@ export default function EMICalculator() {
                     <Percent className="w-3.5 h-3.5" />
                     Interest Rate (p.a.)
                   </label>
-                  <div className="bg-white/10 rounded-lg px-3 py-1.5 flex items-center gap-1">
+                  <div className="bg-white/10 rounded-lg px-3 py-2.5 flex items-center gap-1">
                     <Input
                       type="number"
                       value={interestRate}
@@ -559,7 +559,7 @@ export default function EMICalculator() {
                     Loan Tenure
                   </label>
                   <div className="flex items-center gap-2">
-                    <div className="bg-white/10 rounded-lg px-3 py-1.5">
+                    <div className="bg-white/10 rounded-lg px-3 py-2.5">
                       <Input
                         type="number"
                         value={tenure}
@@ -575,7 +575,7 @@ export default function EMICalculator() {
                         }}
                         min={1}
                         max={tenureType === "years" ? 30 : 360}
-                        className="bg-transparent border-0 text-right text-white font-semibold text-sm p-0 h-auto focus:ring-0 focus:outline-none w-12"
+                        className="bg-transparent border-0 text-right text-white font-semibold text-sm p-0 h-auto focus:ring-0 focus:outline-none w-16"
                       />
                     </div>
                     <Select
@@ -584,7 +584,7 @@ export default function EMICalculator() {
                         setTenureType(val)
                       }
                     >
-                      <SelectTrigger className="bg-white/10 border-0 text-white text-xs h-8 w-20 sm:w-24 rounded-lg focus:ring-0">
+                      <SelectTrigger className="bg-white/10 border-0 text-white text-xs w-24 sm:w-28 rounded-lg focus:ring-0 data-[size=default]:h-11 h-11">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -617,7 +617,7 @@ export default function EMICalculator() {
                     <Calendar className="w-3.5 h-3.5" />
                     Loan Start Date
                   </label>
-                  <div className="bg-white/10 rounded-lg px-3 py-1.5">
+                  <div className="bg-white/10 rounded-lg px-3 py-2.5">
                     <Input
                       type="date"
                       value={startDate}
@@ -646,7 +646,7 @@ export default function EMICalculator() {
                         setTenure(preset.ten);
                         setTenureType(preset.type);
                       }}
-                      className="text-xs bg-white/5 hover:bg-white/15 border border-white/10 rounded-lg px-3 py-2 text-white/80 hover:text-white transition-all duration-200 text-left"
+                      className="text-xs bg-white/5 hover:bg-white/15 border border-white/10 rounded-lg px-3 py-2.5 text-white/80 hover:text-white transition-all duration-200 text-left min-h-[44px] flex items-center"
                     >
                       {preset.label}
                     </button>
@@ -671,7 +671,7 @@ export default function EMICalculator() {
                     <p className="text-xs font-medium text-[#718096] uppercase tracking-wider mb-1">
                       Monthly EMI
                     </p>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-[#304AC0] break-words">
+                    <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#304AC0] break-words">
                       {formatCurrency(Math.round(emi))}
                     </p>
                   </div>
@@ -680,7 +680,7 @@ export default function EMICalculator() {
                     <p className="text-xs font-medium text-[#718096] uppercase tracking-wider mb-1">
                       Total Interest
                     </p>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-[#87B73C] break-words">
+                    <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#87B73C] break-words">
                       {formatCurrency(Math.round(totalInterest))}
                     </p>
                   </div>
@@ -689,7 +689,7 @@ export default function EMICalculator() {
                     <p className="text-xs font-medium text-[#718096] uppercase tracking-wider mb-1">
                       Total Payment
                     </p>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1C1D62] break-words">
+                    <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1C1D62] break-words">
                       {formatCurrency(Math.round(totalPayment))}
                     </p>
                   </div>
@@ -776,7 +776,7 @@ export default function EMICalculator() {
                 <Button
                   onClick={downloadExcel}
                   variant="outline"
-                  className="border-[#304AC0] text-[#304AC0] hover:bg-[#304AC0] hover:text-white text-xs"
+                  className="border-[#304AC0] text-[#304AC0] hover:bg-[#304AC0] hover:text-white text-xs h-11"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5 mr-1.5" />
                   Download Excel
@@ -784,7 +784,7 @@ export default function EMICalculator() {
                 <Button
                   onClick={downloadPDF}
                   variant="outline"
-                  className="border-[#87B73C] text-[#87B73C] hover:bg-[#87B73C] hover:text-white text-xs"
+                  className="border-[#87B73C] text-[#87B73C] hover:bg-[#87B73C] hover:text-white text-xs h-11"
                 >
                   <FileText className="w-3.5 h-3.5 mr-1.5" />
                   Download PDF
@@ -801,7 +801,7 @@ export default function EMICalculator() {
                     </h4>
                     <button
                       onClick={() => setShowFullSchedule(!showFullSchedule)}
-                      className="text-xs text-[#304AC0] hover:text-[#13277E] font-medium flex items-center gap-1 transition-colors"
+                      className="text-xs text-[#304AC0] hover:text-[#13277E] font-medium flex items-center gap-1 transition-colors py-2 px-2 rounded-md hover:bg-[#304AC0]/10 min-h-[44px]"
                     >
                       {showFullSchedule ? "Show Less" : "Show All Months"}
                       {showFullSchedule ? (
