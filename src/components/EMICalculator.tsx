@@ -430,7 +430,7 @@ export default function EMICalculator() {
   return (
     <section
       id="emi-calculator"
-      className="py-8 sm:py-12 md:py-20 lg:py-24 bg-[#F7F9FC] relative overflow-hidden"
+      className="py-6 sm:py-12 md:py-20 lg:py-24 bg-[#F7F9FC] relative overflow-hidden"
     >
       {/* Decorative background */}
       <div className="absolute inset-0 pointer-events-none">
@@ -469,16 +469,16 @@ export default function EMICalculator() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.15 }}
         >
-          <div className="grid lg:grid-cols-5 gap-0">
-            {/* Left — Input Controls */}
-            <div className="lg:col-span-2 p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-[#1C1D62] to-[#13277E] text-white">
+          <div className="flex flex-col lg:grid lg:grid-cols-5 gap-0">
+            {/* Left — Input Controls (order-2 on mobile so result shows first) */}
+            <div className="order-2 lg:order-1 lg:col-span-2 p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-[#1C1D62] to-[#13277E] text-white">
               <h3 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-[#87B73C]" />
                 Loan Parameters
               </h3>
 
               {/* Loan Amount */}
-              <div className="mb-6 sm:mb-8">
+              <div className="mb-4 lg:mb-8">
                 <div className="flex justify-between items-center mb-2 gap-2">
                   <label className="text-sm font-medium text-white/80 flex items-center gap-1.5">
                     <IndianRupee className="w-3.5 h-3.5" />
@@ -514,7 +514,7 @@ export default function EMICalculator() {
               </div>
 
               {/* Interest Rate */}
-              <div className="mb-6 sm:mb-8">
+              <div className="mb-4 lg:mb-8">
                 <div className="flex justify-between items-center mb-2 gap-2">
                   <label className="text-sm font-medium text-white/80 flex items-center gap-1.5">
                     <Percent className="w-3.5 h-3.5" />
@@ -552,7 +552,7 @@ export default function EMICalculator() {
               </div>
 
               {/* Tenure */}
-              <div className="mb-6 sm:mb-8">
+              <div className="mb-4 lg:mb-8">
                 <div className="flex justify-between items-center mb-2 gap-2">
                   <label className="text-sm font-medium text-white/80 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
@@ -611,7 +611,7 @@ export default function EMICalculator() {
               </div>
 
               {/* Loan Start Date */}
-              <div className="mb-6">
+              <div className="mb-4 lg:mb-6">
                 <div className="flex justify-between items-center mb-2">
                   <label className="text-sm font-medium text-white/80 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
@@ -629,9 +629,10 @@ export default function EMICalculator() {
               </div>
 
               {/* Quick Presets */}
-              <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-white/10">
+              <div className="mt-4 lg:mt-6 pt-4 lg:pt-6 border-t border-white/10">
                 <p className="text-xs text-white/50 mb-3">Quick Presets</p>
-                <div className="grid grid-cols-2 gap-2">
+                {/* Mobile: horizontal scroll strip; Desktop: 2x2 grid */}
+                <div className="flex lg:grid lg:grid-cols-2 gap-2 overflow-x-auto lg:overflow-visible -mx-1 px-1 pb-1 lg:pb-0 lg:m-0 lg:p-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   {[
                     { label: "₹10L / 12Mo / 12%", amt: 1000000, rate: 12, ten: 12, type: "months" as const },
                     { label: "₹20L / 18Mo / 17%", amt: 2000000, rate: 17, ten: 18, type: "months" as const },
@@ -646,7 +647,7 @@ export default function EMICalculator() {
                         setTenure(preset.ten);
                         setTenureType(preset.type);
                       }}
-                      className="text-xs bg-white/5 hover:bg-white/15 border border-white/10 rounded-lg px-3 py-2.5 text-white/80 hover:text-white transition-all duration-200 text-left min-h-[44px] flex items-center"
+                      className="text-xs bg-white/5 hover:bg-white/15 border border-white/10 rounded-lg px-3 py-2.5 text-white/80 hover:text-white transition-all duration-200 text-left min-h-[44px] flex items-center flex-shrink-0 lg:flex-shrink whitespace-nowrap lg:whitespace-normal"
                     >
                       {preset.label}
                     </button>
@@ -655,9 +656,9 @@ export default function EMICalculator() {
               </div>
             </div>
 
-            {/* Right — Results */}
-            <div className="lg:col-span-3 p-4 sm:p-6 lg:p-8">
-              {/* EMI Result Highlight */}
+            {/* Right — Results (order-1 on mobile so EMI shows first, above inputs) */}
+            <div className="order-1 lg:order-2 lg:col-span-3 p-4 sm:p-6 lg:p-8">
+              {/* EMI Result Highlight — Mobile compact layout (stacked, big EMI first) */}
               <motion.div
                 className="bg-gradient-to-r from-[#F0F4FF] to-[#F5F8EC] rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6"
                 key={emi}
@@ -665,7 +666,33 @@ export default function EMICalculator() {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                {/* Mobile: Monthly EMI is the HERO number, full-width, centered */}
+                <div className="text-center sm:hidden mb-4 pb-4 border-b border-[#304AC0]/10">
+                  <p className="text-xs font-medium text-[#718096] uppercase tracking-wider mb-2">
+                    Your Monthly EMI
+                  </p>
+                  <p className="text-4xl font-bold text-[#304AC0] break-words leading-none">
+                    {formatCurrency(Math.round(emi))}
+                  </p>
+                  <div className="flex justify-center gap-4 mt-3 text-left">
+                    <div>
+                      <p className="text-[10px] text-[#718096] uppercase tracking-wider">Interest</p>
+                      <p className="text-sm font-bold text-[#87B73C]">
+                        {formatCurrency(Math.round(totalInterest))}
+                      </p>
+                    </div>
+                    <div className="w-px bg-[#304AC0]/10" />
+                    <div>
+                      <p className="text-[10px] text-[#718096] uppercase tracking-wider">Total</p>
+                      <p className="text-sm font-bold text-[#1C1D62]">
+                        {formatCurrency(Math.round(totalPayment))}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop/tablet: 3-column grid layout */}
+                <div className="hidden sm:grid grid-cols-3 gap-4 sm:gap-6">
                   {/* Monthly EMI */}
                   <div className="text-center sm:text-left">
                     <p className="text-xs font-medium text-[#718096] uppercase tracking-wider mb-1">
@@ -720,8 +747,8 @@ export default function EMICalculator() {
                   </div>
                 </div>
 
-                {/* Key Info */}
-                <div className="space-y-3">
+                {/* Key Info — hidden on mobile (redundant with the hero EMI block above) */}
+                <div className="hidden sm:block space-y-3">
                   <div className="bg-[#F0F4FF] rounded-xl p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-[#304AC0]/10 flex items-center justify-center">
                       <IndianRupee className="w-5 h-5 text-[#304AC0]" />
@@ -812,7 +839,105 @@ export default function EMICalculator() {
                     </button>
                   </div>
 
-                  <div className="border border-[#E8ECF0] rounded-xl overflow-hidden">
+                  {/* Mobile: card-per-month layout (visually distinct from the table) */}
+                  <div className="md:hidden max-h-96 overflow-y-auto space-y-2 pr-1 -mr-1">
+                    {(showFullSchedule
+                      ? schedule
+                      : schedule.slice(0, 6)
+                    ).map((row, i) => (
+                      <div
+                        key={row.month}
+                        className={`rounded-xl border p-3 ${
+                          i % 2 === 0
+                            ? "bg-white border-[#E8ECF0]"
+                            : "bg-[#FAFBFD] border-[#E8ECF0]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-bold text-white bg-[#304AC0] rounded-full px-2 py-0.5">
+                            #{row.month}
+                          </span>
+                          <span className="text-xs font-semibold text-[#1C1D62]">
+                            {row.dueDate}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] text-[#718096] uppercase tracking-wider">
+                            Installment
+                          </span>
+                          <span className="text-xs font-bold text-[#1C1D62]">
+                            ₹{formatNumber(row.emi)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="text-[10px] text-[#718096] uppercase tracking-wider">
+                              Principal
+                            </p>
+                            <p className="text-xs font-bold text-[#304AC0]">
+                              ₹{formatNumber(row.principal)}
+                            </p>
+                          </div>
+                          <div className="w-px h-8 bg-[#E8ECF0]" />
+                          <div className="flex-1 text-right">
+                            <p className="text-[10px] text-[#718096] uppercase tracking-wider">
+                              Interest
+                            </p>
+                            <p className="text-xs font-bold text-[#87B73C]">
+                              ₹{formatNumber(row.interest)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {!showFullSchedule && schedule.length > 6 && (
+                      <div className="text-center text-[10px] text-[#718096] py-2">
+                        + {schedule.length - 6} more months — tap &quot;Show All
+                        Months&quot;
+                      </div>
+                    )}
+                    {showFullSchedule && (
+                      <>
+                        <div className="rounded-xl bg-[#1C1D62] p-3 sticky bottom-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                              Total
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex-1">
+                              <p className="text-[10px] text-white/50 uppercase tracking-wider">
+                                Principal
+                              </p>
+                              <p className="text-xs font-bold text-[#87B73C]">
+                                ₹
+                                {formatNumber(
+                                  schedule.reduce((s, r) => s + r.principal, 0)
+                                )}
+                              </p>
+                            </div>
+                            <div className="flex-1 text-right">
+                              <p className="text-[10px] text-white/50 uppercase tracking-wider">
+                                Interest
+                              </p>
+                              <p className="text-xs font-bold text-[#87B73C]">
+                                ₹
+                                {formatNumber(
+                                  schedule.reduce((s, r) => s + r.interest, 0)
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-center text-[10px] font-bold text-[#1C1D62] py-2 tracking-wider">
+                          ***END OF REPORT***
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Desktop: wide table (hidden on mobile) */}
+                  <div className="hidden md:block border border-[#E8ECF0] rounded-xl overflow-hidden">
                     <div className="max-h-96 overflow-y-auto">
                       <div className="overflow-x-auto">
                       <Table className="[&_th]:px-1.5 [&_td]:px-1.5 sm:[&_th]:px-2 sm:[&_td]:px-2">
