@@ -815,29 +815,29 @@ export default function EMICalculator() {
                   <div className="border border-[#E8ECF0] rounded-xl overflow-hidden">
                     <div className="max-h-96 overflow-y-auto">
                       <div className="overflow-x-auto">
-                      <Table>
+                      <Table className="[&_th]:px-1.5 [&_td]:px-1.5 sm:[&_th]:px-2 sm:[&_td]:px-2">
                         <TableHeader>
                           <TableRow className="bg-[#F0F4FF] hover:bg-[#F0F4FF]">
-                            <TableHead className="text-xs font-semibold text-[#1C1D62]">
-                              Serial No.
+                            <TableHead className="text-[10px] sm:text-xs font-semibold text-[#1C1D62] whitespace-nowrap">
+                              S.No
                             </TableHead>
-                            <TableHead className="text-xs font-semibold text-[#1C1D62]">
+                            <TableHead className="text-[10px] sm:text-xs font-semibold text-[#1C1D62] whitespace-nowrap">
                               Due Date
                             </TableHead>
-                            <TableHead className="text-xs font-semibold text-[#1C1D62] text-right">
-                              Opening Principal INR
+                            <TableHead className="text-[10px] sm:text-xs font-semibold text-[#1C1D62] text-right whitespace-nowrap hidden md:table-cell">
+                              Opening Principal
                             </TableHead>
-                            <TableHead className="text-xs font-semibold text-[#1C1D62] text-right">
-                              Installment Amount INR
+                            <TableHead className="text-[10px] sm:text-xs font-semibold text-[#1C1D62] text-right whitespace-nowrap">
+                              Installment
                             </TableHead>
-                            <TableHead className="text-xs font-semibold text-[#304AC0] text-right">
-                              Principal Amount INR
+                            <TableHead className="text-[10px] sm:text-xs font-semibold text-[#304AC0] text-right whitespace-nowrap">
+                              Principal
                             </TableHead>
-                            <TableHead className="text-xs font-semibold text-[#87B73C] text-right">
-                              Interest Amount INR
+                            <TableHead className="text-[10px] sm:text-xs font-semibold text-[#87B73C] text-right whitespace-nowrap">
+                              Interest
                             </TableHead>
-                            <TableHead className="text-xs font-semibold text-[#1C1D62] text-right">
-                              Closing Principal INR
+                            <TableHead className="text-[10px] sm:text-xs font-semibold text-[#1C1D62] text-right whitespace-nowrap hidden md:table-cell">
+                              Closing Principal
                             </TableHead>
                           </TableRow>
                         </TableHeader>
@@ -852,25 +852,25 @@ export default function EMICalculator() {
                                 i % 2 === 0 ? "bg-white" : "bg-[#FAFBFD]"
                               }
                             >
-                              <TableCell className="text-xs font-medium text-[#1C1D62]">
+                              <TableCell className="text-[10px] sm:text-xs font-medium text-[#1C1D62]">
                                 {row.month}
                               </TableCell>
-                              <TableCell className="text-xs font-medium text-[#1C1D62]">
+                              <TableCell className="text-[10px] sm:text-xs font-medium text-[#1C1D62] whitespace-nowrap">
                                 {row.dueDate}
                               </TableCell>
-                              <TableCell className="text-xs text-[#718096] text-right">
+                              <TableCell className="text-[10px] sm:text-xs text-[#718096] text-right hidden md:table-cell">
                                 {formatNumber(row.openingPrincipal)}
                               </TableCell>
-                              <TableCell className="text-xs font-medium text-[#1C1D62] text-right">
+                              <TableCell className="text-[10px] sm:text-xs font-medium text-[#1C1D62] text-right whitespace-nowrap">
                                 {formatNumber(row.emi)}
                               </TableCell>
-                              <TableCell className="text-xs font-medium text-[#304AC0] text-right">
+                              <TableCell className="text-[10px] sm:text-xs font-medium text-[#304AC0] text-right whitespace-nowrap">
                                 {formatNumber(row.principal)}
                               </TableCell>
-                              <TableCell className="text-xs font-medium text-[#87B73C] text-right">
+                              <TableCell className="text-[10px] sm:text-xs font-medium text-[#87B73C] text-right whitespace-nowrap">
                                 {formatNumber(row.interest)}
                               </TableCell>
-                              <TableCell className="text-xs text-[#718096] text-right">
+                              <TableCell className="text-[10px] sm:text-xs text-[#718096] text-right hidden md:table-cell">
                                 {formatNumber(row.closingPrincipal)}
                               </TableCell>
                             </TableRow>
@@ -879,7 +879,7 @@ export default function EMICalculator() {
                             <TableRow>
                               <TableCell
                                 colSpan={7}
-                                className="text-center text-xs text-[#718096] py-3"
+                                className="text-center text-[10px] sm:text-xs text-[#718096] py-3"
                               >
                                 + {schedule.length - 6} more months — Click &quot;
                                 Show All Months&quot; to view full schedule
@@ -890,31 +890,31 @@ export default function EMICalculator() {
                           {showFullSchedule && (
                             <>
                               <TableRow className="bg-[#1C1D62] hover:bg-[#1C1D62]">
-                                <TableCell className="text-xs font-bold text-white">
+                                <TableCell className="text-[10px] sm:text-xs font-bold text-white">
                                   Total
                                 </TableCell>
-                                <TableCell className="text-xs text-white/50">
+                                <TableCell className="text-[10px] sm:text-xs text-white/50">
                                   —
                                 </TableCell>
-                                <TableCell className="text-xs text-white/50 text-right">
+                                <TableCell className="text-[10px] sm:text-xs text-white/50 text-right hidden md:table-cell">
                                   —
                                 </TableCell>
-                                <TableCell className="text-xs font-bold text-white text-right">
+                                <TableCell className="text-[10px] sm:text-xs font-bold text-white text-right whitespace-nowrap">
                                   {formatNumber(
                                     schedule.reduce((s, r) => s + r.emi, 0)
                                   )}
                                 </TableCell>
-                                <TableCell className="text-xs font-bold text-[#87B73C] text-right">
+                                <TableCell className="text-[10px] sm:text-xs font-bold text-[#87B73C] text-right whitespace-nowrap">
                                   {formatNumber(
                                     schedule.reduce((s, r) => s + r.principal, 0)
                                   )}
                                 </TableCell>
-                                <TableCell className="text-xs font-bold text-[#87B73C] text-right">
+                                <TableCell className="text-[10px] sm:text-xs font-bold text-[#87B73C] text-right whitespace-nowrap">
                                   {formatNumber(
                                     schedule.reduce((s, r) => s + r.interest, 0)
                                   )}
                                 </TableCell>
-                                <TableCell className="text-xs text-white/50 text-right">
+                                <TableCell className="text-[10px] sm:text-xs text-white/50 text-right hidden md:table-cell">
                                   0.00
                                 </TableCell>
                               </TableRow>
@@ -922,7 +922,7 @@ export default function EMICalculator() {
                               <TableRow>
                                 <TableCell
                                   colSpan={7}
-                                  className="text-center text-xs font-bold text-[#1C1D62] py-3 tracking-wider"
+                                  className="text-center text-[10px] sm:text-xs font-bold text-[#1C1D62] py-3 tracking-wider"
                                 >
                                   ***END OF REPORT***
                                 </TableCell>

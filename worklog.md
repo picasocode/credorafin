@@ -1656,3 +1656,32 @@ Stage Summary:
 - Note: FloatingEMIButton (separate fixed widget, "EMI CALC" pill at right edge of viewport) visually overlaps the right edge of the hero image — this is an intended page-level floating widget, NOT one of the 3 HUD overlay cards being verified. Not a regression.
 - Screenshots saved at /home/z/my-project/verify-hero-clean-shots/ (8 PNG files, ~5 MB total) for visual reference
 - Conclusion: The 3 HUD overlay cards have been successfully removed from the hero slide image. The hero now displays a clean plain image with all expected chrome (badge/heading/subtitle/CTAs/tabs) intact. Task 6-MULTI (Task O) removal is verified complete and effective — the discrepancy noted in the earlier verify-styling task (which saw the cards still rendering) is no longer reproducible.
+
+---
+Task ID: hero-buttons-emi-responsive
+Agent: main (Z.ai Code)
+Task: Fix hero section button links (not working) and make EMI Calculator responsive on mobile
+
+Work Log:
+- Inspected home page with agent-browser (iPhone 14 viewport). Found:
+  (1) Hero buttons called `document.getElementById("contact")?.scrollIntoView()` but there is NO #contact section on the home page (sections are: why-us, what-we-do, key-numbers, testimonial, cta, blog-preview). Contact form lives at /contact route. So buttons did nothing.
+  (2) EMI Calculator amortization table had 7 columns (S.No, Due Date, Opening Principal, Installment, Principal, Interest, Closing Principal) all forced visible — caused horizontal overflow on mobile (table was 640px wide vs 390px viewport).
+- Fix 1 — Hero.tsx: Imported `useRouter` from next/navigation. Replaced both button onClick handlers: `document.getElementById("contact")?.scrollIntoView(...)` → `router.push("/contact")`. Also made buttons mobile-friendly: `flex-col sm:flex-row`, `h-11 sm:h-10` (bigger touch target on mobile), `w-full sm:w-auto` (full-width on mobile). Verified: clicking "Build Finance" and "Contact us" both navigate to http://localhost:3000/contact.
+- Fix 2 — EMICalculator.tsx amortization table:
+  * Hid "Opening Principal" and "Closing Principal" columns on mobile via `hidden md:table-cell` (on both TableHead and TableCell, plus the Totals row cells).
+  * Shortened column header labels: "Serial No." → "S.No", "Opening Principal INR" → "Opening Principal", "Installment Amount INR" → "Installment", etc.
+  * Reduced font on mobile: `text-[10px] sm:text-xs` for all headers and cells.
+  * Added `whitespace-nowrap` to all cells to prevent awkward wrapping.
+  * Tightened cell padding on mobile: `[&_th]:px-1.5 [&_td]:px-1.5 sm:[&_th]:px-2 sm:[&_td]:px-2`.
+  * Removed forced `min-w-[640px]` so table auto-sizes to fit viewport.
+- Verified table dimensions via DOM eval: table width 334px < viewport 390px → fits with no overflow. 5 columns visible on mobile (S.No, Due Date, Installment, Principal, Interest), 7 on desktop.
+- VLM-verified mobile: "table fits within the screen width... all columns and data fully visible and readable... good mobile responsiveness."
+- VLM-verified desktop: all 7 columns render correctly, no regressions.
+- Lint: no new errors in Hero.tsx or EMICalculator.tsx (25 pre-existing errors in admin pages, unrelated).
+
+Stage Summary:
+- Hero buttons FIXED: both CTA buttons now navigate to /contact route (was a no-op scroll to non-existent #contact).
+- Hero buttons made mobile-friendly: stack vertically, full-width, taller touch target on mobile; side-by-side on sm+.
+- EMI Calculator amortization table FIXED for mobile: 7 cols → 5 cols on mobile (Opening/Closing Principal hidden until md breakpoint), smaller font + padding, auto-width. No horizontal overflow.
+- Desktop layout preserved: all 7 columns still show on md+ screens.
+- Verified end-to-end via agent-browser on both iPhone 14 (390px) and desktop (1280px) viewports.

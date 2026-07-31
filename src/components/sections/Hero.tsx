@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import {
@@ -135,6 +136,7 @@ const itemVariants = {
 };
 
 export default function Hero() {
+  const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [slides, setSlides] = useState<PublicHeroSlide[]>(DEFAULT_SLIDES);
   const [loading, setLoading] = useState(true);
@@ -283,12 +285,12 @@ export default function Hero() {
             </AnimatePresence>
 
             {/* ACTION BUTTONS */}
-            <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 w-full z-20 mb-2">
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full z-20 mb-2 max-w-md sm:max-w-none mx-auto">
               <Button
-                onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
-                className="h-10 px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg hover:shadow-[#1A2255]/10 active:scale-[0.98] cursor-pointer group"
+                onClick={() => router.push("/contact")}
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg hover:shadow-[#1A2255]/10 active:scale-[0.98] cursor-pointer group w-full sm:w-auto"
               >
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center justify-center gap-1.5">
                   {slide.cta1}
                   <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
@@ -296,10 +298,10 @@ export default function Hero() {
 
               <Button
                 variant="outline"
-                onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
-                className="h-10 px-7 rounded-full text-[12px] font-bold border-[#304AC0] bg-white text-[#1C1D62] hover:bg-[#F0F4FF] hover:text-[#1A2255] hover:border-[#1A2255] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer"
+                onClick={() => router.push("/contact")}
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#304AC0] bg-white text-[#1C1D62] hover:bg-[#F0F4FF] hover:text-[#1A2255] hover:border-[#1A2255] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
                   <ArrowUpRight className="w-4 h-4 text-[#304AC0] stroke-[2.5]" />
                 </span>
