@@ -1,0 +1,96 @@
+# ============================================================================
+# CredoraFin — UI-only auto-deploy on push to main
+# ----------------------------------------------------------------------------
+# Triggers whenever you push to `main`. SSHes into the server and runs
+# deploy-ui.sh, which rebuilds the UI WITHOUT touching the database.
+#
+# REQUIRED GitHub repo secrets (Settings → Secrets and variables → Actions):
+#   SSH_HOST          server IP or hostname (e.g. 13.42.5.10)
+#   SSH_USER          ssh user with sudo (e.g. ubuntu)
+#   SSH_PRIVATE_KEY   private key matching the user's ~/.ssh/authorized_keys
+#   SSH_PORT          (optional) ssh port, default 22
+#   PROJECT_PATH      absolute path to the repo on the server (e.g. /home/ubuntu/credorafin)
+#
+# To skip a deploy for a particular commit, include [skip deploy] or
+# [cd skip] anywhere in the commit message.
+# ============================================================================
+name: UI Deploy
+
+on:
+  push:
+    branches: [main]
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+# Cancel any in-flight run for the same ref when a new push lands
+concurrency:
+  group: ui-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Only run on pushes that actually contain code (not [skip deploy])
+    if: ${{ !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[cd skip]') }}
+
+    steps:
+      - name: Checkout (for reference / CHANGELOG detection)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect schema changes
+        id: schema
+        run: |
+          if git diff --name-only HEAD^ HEAD | grep -q '^prisma/schema.prisma$'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "⚠️  prisma/schema.prisma changed — UI-only deploy is NOT enough."
+            echo "   Run ./deploy.sh manually on the server to apply DB changes."
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "✓ No schema changes — safe for UI-only deploy."
+          fi
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.SSH_PORT || '22' }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Run UI-only deploy on server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          PROJECT_PATH: ${{ secrets.PROJECT_PATH }}
+          SCHEMA_CHANGED: ${{ steps.schema.outputs.changed }}
+        run: |
+          set -euo pipefail
+          echo "→ Connecting to ${SSH_USER}@${SSH_HOST}:${SSH_PORT} → ${PROJECT_PATH}"
+
+          if [ "$SCHEMA_CHANGED" = "true" ]; then
+            echo "::warning::prisma/schema.prisma was modified in this push. Skipping auto-deploy to avoid desync. Run ./deploy.sh manually on the server."
+            exit 0
+          fi
+
+          ssh -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" \
+            "cd ${PROJECT_PATH} && git pull --ff-only && ./deploy-ui.sh"
+
+      - name: Verify site is up
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          sleep 3
+          CODE=$(ssh -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" \
+            "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/health || echo 000")
+          echo "Health check: $CODE"
+          if [ "$CODE" = "200" ]; then
+            echo "✅ Deploy verified — app is healthy"
+          else
+            echo "::error::Health check returned $CODE — check pm2 logs on the server"
+            exit 1
+          fi
