@@ -90,6 +90,38 @@ step "Generating Prisma client (NO db push — database untouched)"
 bunx prisma generate
 ok "prisma client generated"
 
+# ── 3b. Fix source file permissions ──────────────────────────────────────────
+# Git preserves the permissions a file had when it was first committed. New
+# route files created with 664 (rw-rw-r--) can be unreadable by the build
+# process if it runs as a different user, causing routes to silently not
+# register → 404 in production. Force all source files to be world-readable.
+step "Fixing source file permissions"
+chmod -R o+rX src 2>/dev/null && ok "src/ readable" || warn "chmod src/ failed"
+chmod -R o+rX prisma 2>/dev/null && ok "prisma/ readable" || warn "chmod prisma/ failed"
+chmod -R o+rX public 2>/dev/null && ok "public/ readable" || warn "chmod public/ failed"
+
+# Verify critical route files exist + are readable (catches git pull issues)
+step "Verifying critical route files exist"
+CRITICAL_ROUTES=(
+  "src/app/api/admin/upload/route.ts"
+  "src/app/api/admin/brochures/upload/route.ts"
+  "src/app/api/admin/brochures/route.ts"
+  "src/app/api/admin/hero-slides/route.ts"
+  "src/app/api/admin/products/route.ts"
+)
+ROUTES_OK=1
+for route in "${CRITICAL_ROUTES[@]}"; do
+  if [ -f "$route" ] && [ -r "$route" ]; then
+    ok "  ✓ $route"
+  else
+    warn "  ✖ $route — MISSING or unreadable!"
+    ROUTES_OK=0
+  fi
+done
+if [ "$ROUTES_OK" != "1" ]; then
+  die "Critical route files are missing! Run: git pull --ff-only && git status"
+fi
+
 # ── 4. Build ─────────────────────────────────────────────────────────────────
 # CRITICAL: Clean .next/ before building. Turbopack's incremental cache can
 # miss new route files (e.g. a new /api/admin/brochures/upload/route.ts was
@@ -104,6 +136,29 @@ ok ".next/ cleaned"
 step "Building Next.js (standalone output)"
 bun run build
 ok "build complete"
+
+# ── 4b. Verify routes are registered in the compiled build ───────────────────
+# After a clean build, check that the brochure upload route actually made it
+# into the route manifest. If it didn't, the build silently skipped it.
+step "Verifying routes registered in build output"
+ROUTES_MANIFEST=".next/server/routes-manifest.json"
+if [ -f "$ROUTES_MANIFEST" ]; then
+  if grep -q "brochures/upload" "$ROUTES_MANIFEST" 2>/dev/null; then
+    ok "  ✓ /api/admin/brochures/upload registered in build"
+  else
+    warn "  ✖ /api/admin/brochures/upload NOT in routes manifest!"
+    warn "    The route file exists but the build didn't pick it up."
+    warn "    Check: ls -la src/app/api/admin/brochures/upload/route.ts"
+    warn "    Check: head -5 src/app/api/admin/brochures/upload/route.ts"
+  fi
+  if grep -q "admin/upload" "$ROUTES_MANIFEST" 2>/dev/null; then
+    ok "  ✓ /api/admin/upload registered in build"
+  else
+    warn "  ✖ /api/admin/upload NOT in routes manifest!"
+  fi
+else
+  warn "routes-manifest.json not found — cannot verify route registration"
+fi
 
 # ── 5. Copy static assets into standalone ────────────────────────────────────
 step "Syncing static assets into .next/standalone/"
