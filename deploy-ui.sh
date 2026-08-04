@@ -91,6 +91,16 @@ bunx prisma generate
 ok "prisma client generated"
 
 # ── 4. Build ─────────────────────────────────────────────────────────────────
+# CRITICAL: Clean .next/ before building. Turbopack's incremental cache can
+# miss new route files (e.g. a new /api/admin/brochures/upload/route.ts was
+# added but the cached route manifest didn't pick it up → 404 in production
+# even though the file exists on disk). A clean build guarantees every route
+# file is registered. This adds ~10-15s to the deploy but eliminates an
+# entire class of "works on my machine but 404s on server" bugs.
+step "Cleaning .next/ build cache (prevents stale route manifests)"
+rm -rf .next
+ok ".next/ cleaned"
+
 step "Building Next.js (standalone output)"
 bun run build
 ok "build complete"
