@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
-/** Shape returned by GET /api/hero-slides (also used for the local fallback). */
+
 interface PublicHeroSlide {
   id: string;
   badge: string;
