@@ -141,8 +141,8 @@ export const products: ProductData[] = [
     icon: "Globe",
     color: "#1C1D62",
     products: [
-      { name: "Export Finance", desc: "Comprehensive support for managing export orders, production costs, and receivables. End-to-end funding from order receipt to export realization.", features: ["Pre & post-shipment funding", "Letter of Credit backing", "Export receivables financing", "Compliance support"] },
-      { name: "Import Finance", desc: "Financing to manage timely payments to overseas suppliers. Ensure your import supply chain runs smoothly without cash flow disruption.", features: ["LC issuance & discounting", "Buyer's credit facility", "Supplier payment management", "Forex Risk management"], subProducts: [
+      { name: "Import Finance", desc: "Financing to manage timely payments to overseas suppliers. Ensure your import supply chain runs smoothly without cash flow disruption.", features: ["LC issuance & discounting", "Buyer's credit facility", "Supplier payment management", "Forex Risk management"] },
+      { name: "Export Finance", desc: "Comprehensive support for managing export orders, production costs, and receivables. End-to-end funding from order receipt to export realization.", features: ["Pre & post-shipment funding", "Letter of Credit backing", "Export receivables financing", "Compliance support"], subProducts: [
         { name: "Pre-Shipment Finance", desc: "Funding based on purchase orders to manage production, packaging, and logistics costs before shipment. Ensures you never turn down an export order due to working capital constraints.", features: ["Against confirmed export orders/LC", "Fund production & packaging", "Up to 90% of order value", "Competitive Forex rates"] },
         { name: "Post-Shipment Finance", desc: "Liquidity support after goods are shipped, until export payments are received. Bridge the gap between shipment and realization.", features: ["Against shipping documents", "Up to 90% of invoice value", "FCY & INR options available", "Competitive pricing"] },
       ] },
