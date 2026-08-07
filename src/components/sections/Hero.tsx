@@ -198,7 +198,7 @@ export default function Hero() {
   }, [slides.length]);
 
   useEffect(() => {
-    timerRef.current = setInterval(goNext, 8500);
+    timerRef.current = setInterval(goNext, 5000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
