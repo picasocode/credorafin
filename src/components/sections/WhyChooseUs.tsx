@@ -9,12 +9,12 @@ const points = [
   {
     icon: ShieldCheck,
     title: "Disciplined Pre-Underwriting",
-    desc: "We prepare your profile before submission, ensuring higher approval rates and fewer rejections.",
+    desc: "We analyze your profile before submission, ensuring higher approval rates and fewer rejections.",
   },
   {
     icon: Landmark,
     title: "Access to 70+ Banks & NBFCs",
-    desc: "A wide network of financial institutions means better terms and the right fit for your business.",
+    desc: "A wide network of financial institutions means better terms and best pricing to the right fit for your requirement.",
   },
   {
     icon: Settings,
@@ -65,7 +65,7 @@ export default function WhyChooseUs() {
             We go beyond arranging funds
           </h2>
           <p className="mt-5 text-lg text-[#718096] leading-relaxed">
-            We prepare your profile, structure your application, and connect you with lenders who are the right fit for your business.
+            We analyze your profile, structure your application, and connect you with lenders who are the right fit for your business.
           </p>
         </motion.div>
 
