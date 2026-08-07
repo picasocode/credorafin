@@ -90,7 +90,7 @@ export const products: ProductData[] = [
     icon: "Link2",
     color: "#13277E",
     products: [
-      { name: "Invoice Discounting — Sales and Purchase", desc: "Convert outstanding invoices into immediate working capital. Get up to 100% of invoice value within 12–24 hours of submission.", features: ["Up to 100% advance", "12–24 hour disbursal", "Sales & purchase invoice support", "Off-balance-sheet option"] },
+      { name: "Invoice Discounting — Sales and Purchase", desc: "Convert outstanding invoices into immediate liquidity. Get up to 100% of invoice value within 12–24 hours of submission.", features: ["Up to 100% advance", "12–24 hour disbursal", "Sales & purchase invoice support", "Off-balance-sheet option"] },
       { name: "Payable Finance", desc: "Manage and optimize your supplier payment cycles while preserving cash flow. Extend payment terms without straining supplier relationships.", features: ["Extended payment terms", "Supplier paid on time", "Preserved working capital", "Improved supplier relations"] },
       { name: "Vendor Finance", desc: "Enable vendors to receive early payments against their invoices. Strengthen your supply chain by supporting vendor liquidity.", features: ["Early vendor payments", "Strengthened supply chain", "Flexible discount rates", "Automated processing"] },
       { name: "Channel Finance", desc: "Funding support for inventory and stocks for channel partners. Enable distributors and dealers to maintain adequate stock levels.", features: ["Distributor/dealer funding", "Inventory-based limits", "Seasonal flexibility", "Multi-channel support"] },
@@ -106,10 +106,10 @@ export const products: ProductData[] = [
       "No additional collateral required for most products",
     ],
     eligibility: [
-      { label: "Business Type", desc: "Manufacturing, trading, or services companies with regular invoicing to corporate or government." },
+      { label: "Business Type", desc: "Manufacturing, trading, or services with regular invoicing to corporate or government." },
       { label: "Invoice Value", desc: "Minimum invoice value of ₹1 Lakh. Higher limits available for established businesses with strong buyer relationships." },
       { label: "Buyer Profile", desc: "Invoices to external rated companies, corporates or government entities qualify for better terms and higher advance rates." },
-      { label: "Vintage", desc: "Minimum 2 years of business operation with consistent revenue and a track record of timely invoice settlements." },
+      { label: "Vintage", desc: "Minimum 3 years of business operation with consistent revenue and a track record of timely invoice settlements." },
     ],
     processSteps: [
       { title: "Requirement Assessment", desc: "Assess your invoices, purchase orders, inventory, and working capital requirements to identify the most suitable supply chain finance solution" },
