@@ -17,7 +17,7 @@ const steps = [
   { icon: FileText, title: "Financial Assessment", num: "02", color: "#13277E", desc: "Deep-dive into your financials and credit profile." },
   { icon: ShieldCheck, title: "Pre-Underwriting", num: "03", color: "#1C1D62", desc: "We prepare and strengthen your application." },
   { icon: MapPin, title: "Lender Mapping", num: "04", color: "#304AC0", desc: "Match your profile to the best-fit lenders." },
-  { icon: FileCheck, title: "Proposal Structuring", num: "05", color: "#13277E", desc: "Professional proposal positioned for approval." },
+  { icon: FileCheck, title: "Proposal Structuring", num: "05", color: "#13277E", desc: "Professional approach." },
   { icon: Banknote, title: "Sanction & Disbursal", num: "06", color: "#1C1D62", desc: "Faster approval with managed follow-ups." },
   { icon: HeadphonesIcon, title: "Client Support Service", num: "07", color: "#87B73C", desc: "Ongoing support beyond disbursal." },
 ];
