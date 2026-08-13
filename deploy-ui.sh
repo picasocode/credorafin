@@ -255,18 +255,28 @@ sync_nginx_if_needed() {
       ok "nginx: /uploads/ alias points to public/uploads/ (correct)"
     fi
 
-    # Fix 2: Add no-cache headers for HTML if missing (prevents stale page content)
-    if ! sudo grep -q 'no-store, must-revalidate' "$NGINX_SITE_FILE" 2>/dev/null; then
-      warn "nginx: missing Cache-Control no-store header — patching in-place"
-      # Add the no-cache headers before the closing brace of each 'location /' block
-      sudo sed -i '/proxy_send_timeout 300s;/{
-        /no-store/!{
-          s|proxy_send_timeout 300s;|proxy_send_timeout 300s;\n\n        # Never cache HTML pages — prevents stale content after deploys\n        add_header Cache-Control "no-store, must-revalidate" always;|g
-        }
-      }' "$NGINX_SITE_FILE"
-      ok "nginx: no-cache headers added"
+    # Fix 2: Add no-cache headers for HTML on EVERY location block that has
+    # proxy_send_timeout (prevents stale HTML → ChunkLoadError after deploys).
+    # NOTE: We must NOT use a single `if ! grep no-store` guard here, because
+    # the certbot-managed file has BOTH HTTP and HTTPS server blocks. If the
+    # HTTP block already has the header, a whole-file grep would skip the
+    # HTTPS block — leaving production (HTTPS) unpatched. Instead, always
+    # run the idempotent sed (per-line /no-store/! guard prevents duplicates).
+    NO_STORE_BEFORE=$(sudo grep -c 'no-store, must-revalidate' "$NGINX_SITE_FILE" 2>/dev/null || echo 0)
+    sudo sed -i '/proxy_send_timeout 300s;/{
+      /no-store/!{
+        s|proxy_send_timeout 300s;|proxy_send_timeout 300s;\n\n        # CRITICAL: Never cache HTML — prevents ChunkLoadError after deploys\n        add_header Cache-Control "no-store, must-revalidate" always;|g
+      }
+    }' "$NGINX_SITE_FILE"
+    NO_STORE_AFTER=$(sudo grep -c 'no-store, must-revalidate' "$NGINX_SITE_FILE" 2>/dev/null || echo 0)
+    PROXY_BLOCKS=$(sudo grep -c 'proxy_send_timeout 300s;' "$NGINX_SITE_FILE" 2>/dev/null || echo 0)
+    if [ "$NO_STORE_AFTER" -ge "$PROXY_BLOCKS" ] && [ "$PROXY_BLOCKS" -gt 0 ]; then
+      ok "nginx: no-store header on all ${PROXY_BLOCKS} proxy location block(s)"
+    elif [ "$NO_STORE_AFTER" -gt "$NO_STORE_BEFORE" ]; then
+      ok "nginx: no-store header added (${NO_STORE_BEFORE} → ${NO_STORE_AFTER}, need ${PROXY_BLOCKS})"
     else
-      ok "nginx: no-cache headers present"
+      warn "nginx: no-store header count ${NO_STORE_AFTER}/${PROXY_BLOCKS} — manual check needed"
+      warn "  check: sudo grep -c 'no-store' $NGINX_SITE_FILE"
     fi
 
     # Test + reload
@@ -340,12 +350,42 @@ else
   warn "health check failed — check: pm2 logs ${APP_NAME}"
 fi
 
-step "Verifying static assets load"
+step "Verifying ALL static chunks load (catches ChunkLoadError)"
+# CRITICAL: This step prevents the #1 post-deploy failure mode —
+# ChunkLoadError. After a redeploy, if the served HTML references a chunk
+# file that doesn't exist on disk (because the build is stale, the .next/
+# dir was partially copied, or PM2 is serving an old process), users see:
+#   "Uncaught ChunkLoadError: Failed to load chunk /_next/static/chunks/abc123.js"
+#   "Loading failed for the <script> with source …/abc123.js"
+# We extract EVERY /_next/static/ reference from the served HTML and curl
+# each one. If any returns non-200, the deploy is broken and we warn loudly.
 HTML="$(curl -s http://127.0.0.1:${APP_PORT}/)"
-CSS_REF="$(printf '%s' "$HTML" | grep -oE '/_next/static/chunks/[a-f0-9]+\.css' | head -1)"
-JS_REF="$(printf '%s' "$HTML" | grep -oE '/_next/static/chunks/[a-f0-9]+\.js' | head -1)"
-[ -n "$CSS_REF" ] && curl -s -o /dev/null -w "CSS  %{http_code}  $CSS_REF\n" "http://127.0.0.1:${APP_PORT}${CSS_REF}"
-[ -n "$JS_REF" ]  && curl -s -o /dev/null -w "JS   %{http_code}  $JS_REF\n"  "http://127.0.0.1:${APP_PORT}${JS_REF}"
+# Extract all unique /_next/static/ URLs (JS chunks, CSS chunks, fonts, media)
+CHUNK_REFS=$(printf '%s' "$HTML" | grep -oE '/_next/static/[^"'"'"' ]+' | sort -u)
+CHUNK_TOTAL=$(printf '%s' "$CHUNK_REFS" | grep -c . || echo 0)
+CHUNK_OK=0
+CHUNK_FAIL=0
+if [ "$CHUNK_TOTAL" -gt 0 ]; then
+  while IFS= read -r ref; do
+    [ -z "$ref" ] && continue
+    CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${APP_PORT}${ref}")
+    if [ "$CODE" = "200" ]; then
+      CHUNK_OK=$((CHUNK_OK + 1))
+    else
+      CHUNK_FAIL=$((CHUNK_FAIL + 1))
+      err "  ✖ ${CODE}  ${ref}"
+    fi
+  done <<< "$CHUNK_REFS"
+  if [ "$CHUNK_FAIL" -eq 0 ]; then
+    ok "all ${CHUNK_TOTAL} chunk references returned 200 ✓"
+  else
+    warn "${CHUNK_FAIL}/${CHUNK_TOTAL} chunk references FAILED — users will see ChunkLoadError!"
+    warn "  This usually means PM2 is serving a stale build or .next/ is incomplete."
+    warn "  Fix: pm2 delete $APP_NAME && pm2 start ecosystem.config.cjs"
+  fi
+else
+  warn "no /_next/static/ references found in served HTML — page may be broken"
+fi
 
 # Verify upload routes respond (401 = route exists & working, 404 = broken)
 UPLOAD_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "http://127.0.0.1:${APP_PORT}/api/admin/upload?bucket=hero-slides")

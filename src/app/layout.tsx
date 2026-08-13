@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import RootShell from "@/components/RootShell";
+import ChunkLoadRecovery from "@/components/ChunkLoadRecovery";
 import { Analytics } from "@/components/Analytics";
 import { JsonLd } from "@/components/JsonLd";
 import { organizationSchema, localBusinessSchema, websiteSchema } from "@/lib/schema";
@@ -127,6 +128,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body className={`${poppins.variable} font-sans antialiased bg-background text-foreground`} suppressHydrationWarning>
+        <ChunkLoadRecovery />
         <RootShell>{children}</RootShell>
         <Toaster />
         <Analytics />
