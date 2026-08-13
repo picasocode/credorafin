@@ -60,7 +60,7 @@ export default function AboutUs() {
             >
               <h3 className="text-xl font-semibold text-[#1C1D62] mb-3">Who We Are</h3>
               <p className="text-[#2D3748] leading-relaxed">
-                Credora Fintech Pvt Ltd is a financial services and advisory firm providing structured funding solutions to businesses and professionals across India.
+                Credora Fintech Pvt Ltd is a fintech services and advisory firm providing structured funding solutions to businesses and professionals across India.
               </p>
               <p className="text-[#2D3748] leading-relaxed mt-3">
                 We specialize in assessing financial positions, structuring funding requirements, and connecting clients with the lenders best aligned to their profile. By combining financial expertise with strong institutional partnerships, we enable efficient access to capital while minimizing delays and rejections.
