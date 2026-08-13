@@ -241,15 +241,40 @@ sync_nginx_if_needed() {
   chmod -R o+rX public 2>/dev/null || true
   chmod -R o+rX public/uploads 2>/dev/null || true
 
-  # Check if config has SSL (certbot-managed) — never overwrite
+  # Check if config has SSL (certbot-managed) — never overwrite the whole file
   if sudo grep -qE 'listen[[:space:]]+443|ssl_certificate[[:space:]]' "$NGINX_SITE_FILE" 2>/dev/null; then
-    # SSL active — just verify alias lines are correct
-    if sudo grep -q 'alias.*public/uploads' "$NGINX_SITE_FILE" 2>/dev/null; then
-      ok "nginx: /uploads/ alias points to public/uploads/ (correct)"
+    # SSL active — patch specific lines in-place instead of overwriting
+
+    # Fix 1: /uploads/ alias path
+    if sudo grep -q 'alias.*\.next/standalone/public/uploads/' "$NGINX_SITE_FILE" 2>/dev/null; then
+      warn "nginx: /uploads/ alias is WRONG — patching in-place"
+      sudo sed -i 's|/.next/standalone/public/uploads/;|/public/uploads/;|g' "$NGINX_SITE_FILE"
+      sudo sed -i 's|__APP_ROOT__/.next/standalone/public/uploads/|__APP_ROOT__/public/uploads/|g' "$NGINX_SITE_FILE"
+      ok "nginx: /uploads/ alias patched"
     else
-      warn "nginx: /uploads/ alias is WRONG — still pointing to .next/standalone/public/uploads/"
-      warn "  Fix: sudo sed -i 's|/.next/standalone/public/uploads/|/public/uploads/|g' $NGINX_SITE_FILE"
-      warn "  Then: sudo nginx -t && sudo systemctl reload nginx"
+      ok "nginx: /uploads/ alias points to public/uploads/ (correct)"
+    fi
+
+    # Fix 2: Add no-cache headers for HTML if missing (prevents stale page content)
+    if ! sudo grep -q 'no-store, must-revalidate' "$NGINX_SITE_FILE" 2>/dev/null; then
+      warn "nginx: missing Cache-Control no-store header — patching in-place"
+      # Add the no-cache headers before the closing brace of each 'location /' block
+      sudo sed -i '/proxy_send_timeout 300s;/{
+        /no-store/!{
+          s|proxy_send_timeout 300s;|proxy_send_timeout 300s;\n\n        # Never cache HTML pages — prevents stale content after deploys\n        add_header Cache-Control "no-store, must-revalidate" always;|g
+        }
+      }' "$NGINX_SITE_FILE"
+      ok "nginx: no-cache headers added"
+    else
+      ok "nginx: no-cache headers present"
+    fi
+
+    # Test + reload
+    if sudo nginx -t 2>/dev/null; then
+      sudo systemctl reload nginx
+      ok "nginx reloaded with patches"
+    else
+      warn "nginx config test failed — check: sudo nginx -t"
     fi
     return 0
   fi
@@ -279,11 +304,32 @@ sync_nginx_if_needed() {
 }
 sync_nginx_if_needed
 
-# ── 8. Reload PM2 (zero-downtime) ────────────────────────────────────────────
-step "Reloading PM2 (zero-downtime)"
-pm2 startOrReload ecosystem.config.cjs --update-env
+# ── 8. Hard restart PM2 (kills stale processes completely) ───────────────────
+# CRITICAL: Do NOT use 'pm2 startOrReload' — it does a zero-downtime reload
+# that can leave the OLD process running alongside the new one. When both
+# processes are alive, nginx round-robins between them, so users see
+# intermittent old content (text changes don't reflect). This is especially
+# common when the process has many restarts (100+).
+#
+# Instead: delete the process entirely, then start fresh. This guarantees
+# only ONE process is running, with the latest build.
+step "Hard-restarting PM2 (kills old process completely)"
+pm2 delete "$APP_NAME" 2>/dev/null || true
+pm2 start ecosystem.config.cjs --update-env
 pm2 save
-ok "app reloaded"
+ok "app started fresh (no stale processes)"
+
+# Verify only ONE process is on port 3000
+sleep 1
+PORT_PIDS=$(ss -tlnp 2>/dev/null | grep ":${APP_PORT} " | grep -oP 'pid=\K[0-9]+' | sort -u | wc -l)
+if [ "$PORT_PIDS" = "1" ]; then
+  ok "exactly 1 process on port ${APP_PORT}"
+elif [ "$PORT_PIDS" = "0" ]; then
+  warn "no process on port ${APP_PORT} — check: pm2 logs ${APP_NAME}"
+else
+  warn "$PORT_PIDS processes on port ${APP_PORT} — stale process detected!"
+  warn "  Run manually: pm2 delete all && pm2 start ecosystem.config.cjs"
+fi
 
 # ── 9. Health + static-asset verification ────────────────────────────────────
 step "Health check"
@@ -315,6 +361,40 @@ else
   warn "POST /api/admin/brochures/upload → $BROCHURE_CODE (expected 401 — route may be broken)"
 fi
 
+# ── 10. Content freshness verification ───────────────────────────────────────
+# Verify the server is actually serving the NEW build, not a stale one.
+# We check that the homepage HTML contains the current build's JS chunk hash
+# (which changes every build). If the hash in the served HTML matches the
+# hash in the built file, the new code is live.
+step "Verifying content freshness (new build is live)"
+BUILD_HASH_FILE=".next/build-manifest.json"
+if [ -f "$BUILD_HASH_FILE" ]; then
+  BUILD_HASH=$(grep -o '"buildId":"[^"]*"' "$BUILD_HASH_FILE" | head -1 | cut -d'"' -f4)
+  SERVED_HASH=$(curl -s "http://127.0.0.1:${APP_PORT}/" | grep -oE '/_next/static/[^"/]+/' | head -1 | sed 's|/_next/static/||;s|/||')
+  if [ -n "$BUILD_HASH" ] && [ -n "$SERVED_HASH" ]; then
+    if echo "$SERVED_HASH" | grep -q "^${BUILD_HASH:0:12}" || echo "$BUILD_HASH" | grep -q "^${SERVED_HASH:0:12}"; then
+      ok "build ID matches — server is serving the NEW build ✅"
+    else
+      warn "build ID mismatch — server may be serving a STALE build!"
+      warn "  built:  $BUILD_HASH"
+      warn "  served: $SERVED_HASH"
+      warn "  Fix: pm2 delete $APP_NAME && pm2 start ecosystem.config.cjs"
+    fi
+  else
+    warn "could not extract build IDs for freshness check"
+  fi
+else
+  warn "build-manifest.json not found — skipping freshness check"
+fi
+
+# Show PM2 restart count (high count = instability)
+PM2_RESTARTS=$(pm2 jlist 2>/dev/null | grep -o '"restart_time":[0-9]*' | head -1 | cut -d: -f2)
+if [ -n "$PM2_RESTARTS" ] && [ "$PM2_RESTARTS" -gt 20 ]; then
+  warn "PM2 restart count is $PM2_RESTARTS (high) — consider: pm2 reset $APP_NAME"
+else
+  ok "PM2 restart count: ${PM2_RESTARTS:-0}"
+fi
+
 cat <<EOF
 
   ┌──────────────────────────────────────────────────────────────┐
@@ -325,5 +405,7 @@ cat <<EOF
   │                                                                │
   │  Upload dirs: public/uploads/{brochures,hero-slides,...}       │
   │  Uploads are persistent — safe across rebuilds.                │
+  │  PM2: hard-restarted (no stale processes)                      │
+  │  Cache: no-store on HTML (changes reflect immediately)         │
   └──────────────────────────────────────────────────────────────┘
 EOF
