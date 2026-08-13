@@ -246,7 +246,7 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-4">
                 <p className="text-[#2D3748] leading-relaxed">
-                  Credora Fintech Pvt Ltd is a financial services and advisory
+                  Credora Fintech Pvt Ltd is a fintech services and advisory
                   firm providing structured funding solutions to businesses and
                   professionals across India. We specialize in assessing financial
                   positions, structuring funding requirements, and connecting
