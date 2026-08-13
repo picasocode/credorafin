@@ -55,16 +55,16 @@ export default function ProcessFlow() {
         <div className="hidden lg:block">
           {/* Top row — Steps 1–4 */}
           <div className="relative">
-            <div className="grid grid-cols-4 gap-6">
+            <div className="grid grid-cols-4 gap-6 items-stretch">
               {steps.slice(0, 4).map((step, i) => (
                 <motion.div
                   key={i}
-                  className="relative group"
+                  className="relative group h-full"
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
                 >
-                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#304AC0]/20 h-full">
+                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#304AC0]/20 h-full flex flex-col">
                     <div className="flex items-center gap-3 mb-3">
                       <div
                         className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -77,7 +77,7 @@ export default function ProcessFlow() {
                       </span>
                     </div>
                     <h4 className="text-base font-semibold text-[#1C1D62] mb-2">{step.title}</h4>
-                    <p className="text-sm text-[#718096] leading-relaxed">{step.desc}</p>
+                    <p className="text-sm text-[#718096] leading-relaxed flex-grow">{step.desc}</p>
                   </div>
                   {i < 3 && (
                     <div className="absolute top-1/2 -right-3 translate-x-1/2 -translate-y-1/2 z-10">
@@ -118,17 +118,17 @@ export default function ProcessFlow() {
 
           {/* Bottom row — Steps 5–7 */}
           <div className="relative">
-            <div className="grid grid-cols-4 gap-6">
+            <div className="grid grid-cols-4 gap-6 items-stretch">
               <div />
               {steps.slice(4).map((step, i) => (
                 <motion.div
                   key={i + 4}
-                  className="relative group"
+                  className="relative group h-full"
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 1.5 + i * 0.15 }}
                 >
-                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#304AC0]/20 h-full">
+                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#304AC0]/20 h-full flex flex-col">
                     <div className="flex items-center gap-3 mb-3">
                       <div
                         className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -141,7 +141,7 @@ export default function ProcessFlow() {
                       </span>
                     </div>
                     <h4 className="text-base font-semibold text-[#1C1D62] mb-2">{step.title}</h4>
-                    <p className="text-sm text-[#718096] leading-relaxed">{step.desc}</p>
+                    <p className="text-sm text-[#718096] leading-relaxed flex-grow">{step.desc}</p>
                   </div>
                   {i < 2 && (
                     <div className="absolute top-1/2 -right-3 translate-x-1/2 -translate-y-1/2 z-10">
@@ -165,11 +165,11 @@ export default function ProcessFlow() {
         </div>
 
         {/* ── Tablet: 2-column grid ── */}
-        <div className="hidden md:grid lg:hidden grid-cols-2 gap-5">
+        <div className="hidden md:grid lg:hidden grid-cols-2 gap-5 items-stretch">
           {steps.map((step, i) => (
             <motion.div
               key={i}
-              className="bg-white rounded-2xl p-5 border border-[#E8ECF0] shadow-sm"
+              className="bg-white rounded-2xl p-5 border border-[#E8ECF0] shadow-sm flex flex-col h-full"
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.4, delay: 0.2 + i * 0.1 }}
@@ -186,7 +186,7 @@ export default function ProcessFlow() {
                 </span>
               </div>
               <h4 className="text-sm font-semibold text-[#1C1D62] mb-1">{step.title}</h4>
-              <p className="text-xs text-[#718096] leading-relaxed">{step.desc}</p>
+              <p className="text-xs text-[#718096] leading-relaxed flex-grow">{step.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -196,7 +196,7 @@ export default function ProcessFlow() {
           {steps.map((step, i) => (
             <motion.div
               key={i}
-              className="flex items-start gap-4 relative"
+              className="flex items-stretch gap-4 relative"
               initial={{ opacity: 0, x: -20 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.4, delay: 0.15 + i * 0.1 }}
@@ -218,7 +218,7 @@ export default function ProcessFlow() {
                   />
                 )}
               </div>
-              <div className="pb-8 pt-1">
+              <div className="pb-8 pt-1 flex flex-col justify-start">
                 <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: step.color }}>Step {step.num}</span>
                 <h4 className="text-base font-semibold text-[#1C1D62] mt-0.5">{step.title}</h4>
                 <p className="text-sm text-[#718096] mt-1 leading-relaxed">{step.desc}</p>
