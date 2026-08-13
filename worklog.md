@@ -2351,3 +2351,47 @@ The user can no longer say "UI still same" because the structural layout has bee
 8. **VLM independently confirms** the redesign is "a complete structural overhaul" and "significantly better for a user who wants to know their EMI instantly."
 
 **Files affected:** NONE (pure verification only — no code modified).
+
+---
+Task ID: restore-admin-upload-routes
+Agent: Z.ai Code (main)
+Task: Fix deploy-ui.sh failure "Critical route files are missing!" for src/app/api/admin/upload/route.ts and src/app/api/admin/brochures/upload/route.ts on the AWS deployment server.
+
+Work Log:
+- Read /home/z/my-project/worklog.md (prior context: EMI redesign verification, PM2 stale-process + cache fix).
+- Ran `git status` locally → working tree clean, but verified the two flagged route files DO NOT exist locally either (ls -la returned "No such file or directory").
+- Listed all admin API route files: only 14 routes present; upload/ and brochures/upload/ directories entirely absent.
+- Searched codebase for references to the missing endpoints:
+    * src/components/admin/ImageUploader.tsx:69 → POST /api/admin/upload?bucket=<bucket>
+    * src/app/admin/dashboard/page.tsx:516 → DELETE /api/admin/brochures/upload?slug=<slug>
+    * src/app/admin/dashboard/page.tsx:993 → POST /api/admin/brochures/upload
+  → Confirmed the files ARE genuinely needed (not a stale script).
+- Checked worklog line 1889: a prior task HAD created and verified src/app/api/admin/upload/route.ts (3599 bytes) — so the files existed before and were lost.
+- Ran `git log --all --full-history -- <path>` for both files:
+    * upload/route.ts touched by: 5e0e641, 6a819c0, 71b2bd8, 9df6f4a
+    * brochures/upload/route.ts touched by: 4274ebc, 9df6f4a
+- Ran `git ls-files <paths>` → empty (NOT tracked at HEAD).
+- Ran `git show --stat 9df6f4a | grep upload` → the commit "fix: add source file permission check + route registration verification" DELETED both files:
+    * src/app/api/admin/brochures/upload/route.ts | 165 ----------------------------
+    * src/app/api/admin/upload/route.ts           | 116 -------------------
+  ROOT CAUSE: 9df6f4a accidentally deleted the very route files its own verification logic checks for.
+- Verified files exist at parent commit 9df6f4a^ (= 5e1910c): 116 + 165 lines (matches deletion stats exactly).
+- Recovered full content via `git show 9df6f4a^:src/app/api/admin/upload/route.ts` and `git show 9df6f4a^:src/app/api/admin/brochures/upload/route.ts`.
+- Verified all dependencies of the recovered files still exist in current codebase:
+    * BrochureFile model in prisma/schema.prisma (id, slug, fileName, originalName, mimeType, size, uploadedBy, createdAt, updatedAt) ✓
+    * verifyAdminSession exported from src/lib/admin-auth.ts ✓
+    * db exported from src/lib/db.ts ✓
+    * /api/brochure/download/[slug] route directory exists ✓
+- Wrote both files back to working tree (byte-for-byte identical to 9df6f4a^ versions).
+- Set permissions chmod 755 on both (matches sibling brochures/route.ts which is -rwxr-xr-x).
+- Re-ran the deploy-ui.sh CRITICAL_ROUTES check → all 5 routes now ✓ present + readable.
+- Ran `bun run lint`: 25 pre-existing problems, NONE in the restored files (grep for 'admin/upload/route' and 'brochures/upload/route' returned empty). Confirmed via git stash that the 25 errors are pre-existing in admin/dashboard/page.tsx + admin/login/page.tsx (unrelated to this fix).
+- Committed as 24200ea "fix: restore admin upload routes accidentally deleted in 9df6f4a" (2 files, 281 insertions).
+- Pushed to origin/main.
+
+Stage Summary:
+- **Root cause identified:** Commit 9df6f4a ("fix: add source file permission check + route registration verification") accidentally deleted `src/app/api/admin/upload/route.ts` (116 lines) and `src/app/api/admin/brochures/upload/route.ts` (165 lines) — the very files its verification script checks for. This is why deploy-ui.sh fails on the server with "Critical route files are missing!".
+- **Fix applied:** Both files restored verbatim from commit 9df6f4a^ (5e1910c). Committed as 24200ea and pushed to origin/main.
+- **Impact restored:** Admin ImageUploader (hero slides / blog / pages image uploads via POST /api/admin/upload?bucket=) and Brochure PDF upload/delete (POST + DELETE /api/admin/brochures/upload) now have their backend endpoints again.
+- **Verified:** All 5 CRITICAL_ROUTES pass the deploy-ui.sh check; restored files are lint-clean; all prisma/lib/route dependencies intact.
+- **Action needed on server:** `git pull --ff-only && ./deploy-ui.sh` (or the user's usual deploy command). The PM2 hard-restart + clean .next/ build in deploy-ui.sh will then register both routes and the brochure upload 404 will be resolved.
