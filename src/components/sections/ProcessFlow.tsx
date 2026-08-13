@@ -17,7 +17,7 @@ const steps = [
   { icon: FileText, title: "Financial Assessment", num: "02", color: "#13277E", desc: "Deep-dive into your financials and credit profile." },
   { icon: ShieldCheck, title: "Pre-Underwriting", num: "03", color: "#1C1D62", desc: "We prepare and strengthen your application." },
   { icon: MapPin, title: "Lender Mapping", num: "04", color: "#304AC0", desc: "Match your profile to the best-fit lenders." },
-  { icon: FileCheck, title: "Proposal Structuring", num: "05", color: "#13277E", desc: "Professional approach." },
+  { icon: FileCheck, title: "Proposal Structuring", num: "05", color: "#13277E", desc: "Professional approach tailored to lender criteria." },
   { icon: Banknote, title: "Sanction & Disbursal", num: "06", color: "#1C1D62", desc: "Faster approval with managed follow-ups." },
   { icon: HeadphonesIcon, title: "Client Support Service", num: "07", color: "#87B73C", desc: "Ongoing support beyond disbursal." },
 ];
@@ -28,6 +28,7 @@ export default function ProcessFlow() {
 
   return (
     <section id="process" className="py-20 md:py-28 bg-[#F7F9FC] relative overflow-hidden">
+      {/* Background shapes */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-[#304AC0]/[0.02]" />
         <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-[#87B73C]/[0.03]" />
@@ -51,34 +52,40 @@ export default function ProcessFlow() {
           </p>
         </motion.div>
 
-        {/* ── Desktop: Two-row flow with cards ── */}
-        <div className="hidden lg:block">
-          {/* Top row — Steps 1–4 */}
+        {/* ── Desktop: Two-row flow with optimal card sizing ── */}
+        <div className="hidden lg:block space-y-8">
+          {/* Top row — Steps 01–04 */}
           <div className="relative">
             <div className="grid grid-cols-4 gap-6 items-stretch">
               {steps.slice(0, 4).map((step, i) => (
                 <motion.div
                   key={i}
-                  className="relative group h-full"
+                  className="relative group h-full flex flex-col"
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
                 >
-                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#304AC0]/20 h-full flex flex-col">
-                    <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#304AC0]/20 flex-1 flex flex-col min-h-[220px]">
+                    <div className="flex items-start justify-between gap-3 mb-4">
                       <div
                         className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: `${step.color}10` }}
                       >
                         <step.icon className="w-6 h-6" style={{ color: step.color }} />
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: step.color }}>
+                      <span className="text-xs font-bold uppercase tracking-widest pt-1" style={{ color: step.color }}>
                         Step {step.num}
                       </span>
                     </div>
-                    <h4 className="text-base font-semibold text-[#1C1D62] mb-2">{step.title}</h4>
-                    <p className="text-sm text-[#718096] leading-relaxed flex-grow">{step.desc}</p>
+                    <h3 className="text-base font-semibold text-[#1C1D62] mb-2 leading-snug">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm text-[#718096] leading-relaxed flex-1">
+                      {step.desc}
+                    </p>
                   </div>
+
+                  {/* Horizontal Arrow between cards */}
                   {i < 3 && (
                     <div className="absolute top-1/2 -right-3 translate-x-1/2 -translate-y-1/2 z-10">
                       <motion.div
@@ -98,7 +105,7 @@ export default function ProcessFlow() {
               ))}
             </div>
 
-            {/* Connector from row 1 to row 2 */}
+            {/* Connector from Step 04 to Step 05 */}
             <div className="flex justify-end pr-[12.5%] my-4">
               <motion.div
                 className="flex flex-col items-center"
@@ -116,33 +123,38 @@ export default function ProcessFlow() {
             </div>
           </div>
 
-          {/* Bottom row — Steps 5–7 */}
+          {/* Bottom row — Steps 05–07 (Centered layout) */}
           <div className="relative">
-            <div className="grid grid-cols-4 gap-6 items-stretch">
-              <div />
+            <div className="grid grid-cols-3 gap-6 items-stretch max-w-5xl ml-auto">
               {steps.slice(4).map((step, i) => (
                 <motion.div
                   key={i + 4}
-                  className="relative group h-full"
+                  className="relative group h-full flex flex-col"
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 1.5 + i * 0.15 }}
                 >
-                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#304AC0]/20 h-full flex flex-col">
-                    <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#304AC0]/20 flex-1 flex flex-col min-h-[220px]">
+                    <div className="flex items-start justify-between gap-3 mb-4">
                       <div
                         className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: `${step.color}10` }}
                       >
                         <step.icon className="w-6 h-6" style={{ color: step.color }} />
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: step.color }}>
+                      <span className="text-xs font-bold uppercase tracking-widest pt-1" style={{ color: step.color }}>
                         Step {step.num}
                       </span>
                     </div>
-                    <h4 className="text-base font-semibold text-[#1C1D62] mb-2">{step.title}</h4>
-                    <p className="text-sm text-[#718096] leading-relaxed flex-grow">{step.desc}</p>
+                    <h3 className="text-base font-semibold text-[#1C1D62] mb-2 leading-snug">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm text-[#718096] leading-relaxed flex-1">
+                      {step.desc}
+                    </p>
                   </div>
+
+                  {/* Horizontal Arrow between bottom row cards */}
                   {i < 2 && (
                     <div className="absolute top-1/2 -right-3 translate-x-1/2 -translate-y-1/2 z-10">
                       <motion.div
@@ -165,28 +177,28 @@ export default function ProcessFlow() {
         </div>
 
         {/* ── Tablet: 2-column grid ── */}
-        <div className="hidden md:grid lg:hidden grid-cols-2 gap-5 items-stretch">
+        <div className="hidden md:grid lg:hidden grid-cols-2 gap-6 items-stretch">
           {steps.map((step, i) => (
             <motion.div
               key={i}
-              className="bg-white rounded-2xl p-5 border border-[#E8ECF0] shadow-sm flex flex-col h-full"
+              className="bg-white rounded-2xl p-6 border border-[#E8ECF0] shadow-sm flex flex-col h-full"
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.4, delay: 0.2 + i * 0.1 }}
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center justify-between gap-3 mb-3">
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: `${step.color}10` }}
                 >
                   <step.icon className="w-5 h-5" style={{ color: step.color }} />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: step.color }}>
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: step.color }}>
                   Step {step.num}
                 </span>
               </div>
-              <h4 className="text-sm font-semibold text-[#1C1D62] mb-1">{step.title}</h4>
-              <p className="text-xs text-[#718096] leading-relaxed flex-grow">{step.desc}</p>
+              <h3 className="text-base font-semibold text-[#1C1D62] mb-2 leading-snug">{step.title}</h3>
+              <p className="text-xs sm:text-sm text-[#718096] leading-relaxed flex-grow">{step.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -210,7 +222,7 @@ export default function ProcessFlow() {
                 </div>
                 {i < steps.length - 1 && (
                   <motion.div
-                    className="w-0.5 flex-1 min-h-[32px]"
+                    className="w-0.5 flex-1 min-h-[40px]"
                     style={{ backgroundColor: `${step.color}20` }}
                     initial={{ scaleY: 0 }}
                     animate={isInView ? { scaleY: 1 } : {}}
@@ -218,10 +230,16 @@ export default function ProcessFlow() {
                   />
                 )}
               </div>
-              <div className="pb-8 pt-1 flex flex-col justify-start">
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: step.color }}>Step {step.num}</span>
-                <h4 className="text-base font-semibold text-[#1C1D62] mt-0.5">{step.title}</h4>
-                <p className="text-sm text-[#718096] mt-1 leading-relaxed">{step.desc}</p>
+              <div className="pb-8 pt-1 flex flex-col justify-start flex-1 min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: step.color }}>
+                  Step {step.num}
+                </span>
+                <h3 className="text-base font-semibold text-[#1C1D62] mt-0.5 leading-snug break-words">
+                  {step.title}
+                </h3>
+                <p className="text-sm text-[#718096] mt-1 leading-relaxed break-words">
+                  {step.desc}
+                </p>
               </div>
             </motion.div>
           ))}
