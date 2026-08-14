@@ -104,7 +104,7 @@ const whyChooseData = [
   {
     icon: ShieldCheck,
     title: "Disciplined Pre-Underwriting",
-    desc: "We prepare your profile before submission, ensuring higher approval rates.",
+    desc: "We analyze your profile before submission, ensuring higher approval rates.",
   },
   {
     icon: Landmark,
@@ -145,8 +145,8 @@ function WhyChooseUsSection() {
             We go beyond arranging funds
           </h2>
           <p className="mt-5 text-lg text-[#718096] leading-relaxed">
-            We prepare your profile, structure your application, and connect you
-            with lenders who are the right fit for your business.
+            We analyze your profile, structure your application, and connect you
+            with lenders who are the right fit for your requirement.
           </p>
         </SmoothReveal>
 
