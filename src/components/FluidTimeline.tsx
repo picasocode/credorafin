@@ -20,13 +20,13 @@ interface Step {
 }
 
 const steps: Step[] = [
-  { id: 1, title: "Understand Requirement", desc: "Listen to business needs.", icon: Search },
-  { id: 2, title: "Financial Assessment", desc: "Deep-Dive into Your Financials and Credit Profile", icon: ClipboardList },
+  { id: 1, title: "Understand Requirement", desc: "We listen to your business needs and funding goals", icon: Search },
+  { id: 2, title: "Financial Assessment", desc: "Deep-dive into your financials and credit profile.", icon: ClipboardList },
   { id: 3, title: "Pre-Underwriting", desc: "We analyse and strengthen your application.", icon: FileText },
-  { id: 4, title: "Lender Mapping", desc: "Match profile.", icon: Target },
-  { id: 5, title: "Proposal Structuring", desc: "Professional proposal.", icon: Rocket },
-  { id: 6, title: "Sanction & Disbursal", desc: "Faster approval.", icon: CheckCircle },
-  { id: 7, title: "Client Support", desc: "Ongoing support.", icon: HeartHandshake },
+  { id: 4, title: "Lender Mapping", desc: "Match your profile to the best-fit lenders.", icon: Target },
+  { id: 5, title: "Proposal Structuring", desc: "Professional approach tailored to lender criteria.", icon: Rocket },
+  { id: 6, title: "Sanction & Disbursal", desc: "Faster approval with managed follow-ups.", icon: CheckCircle },
+  { id: 7, title: "Client Support", desc: "Ongoing support beyond disbursal.", icon: HeartHandshake },
 ];
 
 export default function FluidTimeline() {
