@@ -226,16 +226,16 @@ export default function Hero() {
       aria-busy={loading}
       className="relative bg-[#FAFBFD] w-full h-[calc(100vh-80px)] max-h-[850px] min-h-[600px] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-10 py-3 font-sans antialiased"
     >
-      {/* BACKGROUND LAYER WITH DEEPER YET SUBTLE CORNER GRADIENTS */}
+      {/* BACKGROUND LAYER WITH LARGER & DEEPER CORNER GRADIENTS */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {/* Subtle Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225506_1px,transparent_1px),linear-gradient(to_bottom,#1A225506_1px,transparent_1px)] bg-[size:2.5rem_2.5rem]" />
 
-        {/* Top-Left Dark Saffron/Orange Gradient (Lower Opacity) */}
-        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-radial from-[#B33F00]/18 via-[#993300]/08 to-transparent blur-3xl pointer-events-none" />
+        {/* Top-Left Darker, Expanded Saffron/Orange Glow */}
+        <div className="absolute -top-40 -left-40 w-[900px] h-[900px] rounded-full bg-radial from-[#9E3000]/45 via-[#6E2100]/20 to-transparent blur-3xl pointer-events-none" />
 
-        {/* Bottom-Right Dark Green Gradient (Lower Opacity) */}
-        <div className="absolute -bottom-32 -right-32 w-[600px] h-[600px] rounded-full bg-radial from-[#002D15]/20 via-[#001F0E]/08 to-transparent blur-3xl pointer-events-none" />
+        {/* Bottom-Right Darker, Expanded Deep Green Glow */}
+        <div className="absolute -bottom-40 -right-40 w-[900px] h-[900px] rounded-full bg-radial from-[#004520]/45 via-[#002B13]/20 to-transparent blur-3xl pointer-events-none" />
 
         {/* Floating Solid Balloons */}
         {balloonConfig.map((b, index) => (
@@ -269,7 +269,7 @@ export default function Hero() {
               <span className="text-[#1A2255] font-bold">{slide.badge}</span>
             </div>
 
-            {/* Typography */}
+            {/* Solid Typography */}
             <h1 className="text-[1.6rem] sm:text-[2.2rem] md:text-[2.5rem] lg:text-[2.8rem] font-black tracking-[-0.03em] leading-[1.1] text-slate-900 flex flex-col justify-center items-center">
               <AnimatePresence mode="wait">
                 <motion.span
