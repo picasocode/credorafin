@@ -84,7 +84,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
   }
 ];
 
-// --- UNIFORM SOLID BRIGHT BALLOON COMPONENT (NO OPACITY FADING) ---
+// --- UNIFORM SOLID BRIGHT BALLOON COMPONENT ---
 interface SolidBalloonProps {
   color: string;
   xPosition: number;
@@ -116,14 +116,12 @@ const SolidBalloon = ({ color, xPosition, delay, duration, size, isWhite }: Soli
       }}
     >
       <svg viewBox="0 0 50 70" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-md">
-        {/* Solid Balloon Body */}
         <path
           d="M25 0C11.19 0 0 11.19 0 25C0 37.8 18.5 50 22.5 53.5C23.9 54.7 26.1 54.7 27.5 53.5C31.5 50 50 37.8 50 25C50 11.19 38.81 0 25 0Z"
           fill={color}
           stroke={isWhite ? "#94A3B8" : "none"}
           strokeWidth={isWhite ? "1.5" : "0"}
         />
-        {/* Crisp Highlight */}
         <path
           d="M12 10C7 16 7 24 10 30"
           stroke="white"
@@ -131,9 +129,7 @@ const SolidBalloon = ({ color, xPosition, delay, duration, size, isWhite }: Soli
           strokeLinecap="round"
           opacity={isWhite ? "0.8" : "0.6"}
         />
-        {/* Knot */}
         <polygon points="22,54 28,54 25,58" fill={color} />
-        {/* String */}
         <path
           d="M25 58 C 22 62, 28 66, 25 70"
           stroke="#475569"
@@ -154,14 +150,13 @@ export default function Hero() {
   const [imgSrc, setImgSrc] = useState<string>(DEFAULT_SLIDES[0].image);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // --- BRIGHT UNIFORM TRICOLOR BALLOONS ---
   const balloonConfig = [
-    { color: "#FF671F", xPosition: 5, delay: 0, duration: 14, size: 44 },                // Bright Saffron
-    { color: "#FFFFFF", xPosition: 22, delay: 3, duration: 18, size: 40, isWhite: true },  // Pure White
-    { color: "#046A38", xPosition: 38, delay: 1, duration: 16, size: 48 },                // Vibrant Green
-    { color: "#FF671F", xPosition: 62, delay: 5, duration: 15, size: 42 },                // Bright Saffron
-    { color: "#FFFFFF", xPosition: 78, delay: 2, duration: 20, size: 46, isWhite: true },  // Pure White
-    { color: "#046A38", xPosition: 92, delay: 4, duration: 17, size: 40 },                // Vibrant Green
+    { color: "#FF671F", xPosition: 5, delay: 0, duration: 14, size: 44 },
+    { color: "#FFFFFF", xPosition: 22, delay: 3, duration: 18, size: 40, isWhite: true },
+    { color: "#046A38", xPosition: 38, delay: 1, duration: 16, size: 48 },
+    { color: "#FF671F", xPosition: 62, delay: 5, duration: 15, size: 42 },
+    { color: "#FFFFFF", xPosition: 78, delay: 2, duration: 20, size: 46, isWhite: true },
+    { color: "#046A38", xPosition: 92, delay: 4, duration: 17, size: 40 },
   ];
 
   const slide = slides[current] ?? slides[0];
@@ -231,16 +226,16 @@ export default function Hero() {
       aria-busy={loading}
       className="relative bg-[#FAFBFD] w-full min-h-[calc(100vh-4rem)] max-h-[1000px] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-10 py-3 sm:py-4 font-sans antialiased"
     >
-      {/* BACKGROUND LAYER WITH SUBTLE GLASSY TRICOLOR CORNER GRADIENTS */}
+      {/* BACKGROUND LAYER WITH LARGER & DARKER TRICOLOR CORNER GRADIENTS */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {/* Subtle Background Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225506_1px,transparent_1px),linear-gradient(to_bottom,#1A225506_1px,transparent_1px)] bg-[size:2.5rem_2.5rem]" />
 
-        {/* Top-Left Brighter Glassy Saffron Gradient Corner */}
-        <div className="absolute -top-16 -left-16 w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-gradient-to-br from-[#FF671F]/25 via-[#FF671F]/10 to-transparent blur-2xl backdrop-blur-md border border-white/20" />
+        {/* Top-Left Darker, Larger Glassy Saffron Gradient Corner */}
+        <div className="absolute -top-28 -left-28 w-[450px] h-[450px] sm:w-[580px] sm:h-[580px] rounded-full bg-gradient-to-br from-[#E65100]/45 via-[#FF671F]/25 to-transparent blur-3xl backdrop-blur-xl border border-white/20" />
 
-        {/* Bottom-Right Brighter Glassy Green Gradient Corner */}
-        <div className="absolute -bottom-16 -right-16 w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-gradient-to-tl from-[#046A38]/25 via-[#046A38]/10 to-transparent blur-2xl backdrop-blur-md border border-white/20" />
+        {/* Bottom-Right Darker, Larger Glassy Green Gradient Corner */}
+        <div className="absolute -bottom-28 -right-28 w-[450px] h-[450px] sm:w-[580px] sm:h-[580px] rounded-full bg-gradient-to-tl from-[#024B27]/45 via-[#046A38]/25 to-transparent blur-3xl backdrop-blur-xl border border-white/20" />
 
         {/* Floating Solid Bright Balloons */}
         {balloonConfig.map((b, index) => (
