@@ -142,6 +142,38 @@ const SolidBalloon = ({ color, xPosition, delay, duration, size, isWhite }: Soli
   );
 };
 
+// --- ASHOKA CHAKRA BACKGROUND SVG COMPONENT ---
+const AshokaChakraWatermark = () => {
+  const spokes = Array.from({ length: 24 });
+  return (
+    <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] pointer-events-none opacity-[0.06] z-0">
+      <motion.svg
+        viewBox="0 0 200 200"
+        className="w-full h-full text-[#000080]"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 120, ease: "linear", repeat: Infinity }}
+      >
+        <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" strokeWidth="6" />
+        <circle cx="100" cy="100" r="18" fill="none" stroke="currentColor" strokeWidth="4" />
+        {spokes.map((_, i) => {
+          const angle = (i * 360) / 24;
+          return (
+            <line
+              key={i}
+              x1="100"
+              y1="100"
+              x2={100 + 92 * Math.cos((angle * Math.PI) / 180)}
+              y2={100 + 92 * Math.sin((angle * Math.PI) / 180)}
+              stroke="currentColor"
+              strokeWidth="2.5"
+            />
+          );
+        })}
+      </motion.svg>
+    </div>
+  );
+};
+
 export default function Hero() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
@@ -226,26 +258,20 @@ export default function Hero() {
       aria-busy={loading}
       className="relative bg-[#FAFBFD] w-full h-[calc(100vh-80px)] max-h-[850px] min-h-[600px] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-10 py-3 font-sans antialiased"
     >
-      {/* BACKGROUND LAYER: HIGH-CONTRAST CORNER GRADIENTS WITH CLEAR WHITE CENTER */}
+      {/* TRICOLOR TOP ACCENT LINE */}
+      <div className="absolute top-0 left-0 right-0 h-1.5 flex z-30 pointer-events-none">
+        <div className="flex-1 bg-[#FF671F]" />
+        <div className="flex-1 bg-white" />
+        <div className="flex-1 bg-[#046A38]" />
+      </div>
+
+      {/* BACKGROUND ELEMENTS & ASHOKA CHAKRA WATERMARK */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Subtle Grid */}
+        {/* Grid Background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225506_1px,transparent_1px),linear-gradient(to_bottom,#1A225506_1px,transparent_1px)] bg-[size:2.5rem_2.5rem]" />
 
-        {/* TOP-LEFT CORNER: Deep Saffron/Orange Sweep */}
-        <div 
-          className="absolute top-0 left-0 w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] pointer-events-none opacity-85"
-          style={{
-            background: "radial-gradient(circle at 0% 0%, #CC4400 0%, #E65500 25%, rgba(230,85,0,0.3) 55%, transparent 75%)"
-          }}
-        />
-
-        {/* BOTTOM-RIGHT CORNER: Deep Emerald Green Sweep */}
-        <div 
-          className="absolute bottom-0 right-0 w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] pointer-events-none opacity-85"
-          style={{
-            background: "radial-gradient(circle at 100% 100%, #005C2B 0%, #008037 25%, rgba(0,128,55,0.3) 55%, transparent 75%)"
-          }}
-        />
+        {/* Ashoka Chakra Motif */}
+        <AshokaChakraWatermark />
 
         {/* Floating Solid Balloons */}
         {balloonConfig.map((b, index) => (
@@ -267,15 +293,15 @@ export default function Hero() {
           <div className="flex flex-col items-center max-w-2xl sm:max-w-3xl w-full tracking-tight shrink-0">
             
             {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] mb-1 border border-white/80 bg-white/90 backdrop-blur-md shadow-xs">
+            <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] mb-2 border border-slate-200 bg-white/90 backdrop-blur-md shadow-xs">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#FF671F]" />
                 <span className="w-2 h-2 rounded-full bg-slate-300 border border-slate-400/50" />
                 <span className="w-2 h-2 rounded-full bg-[#046A38]" />
               </span>
-              <span className="text-[#FF671F] font-extrabold pl-1">Independence Day Special</span>
+              <span className="text-[#FF671F] font-extrabold pl-1">79th Independence Day</span>
               <span className="text-neutral-300">|</span>
-              <Sparkles className="w-3.5 h-3.5 text-[#FF671F]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#000080]" />
               <span className="text-[#1A2255] font-bold">{slide.badge}</span>
             </div>
 
@@ -314,7 +340,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="text-[12px] sm:text-[13.5px] text-slate-700 font-semibold leading-[1.4] max-w-md sm:max-w-lg mt-1 mb-2"
+                className="text-[12px] sm:text-[13.5px] text-slate-600 font-semibold leading-[1.4] max-w-md sm:max-w-lg mt-1 mb-2"
               >
                 {slide.subtitle}
               </motion.p>
@@ -345,35 +371,37 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* EXACTLY PROPORTIONED IMAGE CONTAINER */}
+          {/* TRICOLOR BORDERED HERO IMAGE */}
           <div className="relative w-full max-w-[1100px] h-[180px] sm:h-[220px] md:h-[250px] lg:h-[270px] perspective-[1200px] my-1">
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[18px] border-4 border-white/90 shadow-[0_15px_40px_-12px_rgba(26,34,85,0.14)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden"
+              className="relative w-full h-full rounded-[20px] p-[3px] bg-gradient-to-r from-[#FF671F] via-slate-300 to-[#046A38] shadow-[0_15px_40px_-12px_rgba(26,34,85,0.14)] transition-all duration-300 ease-out overflow-hidden"
             >
-              <AnimatePresence initial={false} mode="popLayout">
-                <motion.div
-                  key={`img-${current}`}
-                  initial={{ opacity: 0, scale: 1.02 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.35 }}
-                  className="relative w-full h-full"
-                >
-                  <Image
-                    src={imgSrc}
-                    alt="Credora Enterprise Funding Platform"
-                    fill
-                    unoptimized
-                    onError={() => setImgSrc(slide.fallbackImage)}
-                    className="object-cover object-center brightness-[0.98]"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/20 via-transparent to-transparent pointer-events-none" />
-                </motion.div>
-              </AnimatePresence>
+              <div className="relative w-full h-full rounded-[17px] overflow-hidden bg-neutral-200">
+                <AnimatePresence initial={false} mode="popLayout">
+                  <motion.div
+                    key={`img-${current}`}
+                    initial={{ opacity: 0, scale: 1.02 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.35 }}
+                    className="relative w-full h-full"
+                  >
+                    <Image
+                      src={imgSrc}
+                      alt="Credora Enterprise Funding Platform"
+                      fill
+                      unoptimized
+                      onError={() => setImgSrc(slide.fallbackImage)}
+                      className="object-cover object-center brightness-[0.98]"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/20 via-transparent to-transparent pointer-events-none" />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -381,7 +409,7 @@ export default function Hero() {
 
       {/* DOCK NAVIGATION STRIP */}
       <div className="w-full max-w-[900px] mx-auto shrink-0 z-30 pt-1 pb-1">
-        <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-[0_4px_16px_-4px_rgba(0,0,0,0.08)] border border-white p-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+        <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-[0_4px_16px_-4px_rgba(0,0,0,0.08)] border border-slate-200 p-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
