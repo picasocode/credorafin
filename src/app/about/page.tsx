@@ -242,7 +242,7 @@ export default function AboutPage() {
                 Who We Are
               </span>
               <h2 className="text-2xl sm:text-3xl font-semibold text-[#1C1D62] mb-6 max-w-xl">
-                A Financial Services & Advisory Firm You Can Rely On
+                A Fintech Services & Advisory Firm You Can Rely On
               </h2>
               <div className="space-y-4">
                 <p className="text-[#2D3748] leading-relaxed">
