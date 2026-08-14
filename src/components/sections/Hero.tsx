@@ -84,16 +84,46 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
   }
 ];
 
-// --- ELEGANT VECTOR BALLOON COMPONENT ---
+// --- ASHOKA CHAKRA BACKGROUND MOTIF ---
+const AshokaChakra = () => (
+  <svg
+    viewBox="0 0 100 100"
+    className="w-[360px] h-[360px] sm:w-[520px] sm:h-[520px] text-[#000080] opacity-[0.07] animate-[spin_90s_linear_infinite] pointer-events-none select-none"
+    fill="currentColor"
+  >
+    <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="2.5" fill="none" />
+    <circle cx="50" cy="50" r="42" stroke="currentColor" strokeWidth="1" fill="none" />
+    <circle cx="50" cy="50" r="7" fill="currentColor" />
+    {Array.from({ length: 24 }).map((_, i) => {
+      const angle = (i * 15 * Math.PI) / 180;
+      const x2 = 50 + 42 * Math.cos(angle);
+      const y2 = 50 + 42 * Math.sin(angle);
+      return (
+        <line
+          key={i}
+          x1="50"
+          y1="50"
+          x2={x2}
+          y2={y2}
+          stroke="currentColor"
+          strokeWidth="1.2"
+        />
+      );
+    })}
+  </svg>
+);
+
+// --- BRIGHT VIBRANT BALLOON COMPONENT ---
 interface MinimalBalloonProps {
   color: string;
   xPosition: number;
   delay: number;
   duration: number;
   size: number;
+  isWhite?: boolean;
 }
 
-const MinimalBalloon = ({ color, xPosition, delay, duration, size }: MinimalBalloonProps) => {
+const MinimalBalloon = ({ color, xPosition, delay, duration, size, isWhite }: MinimalBalloonProps) => {
   return (
     <motion.div
       className="absolute pointer-events-none z-0"
@@ -105,8 +135,8 @@ const MinimalBalloon = ({ color, xPosition, delay, duration, size }: MinimalBall
       initial={{ y: "-15vh", opacity: 0, x: 0 }}
       animate={{
         y: "115vh",
-        opacity: [0, 0.45, 0.45, 0],
-        x: [0, 15, -15, 0], // Gentle swaying motion
+        opacity: [0, 0.85, 0.85, 0], // Increased opacity for bright presence
+        x: [0, 18, -18, 0],
       }}
       transition={{
         duration: duration,
@@ -115,29 +145,31 @@ const MinimalBalloon = ({ color, xPosition, delay, duration, size }: MinimalBall
         repeat: Infinity,
       }}
     >
-      <svg viewBox="0 0 50 70" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-sm">
+      <svg viewBox="0 0 50 70" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-md">
         {/* Balloon Body */}
         <path
           d="M25 0C11.19 0 0 11.19 0 25C0 37.8 18.5 50 22.5 53.5C23.9 54.7 26.1 54.7 27.5 53.5C31.5 50 50 37.8 50 25C50 11.19 38.81 0 25 0Z"
           fill={color}
+          stroke={isWhite ? "#D1D5DB" : "none"}
+          strokeWidth={isWhite ? "1" : "0"}
         />
-        {/* Highlight Curve for Depth */}
+        {/* Highlight Curve */}
         <path
           d="M12 10C7 16 7 24 10 30"
           stroke="white"
-          strokeWidth="2.5"
+          strokeWidth="3"
           strokeLinecap="round"
-          opacity="0.3"
+          opacity={isWhite ? "0.6" : "0.45"}
         />
         {/* Balloon Knot */}
         <polygon points="22,54 28,54 25,58" fill={color} />
         {/* Balloon String */}
         <path
           d="M25 58 C 22 62, 28 66, 25 70"
-          stroke="#A3A3A3"
-          strokeWidth="1"
+          stroke="#64748B"
+          strokeWidth="1.2"
           fill="none"
-          opacity="0.5"
+          opacity="0.6"
         />
       </svg>
     </motion.div>
@@ -152,15 +184,14 @@ export default function Hero() {
   const [imgSrc, setImgSrc] = useState<string>(DEFAULT_SLIDES[0].image);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // --- MINIMAL BALLOONS CONFIGURATION ---
-  // Frame settings: Bigger size (38px - 52px), sparse count (6 balloons total), slow smooth duration (14s - 22s)
+  // --- BRIGHT TRICOLOR BALLOONS CONFIGURATION ---
   const balloonConfig = [
-    { color: "#FF9933", xPosition: 8, delay: 0, duration: 16, size: 44 },   // Saffron Left
-    { color: "#138808", xPosition: 22, delay: 5, duration: 20, size: 38 },  // Emerald Left-Center
-    { color: "#94A3B8", xPosition: 38, delay: 2, duration: 18, size: 48 },  // Minimal Neutral/White Center-Left
-    { color: "#FF9933", xPosition: 62, delay: 7, duration: 15, size: 42 },  // Saffron Center-Right
-    { color: "#138808", xPosition: 78, delay: 1, duration: 22, size: 50 },  // Emerald Right
-    { color: "#CBD5E1", xPosition: 91, delay: 4, duration: 17, size: 40 },  // Minimal Neutral/White Far-Right
+    { color: "#FF671F", xPosition: 6, delay: 0, duration: 15, size: 46 },               // Vibrant Saffron Left
+    { color: "#FFFFFF", xPosition: 20, delay: 4, duration: 19, size: 42, isWhite: true }, // Crisp White Left-Center
+    { color: "#046A38", xPosition: 35, delay: 2, duration: 17, size: 50 },               // Vibrant Green Center-Left
+    { color: "#FF671F", xPosition: 64, delay: 6, duration: 16, size: 44 },               // Vibrant Saffron Center-Right
+    { color: "#FFFFFF", xPosition: 78, delay: 1, duration: 21, size: 48, isWhite: true }, // Crisp White Right
+    { color: "#046A38", xPosition: 92, delay: 3, duration: 18, size: 42 },               // Vibrant Green Far-Right
   ];
 
   const slide = slides[current] ?? slides[0];
@@ -230,16 +261,21 @@ export default function Hero() {
       aria-busy={loading}
       className="relative bg-[#FAFBFD] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
     >
-      {/* BACKGROUND LAYER WITH TOP-TO-BOTTOM BALLOONS */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      {/* BACKGROUND LAYER WITH ASHOKA CHAKRA & VIBRANT BALLOONS */}
+      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
         {/* Grid Background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225504_1px,transparent_1px),linear-gradient(to_bottom,#1A225504_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225506_1px,transparent_1px),linear-gradient(to_bottom,#1A225506_1px,transparent_1px)] bg-[size:3rem_3rem]" />
         
-        {/* Soft Radial Backdrops */}
-        <div className="absolute w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.08] -top-20 -left-20 bg-[#FF9933]" />
-        <div className="absolute w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.07] -bottom-20 -right-20 bg-[#138808]" />
+        {/* Ashoka Chakra Centerpiece Motif */}
+        <div className="absolute top-[22%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-0">
+          <AshokaChakra />
+        </div>
 
-        {/* Floating Minimal Balloons */}
+        {/* Soft Tricolor Ambient Glows */}
+        <div className="absolute w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.12] -top-20 -left-20 bg-[#FF671F]" />
+        <div className="absolute w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.10] -bottom-20 -right-20 bg-[#046A38]" />
+
+        {/* Floating Bright Tricolor Balloons */}
         {balloonConfig.map((b, index) => (
           <MinimalBalloon
             key={index}
@@ -248,6 +284,7 @@ export default function Hero() {
             delay={b.delay}
             duration={b.duration}
             size={b.size}
+            isWhite={b.isWhite}
           />
         ))}
       </div>
@@ -258,20 +295,20 @@ export default function Hero() {
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
             {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] mb-2 border bg-white/90 border-neutral-200 shadow-xs backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] mb-2 border bg-white border-neutral-200/80 shadow-xs backdrop-blur-md">
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#FF9933]" />
-                <span className="w-2 h-2 rounded-full bg-neutral-300" />
-                <span className="w-2 h-2 rounded-full bg-[#138808]" />
+                <span className="w-2 h-2 rounded-full bg-[#FF671F]" />
+                <span className="w-2 h-2 rounded-full bg-slate-300 border border-slate-400/50" />
+                <span className="w-2 h-2 rounded-full bg-[#046A38]" />
               </span>
-              <span className="text-neutral-800 font-semibold pl-1">Independence Day Special</span>
+              <span className="text-[#FF671F] font-extrabold pl-1">Independence Day Special</span>
               <span className="text-neutral-300">|</span>
-              <Sparkles className="w-3.5 h-3.5 text-[#FF9933]" />
-              <span className="text-[#1A2255]">{slide.badge}</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#FF671F]" />
+              <span className="text-[#1A2255] font-bold">{slide.badge}</span>
             </div>
 
-            {/* Typography */}
-            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
+            {/* Typography with High Contrast Colors */}
+            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-slate-900 flex flex-col justify-center items-center">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h1-${current}`}
@@ -279,7 +316,7 @@ export default function Hero() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.45 }}
-                  className="block"
+                  className="block text-slate-900"
                 >
                   {slide.headingWords.slice(0, -1).join(" ")}
                 </motion.span>
@@ -291,7 +328,7 @@ export default function Hero() {
                   animate={{ opacity: 1, width: "auto" }}
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.5, delay: 0.08 }}
-                  className="block text-[#1A2255] relative whitespace-nowrap overflow-hidden pr-1.5"
+                  className="block bg-gradient-to-r from-[#FF5722] via-[#1A2255] to-[#046A38] bg-clip-text text-transparent relative whitespace-nowrap overflow-hidden pr-1.5 font-black"
                 >
                   {slide.headingWords[slide.headingWords.length - 1]}
                 </motion.span>
@@ -305,7 +342,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-neutral-500 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
+                className="text-[13px] sm:text-[15px] text-slate-600 font-semibold leading-[1.55] max-w-lg mt-2 mb-3.5"
               >
                 {slide.subtitle}
               </motion.p>
@@ -326,7 +363,7 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#304AC0] bg-white text-[#1C1D62] hover:bg-[#F0F4FF] hover:text-[#1A2255] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#304AC0] bg-white text-[#1A2255] hover:bg-[#F0F4FF] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
@@ -342,7 +379,7 @@ export default function Hero() {
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-white shadow-[0_25px_60px_-15px_rgba(26,34,85,0.12)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden"
+              className="relative w-full h-full rounded-[24px] border-4 border-white shadow-[0_25px_60px_-15px_rgba(26,34,85,0.14)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
@@ -359,10 +396,10 @@ export default function Hero() {
                     fill
                     unoptimized
                     onError={() => setImgSrc(slide.fallbackImage)}
-                    className="object-cover object-center brightness-[0.97]"
+                    className="object-cover object-center brightness-[0.98]"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/15 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/20 via-transparent to-transparent pointer-events-none" />
                 </motion.div>
               </AnimatePresence>
             </motion.div>
@@ -372,7 +409,7 @@ export default function Hero() {
 
       {/* DOCK NAVIGATION STRIP */}
       <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
-        <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.03)] border border-neutral-200/50 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.05)] border border-neutral-200/80 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -381,7 +418,7 @@ export default function Hero() {
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
                 className={`relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
-                  isActive ? "text-white" : "text-neutral-500 hover:text-[#1A2255]"
+                  isActive ? "text-white" : "text-slate-600 hover:text-[#1A2255]"
                 }`}
               >
                 {isActive && (
@@ -391,7 +428,7 @@ export default function Hero() {
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   />
                 )}
-                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-white" : "text-neutral-400 group-hover:text-[#1A2255]"}`} />
+                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-white" : "text-slate-400 group-hover:text-[#1A2255]"}`} />
                 <span className="whitespace-nowrap truncate z-10">{s.tabLabel}</span>
               </button>
             );
