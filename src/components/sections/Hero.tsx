@@ -84,7 +84,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
   }
 ];
 
-// --- UNIFORM SOLID BRIGHT BALLOON COMPONENT ---
+// --- UNIFORM SOLID BRIGHT BALLOON ---
 interface SolidBalloonProps {
   color: string;
   xPosition: number;
@@ -151,12 +151,12 @@ export default function Hero() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const balloonConfig = [
-    { color: "#FF671F", xPosition: 5, delay: 0, duration: 14, size: 44 },
-    { color: "#FFFFFF", xPosition: 22, delay: 3, duration: 18, size: 40, isWhite: true },
-    { color: "#046A38", xPosition: 38, delay: 1, duration: 16, size: 48 },
-    { color: "#FF671F", xPosition: 62, delay: 5, duration: 15, size: 42 },
-    { color: "#FFFFFF", xPosition: 78, delay: 2, duration: 20, size: 46, isWhite: true },
-    { color: "#046A38", xPosition: 92, delay: 4, duration: 17, size: 40 },
+    { color: "#FF671F", xPosition: 4, delay: 0, duration: 14, size: 40 },
+    { color: "#FFFFFF", xPosition: 20, delay: 3, duration: 18, size: 36, isWhite: true },
+    { color: "#046A38", xPosition: 36, delay: 1, duration: 16, size: 42 },
+    { color: "#FF671F", xPosition: 64, delay: 5, duration: 15, size: 38 },
+    { color: "#FFFFFF", xPosition: 80, delay: 2, duration: 20, size: 40, isWhite: true },
+    { color: "#046A38", xPosition: 94, delay: 4, duration: 17, size: 36 },
   ];
 
   const slide = slides[current] ?? slides[0];
@@ -224,20 +224,20 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-[#FAFBFD] w-full min-h-[calc(100vh-4rem)] max-h-[1000px] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-10 py-3 sm:py-4 font-sans antialiased"
+      className="relative bg-[#FAFBFD] w-full h-[calc(100vh-80px)] max-h-[850px] min-h-[600px] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-10 py-3 font-sans antialiased"
     >
-      {/* BACKGROUND LAYER WITH LARGER & DARKER TRICOLOR CORNER GRADIENTS */}
+      {/* BACKGROUND LAYER WITH PROMINENT DARKER SIDE GRADIENTS */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Subtle Background Grid */}
+        {/* Subtle Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225506_1px,transparent_1px),linear-gradient(to_bottom,#1A225506_1px,transparent_1px)] bg-[size:2.5rem_2.5rem]" />
 
-        {/* Top-Left Darker, Larger Glassy Saffron Gradient Corner */}
-        <div className="absolute -top-28 -left-28 w-[450px] h-[450px] sm:w-[580px] sm:h-[580px] rounded-full bg-gradient-to-br from-[#E65100]/45 via-[#FF671F]/25 to-transparent blur-3xl backdrop-blur-xl border border-white/20" />
+        {/* Left Darker Saffron Gradient */}
+        <div className="absolute top-1/2 -left-32 -translate-y-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-r from-[#FF671F]/50 via-[#FF671F]/25 to-transparent blur-3xl pointer-events-none" />
 
-        {/* Bottom-Right Darker, Larger Glassy Green Gradient Corner */}
-        <div className="absolute -bottom-28 -right-28 w-[450px] h-[450px] sm:w-[580px] sm:h-[580px] rounded-full bg-gradient-to-tl from-[#024B27]/45 via-[#046A38]/25 to-transparent blur-3xl backdrop-blur-xl border border-white/20" />
+        {/* Right Darker Green Gradient */}
+        <div className="absolute top-1/2 -right-32 -translate-y-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-l from-[#046A38]/50 via-[#046A38]/25 to-transparent blur-3xl pointer-events-none" />
 
-        {/* Floating Solid Bright Balloons */}
+        {/* Floating Solid Balloons */}
         {balloonConfig.map((b, index) => (
           <SolidBalloon
             key={index}
@@ -251,13 +251,13 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* MAIN HERO CONTENT - AUTO FIT FRAME */}
-      <div className="relative w-full max-w-[1300px] mx-auto flex-1 flex flex-col items-center justify-center z-10 py-1">
-        <div className="flex flex-col items-center text-center gap-2 sm:gap-3 w-full">
+      {/* MAIN HERO CONTENT */}
+      <div className="relative w-full max-w-[1240px] mx-auto flex-1 flex flex-col items-center justify-center z-10">
+        <div className="flex flex-col items-center text-center gap-2 w-full">
           <div className="flex flex-col items-center max-w-2xl sm:max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* Glassy Tricolor Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] mb-1.5 border border-white/80 bg-white/70 backdrop-blur-md shadow-xs">
+            {/* Pill Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] mb-1 border border-white/80 bg-white/80 backdrop-blur-md shadow-xs">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#FF671F]" />
                 <span className="w-2 h-2 rounded-full bg-slate-300 border border-slate-400/50" />
@@ -269,15 +269,15 @@ export default function Hero() {
               <span className="text-[#1A2255] font-bold">{slide.badge}</span>
             </div>
 
-            {/* Compact Scaled Heading */}
-            <h1 className="text-[1.75rem] sm:text-[2.4rem] md:text-[2.8rem] lg:text-[3.1rem] font-black tracking-[-0.03em] leading-[1.08] text-slate-900 flex flex-col justify-center items-center">
+            {/* Solid Typography - No Gradient Text */}
+            <h1 className="text-[1.6rem] sm:text-[2.2rem] md:text-[2.5rem] lg:text-[2.8rem] font-black tracking-[-0.03em] leading-[1.1] text-slate-900 flex flex-col justify-center items-center">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h1-${current}`}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.35 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3 }}
                   className="block text-slate-900"
                 >
                   {slide.headingWords.slice(0, -1).join(" ")}
@@ -286,11 +286,11 @@ export default function Hero() {
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h2-${current}`}
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: "auto" }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.4, delay: 0.05 }}
-                  className="block bg-gradient-to-r from-[#FF5722] via-[#1A2255] to-[#046A38] bg-clip-text text-transparent relative whitespace-nowrap overflow-hidden pr-1 font-black"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.3, delay: 0.05 }}
+                  className="block text-[#1A2255] font-black"
                 >
                   {slide.headingWords[slide.headingWords.length - 1]}
                 </motion.span>
@@ -304,7 +304,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="text-[12px] sm:text-[14px] text-slate-600 font-semibold leading-[1.45] max-w-md sm:max-w-lg mt-1.5 mb-2.5"
+                className="text-[12px] sm:text-[13.5px] text-slate-600 font-semibold leading-[1.4] max-w-md sm:max-w-lg mt-1 mb-2"
               >
                 {slide.subtitle}
               </motion.p>
@@ -314,7 +314,7 @@ export default function Hero() {
             <div className="flex flex-row items-center justify-center gap-2.5 w-full z-20 mb-1">
               <Button
                 onClick={() => router.push("/contact")}
-                className="h-9 sm:h-9 px-5 sm:px-6 rounded-full text-[11px] sm:text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg active:scale-[0.98] cursor-pointer group"
+                className="h-8.5 px-5 rounded-full text-[11px] sm:text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg active:scale-[0.98] cursor-pointer group"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta1}
@@ -325,7 +325,7 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-9 sm:h-9 px-5 sm:px-6 rounded-full text-[11px] sm:text-[12px] font-bold border-[#304AC0] bg-white/80 backdrop-blur-md text-[#1A2255] hover:bg-[#F0F4FF] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer"
+                className="h-8.5 px-5 rounded-full text-[11px] sm:text-[12px] font-bold border-[#304AC0] bg-white/90 backdrop-blur-md text-[#1A2255] hover:bg-[#F0F4FF] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
@@ -335,13 +335,13 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* COMPACT RESPONSIVE DISPLAY FRAME */}
-          <div className="relative w-full max-w-[1180px] h-[220px] sm:h-[260px] md:h-[300px] lg:h-[330px] perspective-[1200px] my-1">
+          {/* EXACTLY PROPORTIONED IMAGE CONTAINER */}
+          <div className="relative w-full max-w-[1100px] h-[180px] sm:h-[220px] md:h-[250px] lg:h-[270px] perspective-[1200px] my-1">
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[20px] border-4 border-white/90 shadow-[0_20px_50px_-15px_rgba(26,34,85,0.12)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden"
+              className="relative w-full h-full rounded-[18px] border-4 border-white/90 shadow-[0_15px_40px_-12px_rgba(26,34,85,0.14)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
@@ -349,7 +349,7 @@ export default function Hero() {
                   initial={{ opacity: 0, scale: 1.02 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.4 }}
+                  transition={{ duration: 0.35 }}
                   className="relative w-full h-full"
                 >
                   <Image
@@ -369,9 +369,9 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* COMPACT DOCK NAVIGATION STRIP */}
-      <div className="w-full max-w-[950px] mx-auto shrink-0 z-30 pt-1 pb-1">
-        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-[0_4px_16px_-4px_rgba(0,0,0,0.06)] border border-white/90 p-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+      {/* FULLY VISIBLE DOCK NAVIGATION STRIP */}
+      <div className="w-full max-w-[900px] mx-auto shrink-0 z-30 pt-1 pb-1">
+        <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-[0_4px_16px_-4px_rgba(0,0,0,0.08)] border border-white p-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -379,7 +379,7 @@ export default function Hero() {
               <button
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
-                className={`relative flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-[10.5px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
+                className={`relative flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-[10.5px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
                   isActive ? "text-white" : "text-slate-600 hover:text-[#1A2255]"
                 }`}
               >
