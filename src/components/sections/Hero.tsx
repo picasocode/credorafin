@@ -226,16 +226,26 @@ export default function Hero() {
       aria-busy={loading}
       className="relative bg-[#FAFBFD] w-full h-[calc(100vh-80px)] max-h-[850px] min-h-[600px] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-10 py-3 font-sans antialiased"
     >
-      {/* BACKGROUND LAYER WITH LARGER & DEEPER CORNER GRADIENTS */}
+      {/* BACKGROUND LAYER: HIGH-CONTRAST CORNER GRADIENTS WITH CLEAR WHITE CENTER */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {/* Subtle Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225506_1px,transparent_1px),linear-gradient(to_bottom,#1A225506_1px,transparent_1px)] bg-[size:2.5rem_2.5rem]" />
 
-        {/* Top-Left Darker, Expanded Saffron/Orange Glow */}
-        <div className="absolute -top-40 -left-40 w-[900px] h-[900px] rounded-full bg-radial from-[#9E3000]/45 via-[#6E2100]/20 to-transparent blur-3xl pointer-events-none" />
+        {/* TOP-LEFT CORNER: Deep Saffron/Orange Sweep */}
+        <div 
+          className="absolute top-0 left-0 w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] pointer-events-none opacity-85"
+          style={{
+            background: "radial-gradient(circle at 0% 0%, #CC4400 0%, #E65500 25%, rgba(230,85,0,0.3) 55%, transparent 75%)"
+          }}
+        />
 
-        {/* Bottom-Right Darker, Expanded Deep Green Glow */}
-        <div className="absolute -bottom-40 -right-40 w-[900px] h-[900px] rounded-full bg-radial from-[#004520]/45 via-[#002B13]/20 to-transparent blur-3xl pointer-events-none" />
+        {/* BOTTOM-RIGHT CORNER: Deep Emerald Green Sweep */}
+        <div 
+          className="absolute bottom-0 right-0 w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] pointer-events-none opacity-85"
+          style={{
+            background: "radial-gradient(circle at 100% 100%, #005C2B 0%, #008037 25%, rgba(0,128,55,0.3) 55%, transparent 75%)"
+          }}
+        />
 
         {/* Floating Solid Balloons */}
         {balloonConfig.map((b, index) => (
@@ -257,7 +267,7 @@ export default function Hero() {
           <div className="flex flex-col items-center max-w-2xl sm:max-w-3xl w-full tracking-tight shrink-0">
             
             {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] mb-1 border border-white/80 bg-white/80 backdrop-blur-md shadow-xs">
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] mb-1 border border-white/80 bg-white/90 backdrop-blur-md shadow-xs">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#FF671F]" />
                 <span className="w-2 h-2 rounded-full bg-slate-300 border border-slate-400/50" />
@@ -269,7 +279,7 @@ export default function Hero() {
               <span className="text-[#1A2255] font-bold">{slide.badge}</span>
             </div>
 
-            {/* Solid Typography */}
+            {/* Typography */}
             <h1 className="text-[1.6rem] sm:text-[2.2rem] md:text-[2.5rem] lg:text-[2.8rem] font-black tracking-[-0.03em] leading-[1.1] text-slate-900 flex flex-col justify-center items-center">
               <AnimatePresence mode="wait">
                 <motion.span
@@ -304,7 +314,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="text-[12px] sm:text-[13.5px] text-slate-600 font-semibold leading-[1.4] max-w-md sm:max-w-lg mt-1 mb-2"
+                className="text-[12px] sm:text-[13.5px] text-slate-700 font-semibold leading-[1.4] max-w-md sm:max-w-lg mt-1 mb-2"
               >
                 {slide.subtitle}
               </motion.p>
