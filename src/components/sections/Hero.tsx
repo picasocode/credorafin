@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Sparkles, ArrowUpRight } from "lucide-react";
+import { Sparkles, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
@@ -17,10 +17,17 @@ interface PublicHeroSlide {
   cta2: string;
   image: string;
   fallbackImage: string;
+  hudLeft: { metric: string; label: string; status: string };
+  hudRight: { metric: string; label: string; trend: string };
+  hudGraph: { value: string; label: string };
   tabLabel: string;
   tabIcon: string;
+  accent: string;
+  isActive: boolean;
+  sortOrder: number;
 }
 
+/** Fallback slides — rendered immediately and kept if the API is unavailable. */
 const DEFAULT_SLIDES: PublicHeroSlide[] = [
   {
     id: "default-1",
@@ -31,8 +38,14 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     cta2: "Contact us",
     image: "/images/pages/hero-indian-team.png",
     fallbackImage: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1600&q=80",
+    hudLeft: { metric: "+18%", label: "Market Forecast", status: "Optimal Condition" },
+    hudRight: { metric: "9.5% p.a.", label: "Average Interest Rate", trend: "Stable" },
+    hudGraph: { value: "₹50 Crores", label: "Max Liquidity Pool Available" },
     tabLabel: "MSME Loan",
     tabIcon: "Building2",
+    accent: "#1A2255",
+    isActive: true,
+    sortOrder: 0
   },
   {
     id: "default-2",
@@ -43,8 +56,14 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     cta2: "Contact us",
     image: "/images/pages/office-india.png",
     fallbackImage: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80",
+    hudLeft: { metric: "Tier-1", label: "Sourcing Channel", status: "Priority Route" },
+    hudRight: { metric: "₹100 Cr", label: "Maximum Allocation Cap", trend: "High Demand" },
+    hudGraph: { value: "Syndicated", label: "Multi-Bank Framework Active" },
     tabLabel: "Project Finance",
     tabIcon: "TrendingUp",
+    accent: "#1A2255",
+    isActive: true,
+    sortOrder: 1
   },
   {
     id: "default-3",
@@ -55,8 +74,14 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     cta2: "Contact us",
     image: "/images/pages/success-india.png",
     fallbackImage: "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1600&q=80",
+    hudLeft: { metric: "90 Days", label: "Payment Cycle", status: "Discounted Early" },
+    hudRight: { metric: "0 Collateral", label: "Asset-Light Facility", trend: "Flexible" },
+    hudGraph: { value: "₹25 Crores", label: "Annual SCF Limit Available" },
     tabLabel: "Supply Chain Finance",
     tabIcon: "Briefcase",
+    accent: "#1A2255",
+    isActive: true,
+    sortOrder: 2
   },
   {
     id: "default-4",
@@ -67,8 +92,14 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     cta2: "Contact us",
     image: "/images/pages/referral-india.png",
     fallbackImage: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80",
+    hudLeft: { metric: "Tier-1", label: "Commission Slab", status: "Recurring Payouts" },
+    hudRight: { metric: "48 Hours", label: "Payout Cycle", trend: "Transparent" },
+    hudGraph: { value: "Unlimited", label: "Referral Earning Potential" },
     tabLabel: "Referral Partner",
     tabIcon: "Handshake",
+    accent: "#1A2255",
+    isActive: true,
+    sortOrder: 3
   },
   {
     id: "default-5",
@@ -79,99 +110,25 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     cta2: "Contact us",
     image: "/images/pages/handshake-india.png",
     fallbackImage: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=80",
+    hudLeft: { metric: "+150", label: "CIBIL Score Shift", status: "Engine Optimized" },
+    hudRight: { metric: "Rapid", label: "Settlement Cycle Time", trend: "Immediate Plan" },
+    hudGraph: { value: "Restored", label: "Removal of Legacy Default History" },
     tabLabel: "Credit Repair Services",
     tabIcon: "ShieldCheck",
+    accent: "#1A2255",
+    isActive: true,
+    sortOrder: 4
   }
 ];
 
-// --- UNIFORM SOLID BRIGHT BALLOON ---
-interface SolidBalloonProps {
-  color: string;
-  xPosition: number;
-  delay: number;
-  duration: number;
-  size: number;
-  isWhite?: boolean;
-}
-
-const SolidBalloon = ({ color, xPosition, delay, duration, size, isWhite }: SolidBalloonProps) => {
-  return (
-    <motion.div
-      className="absolute pointer-events-none z-0"
-      style={{
-        left: `${xPosition}%`,
-        width: `${size}px`,
-        height: `${size * 1.3}px`,
-      }}
-      initial={{ y: "-15vh", x: 0 }}
-      animate={{
-        y: "115vh",
-        x: [0, 15, -15, 0],
-      }}
-      transition={{
-        duration: duration,
-        delay: delay,
-        ease: "linear",
-        repeat: Infinity,
-      }}
-    >
-      <svg viewBox="0 0 50 70" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-md">
-        <path
-          d="M25 0C11.19 0 0 11.19 0 25C0 37.8 18.5 50 22.5 53.5C23.9 54.7 26.1 54.7 27.5 53.5C31.5 50 50 37.8 50 25C50 11.19 38.81 0 25 0Z"
-          fill={color}
-          stroke={isWhite ? "#94A3B8" : "none"}
-          strokeWidth={isWhite ? "1.5" : "0"}
-        />
-        <path
-          d="M12 10C7 16 7 24 10 30"
-          stroke="white"
-          strokeWidth="3.5"
-          strokeLinecap="round"
-          opacity={isWhite ? "0.8" : "0.6"}
-        />
-        <polygon points="22,54 28,54 25,58" fill={color} />
-        <path
-          d="M25 58 C 22 62, 28 66, 25 70"
-          stroke="#475569"
-          strokeWidth="1.5"
-          fill="none"
-          opacity="0.75"
-        />
-      </svg>
-    </motion.div>
-  );
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } }
 };
 
-// --- ASHOKA CHAKRA BACKGROUND SVG COMPONENT ---
-const AshokaChakraWatermark = () => {
-  const spokes = Array.from({ length: 24 });
-  return (
-    <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] pointer-events-none opacity-[0.06] z-0">
-      <motion.svg
-        viewBox="0 0 200 200"
-        className="w-full h-full text-[#000080]"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 120, ease: "linear", repeat: Infinity }}
-      >
-        <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" strokeWidth="6" />
-        <circle cx="100" cy="100" r="18" fill="none" stroke="currentColor" strokeWidth="4" />
-        {spokes.map((_, i) => {
-          const angle = (i * 360) / 24;
-          return (
-            <line
-              key={i}
-              x1="100"
-              y1="100"
-              x2={100 + 92 * Math.cos((angle * Math.PI) / 180)}
-              y2={100 + 92 * Math.sin((angle * Math.PI) / 180)}
-              stroke="currentColor"
-              strokeWidth="2.5"
-            />
-          );
-        })}
-      </motion.svg>
-    </div>
-  );
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
 };
 
 export default function Hero() {
@@ -181,15 +138,6 @@ export default function Hero() {
   const [loading, setLoading] = useState(true);
   const [imgSrc, setImgSrc] = useState<string>(DEFAULT_SLIDES[0].image);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const balloonConfig = [
-    { color: "#FF671F", xPosition: 4, delay: 0, duration: 14, size: 40 },
-    { color: "#FFFFFF", xPosition: 20, delay: 3, duration: 18, size: 36, isWhite: true },
-    { color: "#046A38", xPosition: 36, delay: 1, duration: 16, size: 42 },
-    { color: "#FF671F", xPosition: 64, delay: 5, duration: 15, size: 38 },
-    { color: "#FFFFFF", xPosition: 80, delay: 2, duration: 20, size: 40, isWhite: true },
-    { color: "#046A38", xPosition: 94, delay: 4, duration: 17, size: 36 },
-  ];
 
   const slide = slides[current] ?? slides[0];
 
@@ -206,7 +154,7 @@ export default function Hero() {
           setCurrent((c) => (c >= data.length ? 0 : c));
         }
       } catch {
-        // Fallback silently
+        // leave DEFAULT_SLIDES in place on any error
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -256,65 +204,56 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-[#FAFBFD] w-full h-[calc(100vh-80px)] max-h-[850px] min-h-[600px] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-10 py-3 font-sans antialiased"
+      className="relative bg-[#FAFBFD] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
     >
-      {/* TRICOLOR TOP ACCENT LINE */}
-      <div className="absolute top-0 left-0 right-0 h-1.5 flex z-30 pointer-events-none">
-        <div className="flex-1 bg-[#FF671F]" />
-        <div className="flex-1 bg-white" />
-        <div className="flex-1 bg-[#046A38]" />
+      {/* BACKGROUND GLOW */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225504_1px,transparent_1px),linear-gradient(to_bottom,#1A225504_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+        
+        <motion.div
+          animate={{ 
+            scale: [1, 1.05, 0.95, 1], 
+            x: [0, 15, -15, 0], 
+            y: [0, -10, 10, 0] 
+          }}
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute w-[700px] h-[700px] rounded-full blur-[140px] opacity-[0.20] top-[-10%] left-[25%]"
+          style={{ background: `radial-gradient(circle, #1A225540 0%, transparent 70%)` }}
+        />
       </div>
 
-      {/* BACKGROUND ELEMENTS & ASHOKA CHAKRA WATERMARK */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Grid Background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225506_1px,transparent_1px),linear-gradient(to_bottom,#1A225506_1px,transparent_1px)] bg-[size:2.5rem_2.5rem]" />
-
-        {/* Ashoka Chakra Motif */}
-        <AshokaChakraWatermark />
-
-        {/* Floating Solid Balloons */}
-        {balloonConfig.map((b, index) => (
-          <SolidBalloon
-            key={index}
-            color={b.color}
-            xPosition={b.xPosition}
-            delay={b.delay}
-            duration={b.duration}
-            size={b.size}
-            isWhite={b.isWhite}
-          />
-        ))}
-      </div>
-
-      {/* MAIN HERO CONTENT */}
-      <div className="relative w-full max-w-[1240px] mx-auto flex-1 flex flex-col items-center justify-center z-10">
-        <div className="flex flex-col items-center text-center gap-2 w-full">
-          <div className="flex flex-col items-center max-w-2xl sm:max-w-3xl w-full tracking-tight shrink-0">
+      {/* MAIN CONTENT AREA */}
+      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col items-center text-center gap-3 w-full"
+        >
+          {/* HEADER TYPOGRAPHY */}
+          <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] mb-2 border border-slate-200 bg-white/90 backdrop-blur-md shadow-xs">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#FF671F]" />
-                <span className="w-2 h-2 rounded-full bg-slate-300 border border-slate-400/50" />
-                <span className="w-2 h-2 rounded-full bg-[#046A38]" />
-              </span>
-              <span className="text-[#FF671F] font-extrabold pl-1">79th Independence Day</span>
+            {/* UPDATED ISO CERTIFIED PILL BADGE */}
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] mb-2 border border-slate-200 bg-white/90 backdrop-blur-md shadow-xs text-[#1A2255]"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#046A38]" />
+              <span className="text-[#046A38] font-extrabold">ISO/IEC 27001:2022 Certified</span>
               <span className="text-neutral-300">|</span>
-              <Sparkles className="w-3.5 h-3.5 text-[#000080]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#1A2255]" />
               <span className="text-[#1A2255] font-bold">{slide.badge}</span>
-            </div>
+            </motion.div>
 
-            {/* Typography */}
-            <h1 className="text-[1.6rem] sm:text-[2.2rem] md:text-[2.5rem] lg:text-[2.8rem] font-black tracking-[-0.03em] leading-[1.1] text-slate-900 flex flex-col justify-center items-center">
+            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h1-${current}`}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3 }}
-                  className="block text-slate-900"
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="block"
                 >
                   {slide.headingWords.slice(0, -1).join(" ")}
                 </motion.span>
@@ -322,11 +261,11 @@ export default function Hero() {
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h2-${current}`}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3, delay: 0.05 }}
-                  className="block text-[#1A2255] font-black"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.5, delay: 0.08 }}
+                  className="block text-[#1A2255] relative after:content-[''] after:absolute after:-right-1.5 after:bottom-1 after:w-[3px] after:h-[75%] after:bg-[#1A2255] after:animate-pulse whitespace-nowrap overflow-hidden pr-1.5"
                 >
                   {slide.headingWords[slide.headingWords.length - 1]}
                 </motion.span>
@@ -339,77 +278,78 @@ export default function Hero() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="text-[12px] sm:text-[13.5px] text-slate-600 font-semibold leading-[1.4] max-w-md sm:max-w-lg mt-1 mb-2"
+                transition={{ duration: 0.3 }}
+                className="text-[13px] sm:text-[15px] text-neutral-500 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
               >
                 {slide.subtitle}
               </motion.p>
             </AnimatePresence>
 
-            {/* Action Buttons */}
-            <div className="flex flex-row items-center justify-center gap-2.5 w-full z-20 mb-1">
+            {/* ACTION BUTTONS */}
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full z-20 mb-2 max-w-md sm:max-w-none mx-auto">
               <Button
                 onClick={() => router.push("/contact")}
-                className="h-8.5 px-5 rounded-full text-[11px] sm:text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg active:scale-[0.98] cursor-pointer group"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg hover:shadow-[#1A2255]/10 active:scale-[0.98] cursor-pointer group w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta1}
-                  <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5] transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </Button>
 
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-8.5 px-5 rounded-full text-[11px] sm:text-[12px] font-bold border-[#304AC0] bg-white/90 backdrop-blur-md text-[#1A2255] hover:bg-[#F0F4FF] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#304AC0] bg-white text-[#1C1D62] hover:bg-[#F0F4FF] hover:text-[#1A2255] hover:border-[#1A2255] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
-                  <ArrowUpRight className="w-3.5 h-3.5 text-[#304AC0] stroke-[2.5]" />
+                  <ArrowUpRight className="w-4 h-4 text-[#304AC0] stroke-[2.5]" />
                 </span>
               </Button>
-            </div>
+            </motion.div>
           </div>
 
-          {/* TRICOLOR BORDERED HERO IMAGE */}
-          <div className="relative w-full max-w-[1100px] h-[180px] sm:h-[220px] md:h-[250px] lg:h-[270px] perspective-[1200px] my-1">
+          {/* WIDER & SHORTER IMAGE CANVAS */}
+          <motion.div 
+            variants={itemVariants} 
+            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
+          >
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[20px] p-[3px] bg-gradient-to-r from-[#FF671F] via-slate-300 to-[#046A38] shadow-[0_15px_40px_-12px_rgba(26,34,85,0.14)] transition-all duration-300 ease-out overflow-hidden"
+              className="relative w-full h-full rounded-[24px] border-4 border-white shadow-[0_25px_60px_-15px_rgba(26,34,85,0.12)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden"
             >
-              <div className="relative w-full h-full rounded-[17px] overflow-hidden bg-neutral-200">
-                <AnimatePresence initial={false} mode="popLayout">
-                  <motion.div
-                    key={`img-${current}`}
-                    initial={{ opacity: 0, scale: 1.02 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ duration: 0.35 }}
-                    className="relative w-full h-full"
-                  >
-                    <Image
-                      src={imgSrc}
-                      alt="Credora Enterprise Funding Platform"
-                      fill
-                      unoptimized
-                      onError={() => setImgSrc(slide.fallbackImage)}
-                      className="object-cover object-center brightness-[0.98]"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/20 via-transparent to-transparent pointer-events-none" />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+              <AnimatePresence initial={false} mode="popLayout">
+                <motion.div
+                  key={`img-${current}`}
+                  initial={{ opacity: 0, scale: 1.02 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative w-full h-full"
+                >
+                  <Image
+                    src={imgSrc}
+                    alt="Credora Enterprise Funding Platform"
+                    fill
+                    unoptimized
+                    onError={() => setImgSrc(slide.fallbackImage)}
+                    className="object-cover object-center brightness-[0.97]"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/15 via-transparent to-transparent pointer-events-none" />
+                </motion.div>
+              </AnimatePresence>
             </motion.div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
-      {/* DOCK NAVIGATION STRIP */}
-      <div className="w-full max-w-[900px] mx-auto shrink-0 z-30 pt-1 pb-1">
-        <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-[0_4px_16px_-4px_rgba(0,0,0,0.08)] border border-slate-200 p-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+      {/* TABS NAVIGATION DOCK STRIP */}
+      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
+        <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.03)] border border-neutral-200/50 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -417,8 +357,8 @@ export default function Hero() {
               <button
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
-                className={`relative flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-[10.5px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
-                  isActive ? "text-white" : "text-slate-600 hover:text-[#1A2255]"
+                className={`relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
+                  isActive ? "text-white" : "text-neutral-500 hover:text-[#1A2255]"
                 }`}
               >
                 {isActive && (
@@ -428,7 +368,7 @@ export default function Hero() {
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   />
                 )}
-                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-white" : "text-slate-400 group-hover:text-[#1A2255]"}`} />
+                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-white" : "text-neutral-400 group-hover:text-[#1A2255]"}`} />
                 <span className="whitespace-nowrap truncate z-10">{s.tabLabel}</span>
               </button>
             );
