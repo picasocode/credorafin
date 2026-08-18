@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Sparkles, ArrowUpRight, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
@@ -233,16 +233,13 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* UPDATED ISO CERTIFIED PILL BADGE */}
+            {/* DARK BLUE RECTANGLE ISO CERTIFIED BADGE WITH AWARD ICON */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] mb-2 border border-slate-200 bg-white/90 backdrop-blur-md shadow-xs text-[#1A2255]"
+              className="inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-[#1A2255] text-white shadow-md border border-[#1A2255]"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#046A38]" />
-              <span className="text-[#046A38] font-extrabold">ISO/IEC 27001:2022 Certified</span>
-              <span className="text-neutral-300">|</span>
-              <Sparkles className="w-3.5 h-3.5 text-[#1A2255]" />
-              <span className="text-[#1A2255] font-bold">{slide.badge}</span>
+              <Award className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>ISO/IEC 27001:2022 CERTIFIED</span>
             </motion.div>
 
             <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
