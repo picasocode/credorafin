@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { ArrowUpRight, Award, Sparkles } from "lucide-react";
+import { ArrowUpRight, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
@@ -131,69 +131,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
 };
 
-// --- ONAM POOKKALAM (FLORAL RANGOLI) WATERMARK ---
-const PookkalamWatermark = () => {
-  const petals = Array.from({ length: 8 });
-  return (
-    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] pointer-events-none opacity-[0.08] z-0">
-      <motion.svg
-        viewBox="0 0 200 200"
-        className="w-full h-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 140, ease: "linear", repeat: Infinity }}
-      >
-        <circle cx="100" cy="100" r="95" fill="none" stroke="#D4AF37" strokeWidth="2" strokeDasharray="4 4" />
-        <circle cx="100" cy="100" r="85" fill="none" stroke="#C41E3A" strokeWidth="3" />
-        <circle cx="100" cy="100" r="70" fill="none" stroke="#FF8C00" strokeWidth="2" />
-        {petals.map((_, i) => {
-          const angle = i * 45;
-          return (
-            <g key={i} transform={`rotate(${angle} 100 100)`}>
-              <path
-                d="M100 15 C115 40 115 60 100 75 C85 60 85 40 100 15 Z"
-                fill="#E5A21A"
-                opacity="0.6"
-              />
-              <path
-                d="M100 30 C108 45 108 55 100 65 C92 55 92 45 100 30 Z"
-                fill="#C41E3A"
-                opacity="0.8"
-              />
-            </g>
-          );
-        })}
-        <circle cx="100" cy="100" r="22" fill="#D4AF37" opacity="0.4" />
-        <circle cx="100" cy="100" r="12" fill="#C41E3A" />
-      </motion.svg>
-    </div>
-  );
-};
-
-// --- FLOATING FESTIVE PETAL ---
-interface FestivePetalProps {
-  color: string;
-  xPosition: number;
-  delay: number;
-  duration: number;
-  size: number;
-}
-
-const FestivePetal = ({ color, xPosition, delay, duration, size }: FestivePetalProps) => {
-  return (
-    <motion.div
-      className="absolute pointer-events-none z-0"
-      style={{ left: `${xPosition}%`, width: `${size}px`, height: `${size * 1.2}px` }}
-      initial={{ y: "-10vh", rotate: 0 }}
-      animate={{ y: "110vh", x: [0, 20, -20, 0], rotate: 360 }}
-      transition={{ duration: duration, delay: delay, ease: "linear", repeat: Infinity }}
-    >
-      <svg viewBox="0 0 30 40" fill="none" className="w-full h-full drop-shadow-xs">
-        <path d="M15 0 C25 10 30 25 15 40 C0 25 5 10 15 0 Z" fill={color} opacity="0.6" />
-      </svg>
-    </motion.div>
-  );
-};
-
 export default function Hero() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
@@ -203,15 +140,6 @@ export default function Hero() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const slide = slides[current] ?? slides[0];
-
-  const petalConfig = [
-    { color: "#E5A21A", xPosition: 6, delay: 0, duration: 12, size: 22 },
-    { color: "#FF8C00", xPosition: 22, delay: 2, duration: 15, size: 26 },
-    { color: "#0A6B32", xPosition: 38, delay: 1, duration: 14, size: 20 },
-    { color: "#C41E3A", xPosition: 68, delay: 4, duration: 16, size: 24 },
-    { color: "#E5A21A", xPosition: 84, delay: 2, duration: 13, size: 22 },
-    { color: "#FF8C00", xPosition: 92, delay: 3, duration: 17, size: 28 },
-  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -276,29 +204,22 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-[#FAF8F2] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
+      className="relative bg-[#FAFBFD] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
     >
-      {/* KERALA KASAVU GOLD BORDER STRIP */}
-      <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#D4AF37] via-[#FFF3C4] to-[#D4AF37] z-30 pointer-events-none shadow-xs" />
-
-      {/* BACKGROUND ELEMENTS & POOKKALAM WATERMARK */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#D4AF3710_1px,transparent_1px),linear-gradient(to_bottom,#D4AF3710_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+      {/* BACKGROUND GLOW */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225504_1px,transparent_1px),linear-gradient(to_bottom,#1A225504_1px,transparent_1px)] bg-[size:3rem_3rem]" />
         
-        {/* Pookkalam Central Motif */}
-        <PookkalamWatermark />
-
-        {/* Floating Petals */}
-        {petalConfig.map((p, index) => (
-          <FestivePetal
-            key={index}
-            color={p.color}
-            xPosition={p.xPosition}
-            delay={p.delay}
-            duration={p.duration}
-            size={p.size}
-          />
-        ))}
+        <motion.div
+          animate={{ 
+            scale: [1, 1.05, 0.95, 1], 
+            x: [0, 15, -15, 0], 
+            y: [0, -10, 10, 0] 
+          }}
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute w-[700px] h-[700px] rounded-full blur-[140px] opacity-[0.20] top-[-10%] left-[25%]"
+          style={{ background: `radial-gradient(circle, #1A225540 0%, transparent 70%)` }}
+        />
       </div>
 
       {/* MAIN CONTENT AREA */}
@@ -312,16 +233,13 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* THIRUVONAM SPECIAL ONAM BADGE */}
+            {/* DARK BLUE RECTANGLE ISO CERTIFIED BADGE WITH AWARD ICON */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-white/95 text-[#1A2255] shadow-sm border border-[#E5A21A]/50 backdrop-blur-md"
+              className="inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-[#1A2255] text-white shadow-md border border-[#1A2255]"
             >
-              <Award className="w-4 h-4 text-[#D4AF37] shrink-0" />
-              <span className="text-[#C41E3A] font-extrabold">THIRUVONAM SPECIAL</span>
-              <span className="text-amber-300">|</span>
-              <Sparkles className="w-3.5 h-3.5 text-[#E5A21A]" />
-              <span className="text-[#1A2255] font-bold">{slide.badge}</span>
+              <Award className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>ISO/IEC 27001:2022 CERTIFIED</span>
             </motion.div>
 
             <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
@@ -358,7 +276,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-neutral-600 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
+                className="text-[13px] sm:text-[15px] text-neutral-500 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
               >
                 {slide.subtitle}
               </motion.p>
@@ -379,17 +297,17 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#D4AF37] bg-white text-[#1C1D62] hover:bg-[#FFFDF5] hover:text-[#1A2255] hover:border-[#D4AF37] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#304AC0] bg-white text-[#1C1D62] hover:bg-[#F0F4FF] hover:text-[#1A2255] hover:border-[#1A2255] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
-                  <ArrowUpRight className="w-4 h-4 text-[#D4AF37] stroke-[2.5]" />
+                  <ArrowUpRight className="w-4 h-4 text-[#304AC0] stroke-[2.5]" />
                 </span>
               </Button>
             </motion.div>
           </div>
 
-          {/* TRICOLOR KASAVU GOLD BORDERED IMAGE CANVAS */}
+          {/* WIDER & SHORTER IMAGE CANVAS */}
           <motion.div 
             variants={itemVariants} 
             className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
@@ -398,31 +316,29 @@ export default function Hero() {
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] p-[3px] bg-gradient-to-r from-[#D4AF37] via-[#FF8C00] to-[#0A6B32] shadow-[0_25px_60px_-15px_rgba(212,175,55,0.20)] transition-all duration-300 ease-out overflow-hidden"
+              className="relative w-full h-full rounded-[24px] border-4 border-white shadow-[0_25px_60px_-15px_rgba(26,34,85,0.12)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden"
             >
-              <div className="relative w-full h-full rounded-[21px] overflow-hidden bg-neutral-200">
-                <AnimatePresence initial={false} mode="popLayout">
-                  <motion.div
-                    key={`img-${current}`}
-                    initial={{ opacity: 0, scale: 1.02 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="relative w-full h-full"
-                  >
-                    <Image
-                      src={imgSrc}
-                      alt="Credora Enterprise Funding Platform"
-                      fill
-                      unoptimized
-                      onError={() => setImgSrc(slide.fallbackImage)}
-                      className="object-cover object-center brightness-[0.97]"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/15 via-transparent to-transparent pointer-events-none" />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+              <AnimatePresence initial={false} mode="popLayout">
+                <motion.div
+                  key={`img-${current}`}
+                  initial={{ opacity: 0, scale: 1.02 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative w-full h-full"
+                >
+                  <Image
+                    src={imgSrc}
+                    alt="Credora Enterprise Funding Platform"
+                    fill
+                    unoptimized
+                    onError={() => setImgSrc(slide.fallbackImage)}
+                    className="object-cover object-center brightness-[0.97]"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/15 via-transparent to-transparent pointer-events-none" />
+                </motion.div>
+              </AnimatePresence>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -430,7 +346,7 @@ export default function Hero() {
 
       {/* TABS NAVIGATION DOCK STRIP */}
       <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
-        <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(212,175,55,0.12)] border border-amber-200/60 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+        <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.03)] border border-neutral-200/50 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
