@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { ArrowUpRight, Award, Sparkles } from "lucide-react";
+import { ArrowUpRight, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
@@ -27,12 +27,11 @@ interface PublicHeroSlide {
   sortOrder: number;
 }
 
-/** Fallback slides — rendered immediately and kept if the API is unavailable. */
 const DEFAULT_SLIDES: PublicHeroSlide[] = [
   {
     id: "default-1",
     badge: "Empowering Enterprises",
-    headingWords: ["Accelerate", "Your MSME", "Growth"],
+    headingWords: ["Celebrate", "Prosperous Onam", "Growth"],
     subtitle: "Customized collateral-free funding solutions syndicated across 70+ banking partners globally.",
     cta1: "Build Finance",
     cta2: "Contact us",
@@ -43,7 +42,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "₹50 Crores", label: "Max Liquidity Pool Available" },
     tabLabel: "MSME Loan",
     tabIcon: "Building2",
-    accent: "#1A2255",
+    accent: "#D4AF37",
     isActive: true,
     sortOrder: 0
   },
@@ -61,7 +60,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "Syndicated", label: "Multi-Bank Framework Active" },
     tabLabel: "Project Finance",
     tabIcon: "TrendingUp",
-    accent: "#1A2255",
+    accent: "#D4AF37",
     isActive: true,
     sortOrder: 1
   },
@@ -79,7 +78,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "₹25 Crores", label: "Annual SCF Limit Available" },
     tabLabel: "Supply Chain Finance",
     tabIcon: "Briefcase",
-    accent: "#1A2255",
+    accent: "#D4AF37",
     isActive: true,
     sortOrder: 2
   },
@@ -97,7 +96,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "Unlimited", label: "Referral Earning Potential" },
     tabLabel: "Referral Partner",
     tabIcon: "Handshake",
-    accent: "#1A2255",
+    accent: "#D4AF37",
     isActive: true,
     sortOrder: 3
   },
@@ -115,11 +114,159 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "Restored", label: "Removal of Legacy Default History" },
     tabLabel: "Credit Repair Services",
     tabIcon: "ShieldCheck",
-    accent: "#1A2255",
+    accent: "#D4AF37",
     isActive: true,
     sortOrder: 4
   }
 ];
+
+// PETAL ANIMATION ENGINE
+interface Petal {
+  id: number;
+  x: number;
+  size: number;
+  duration: number;
+  delay: number;
+  color: string;
+  rotation: number;
+}
+
+const PetalShower = () => {
+  const [petals, setPetals] = useState<Petal[]>([]);
+
+  useEffect(() => {
+    const colors = ["#FF4500", "#FFA500", "#FFD700", "#E60026", "#FF69B4", "#FFF8DC"];
+    const generated: Petal[] = Array.from({ length: 28 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      size: Math.random() * 12 + 10,
+      duration: Math.random() * 8 + 7,
+      delay: Math.random() * 5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360,
+    }));
+    setPetals(generated);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+      {petals.map((p) => (
+        <motion.div
+          key={p.id}
+          initial={{
+            top: "-5%",
+            left: `${p.x}%`,
+            opacity: 0,
+            rotate: p.rotation,
+          }}
+          animate={{
+            top: "105%",
+            left: `${p.x + (Math.random() * 10 - 5)}%`,
+            opacity: [0, 0.9, 0.9, 0],
+            rotate: p.rotation + 360,
+          }}
+          transition={{
+            duration: p.duration,
+            repeat: Infinity,
+            delay: p.delay,
+            ease: "easeInOut",
+          }}
+          style={{
+            position: "absolute",
+            width: `${p.size}px`,
+            height: `${p.size * 1.4}px`,
+            backgroundColor: p.color,
+            borderRadius: "80% 0% 80% 40%",
+            boxShadow: `0 0 6px ${p.color}aa`,
+            filter: "blur(0.4px)",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+// SVG REALISTIC FLORAL POOKKALAM COMPONENT
+const FloralPookkalam = () => {
+  return (
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] sm:w-[900px] sm:h-[900px] pointer-events-none opacity-25 z-0 select-none">
+      <motion.svg
+        viewBox="0 0 500 500"
+        className="w-full h-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+      >
+        <defs>
+          <radialGradient id="pookkalamGold" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#FFF2A3" />
+            <stop offset="40%" stopColor="#FFC800" />
+            <stop offset="75%" stopColor="#E67300" />
+            <stop offset="100%" stopColor="#800000" />
+          </radialGradient>
+        </defs>
+
+        {/* Outer Ring Petals */}
+        <circle cx="250" cy="250" r="235" fill="none" stroke="#FFD700" strokeWidth="2" strokeDasharray="6 6" />
+        <circle cx="250" cy="250" r="225" fill="none" stroke="#E65100" strokeWidth="3" />
+
+        {/* Dynamic Flower Petal Base Layers */}
+        {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, i) => (
+          <g key={i} transform={`rotate(${angle} 250 250)`}>
+            {/* Outer Marigold Petals */}
+            <path
+              d="M 250 30 Q 230 110 250 170 Q 270 110 250 30 Z"
+              fill={i % 2 === 0 ? "#FF4500" : "#FFA500"}
+              opacity="0.85"
+            />
+            {/* Inner Golden Layer */}
+            <path
+              d="M 250 70 Q 238 130 250 170 Q 262 130 250 70 Z"
+              fill="#FFD700"
+              opacity="0.9"
+            />
+            {/* Dark Red Base Ring Petals */}
+            <circle cx="250" cy="50" r="10" fill="#8B0000" />
+            <circle cx="250" cy="50" r="6" fill="#FF8C00" />
+          </g>
+        ))}
+
+        {/* Middle Star Floral Ring */}
+        {[15, 45, 75, 105, 135, 165, 195, 225, 255, 285, 315, 345].map((angle, i) => (
+          <g key={`mid-${i}`} transform={`rotate(${angle} 250 250)`}>
+            <path
+              d="M 250 100 Q 240 150 250 190 Q 260 150 250 100 Z"
+              fill={i % 2 === 0 ? "#D81B60" : "#FFB300"}
+            />
+          </g>
+        ))}
+
+        {/* Central Lotus Pattern */}
+        <circle cx="250" cy="250" r="75" fill="url(#pookkalamGold)" />
+        <circle cx="250" cy="250" r="60" fill="none" stroke="#800000" strokeWidth="2" />
+
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
+          <g key={`lotus-${i}`} transform={`rotate(${angle} 250 250)`}>
+            <path
+              d="M 250 190 C 235 210 235 235 250 250 C 265 235 265 210 250 190 Z"
+              fill="#FFFFFF"
+              opacity="0.9"
+            />
+            <path
+              d="M 250 195 C 240 213 240 233 250 245 C 260 233 260 213 250 195 Z"
+              fill="#E60026"
+            />
+          </g>
+        ))}
+
+        {/* Center Diya / Lamp Flame */}
+        <circle cx="250" cy="250" r="22" fill="#4A0000" />
+        <circle cx="250" cy="250" r="16" fill="#FF8C00" />
+        <circle cx="250" cy="250" r="9" fill="#FFD700" />
+        <circle cx="250" cy="250" r="4" fill="#FFFFFF" />
+      </motion.svg>
+    </div>
+  );
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -131,69 +278,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
 };
 
-// --- ONAM POOKKALAM (FLORAL RANGOLI) WATERMARK ---
-const PookkalamWatermark = () => {
-  const petals = Array.from({ length: 8 });
-  return (
-    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] pointer-events-none opacity-[0.08] z-0">
-      <motion.svg
-        viewBox="0 0 200 200"
-        className="w-full h-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 140, ease: "linear", repeat: Infinity }}
-      >
-        <circle cx="100" cy="100" r="95" fill="none" stroke="#D4AF37" strokeWidth="2" strokeDasharray="4 4" />
-        <circle cx="100" cy="100" r="85" fill="none" stroke="#C41E3A" strokeWidth="3" />
-        <circle cx="100" cy="100" r="70" fill="none" stroke="#FF8C00" strokeWidth="2" />
-        {petals.map((_, i) => {
-          const angle = i * 45;
-          return (
-            <g key={i} transform={`rotate(${angle} 100 100)`}>
-              <path
-                d="M100 15 C115 40 115 60 100 75 C85 60 85 40 100 15 Z"
-                fill="#E5A21A"
-                opacity="0.6"
-              />
-              <path
-                d="M100 30 C108 45 108 55 100 65 C92 55 92 45 100 30 Z"
-                fill="#C41E3A"
-                opacity="0.8"
-              />
-            </g>
-          );
-        })}
-        <circle cx="100" cy="100" r="22" fill="#D4AF37" opacity="0.4" />
-        <circle cx="100" cy="100" r="12" fill="#C41E3A" />
-      </motion.svg>
-    </div>
-  );
-};
-
-// --- FLOATING FESTIVE PETAL ---
-interface FestivePetalProps {
-  color: string;
-  xPosition: number;
-  delay: number;
-  duration: number;
-  size: number;
-}
-
-const FestivePetal = ({ color, xPosition, delay, duration, size }: FestivePetalProps) => {
-  return (
-    <motion.div
-      className="absolute pointer-events-none z-0"
-      style={{ left: `${xPosition}%`, width: `${size}px`, height: `${size * 1.2}px` }}
-      initial={{ y: "-10vh", rotate: 0 }}
-      animate={{ y: "110vh", x: [0, 20, -20, 0], rotate: 360 }}
-      transition={{ duration: duration, delay: delay, ease: "linear", repeat: Infinity }}
-    >
-      <svg viewBox="0 0 30 40" fill="none" className="w-full h-full drop-shadow-xs">
-        <path d="M15 0 C25 10 30 25 15 40 C0 25 5 10 15 0 Z" fill={color} opacity="0.6" />
-      </svg>
-    </motion.div>
-  );
-};
-
 export default function Hero() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
@@ -203,15 +287,6 @@ export default function Hero() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const slide = slides[current] ?? slides[0];
-
-  const petalConfig = [
-    { color: "#E5A21A", xPosition: 6, delay: 0, duration: 12, size: 22 },
-    { color: "#FF8C00", xPosition: 22, delay: 2, duration: 15, size: 26 },
-    { color: "#0A6B32", xPosition: 38, delay: 1, duration: 14, size: 20 },
-    { color: "#C41E3A", xPosition: 68, delay: 4, duration: 16, size: 24 },
-    { color: "#E5A21A", xPosition: 84, delay: 2, duration: 13, size: 22 },
-    { color: "#FF8C00", xPosition: 92, delay: 3, duration: 17, size: 28 },
-  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -276,29 +351,29 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-[#FAF8F2] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
+      className="relative bg-gradient-to-b from-[#FFFBF0] via-[#FDF3D8] to-[#F7E7B6] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-b border-[#E6C280]/40"
     >
-      {/* KERALA KASAVU GOLD BORDER STRIP */}
-      <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#D4AF37] via-[#FFF3C4] to-[#D4AF37] z-30 pointer-events-none shadow-xs" />
+      {/* FALLING FLOWER PETALS ENGINE */}
+      <PetalShower />
 
-      {/* BACKGROUND ELEMENTS & POOKKALAM WATERMARK */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#D4AF3710_1px,transparent_1px),linear-gradient(to_bottom,#D4AF3710_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+      {/* BACKGROUND POOKKALAM & GOLD GLOW */}
+      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
+        {/* Subtle Decorative Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#B8860B0A_1px,transparent_1px),linear-gradient(to_bottom,#B8860B0A_1px,transparent_1px)] bg-[size:3rem_3rem]" />
         
-        {/* Pookkalam Central Motif */}
-        <PookkalamWatermark />
+        {/* Animated Radial Golden Glow */}
+        <motion.div
+          animate={{ 
+            scale: [1, 1.08, 0.95, 1], 
+            opacity: [0.35, 0.5, 0.35]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute w-[800px] h-[800px] rounded-full blur-[130px] top-[-5%] left-[15%]"
+          style={{ background: `radial-gradient(circle, #FFD700 0%, #D4AF37 35%, transparent 70%)` }}
+        />
 
-        {/* Floating Petals */}
-        {petalConfig.map((p, index) => (
-          <FestivePetal
-            key={index}
-            color={p.color}
-            xPosition={p.xPosition}
-            delay={p.delay}
-            duration={p.duration}
-            size={p.size}
-          />
-        ))}
+        {/* Real Golden Floral Pookkalam Centerpiece */}
+        <FloralPookkalam />
       </div>
 
       {/* MAIN CONTENT AREA */}
@@ -312,19 +387,16 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* THIRUVONAM SPECIAL ONAM BADGE */}
+            {/* UNCHANGED ISO CERTIFIED BADGE WITH AWARD ICON */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-white/95 text-[#1A2255] shadow-sm border border-[#E5A21A]/50 backdrop-blur-md"
+              className="inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-[#1A2255] text-white shadow-md border border-[#1A2255]"
             >
-              <Award className="w-4 h-4 text-[#D4AF37] shrink-0" />
-              <span className="text-[#C41E3A] font-extrabold">THIRUVONAM SPECIAL</span>
-              <span className="text-amber-300">|</span>
-              <Sparkles className="w-3.5 h-3.5 text-[#E5A21A]" />
-              <span className="text-[#1A2255] font-bold">{slide.badge}</span>
+              <Award className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>ISO/IEC 27001:2022 CERTIFIED</span>
             </motion.div>
 
-            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
+            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-amber-950 flex flex-col justify-center items-center">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h1-${current}`}
@@ -332,7 +404,7 @@ export default function Hero() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="block"
+                  className="block drop-shadow-sm"
                 >
                   {slide.headingWords.slice(0, -1).join(" ")}
                 </motion.span>
@@ -344,7 +416,7 @@ export default function Hero() {
                   animate={{ opacity: 1, width: "auto" }}
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.5, delay: 0.08 }}
-                  className="block text-[#1A2255] relative after:content-[''] after:absolute after:-right-1.5 after:bottom-1 after:w-[3px] after:h-[75%] after:bg-[#1A2255] after:animate-pulse whitespace-nowrap overflow-hidden pr-1.5"
+                  className="block text-[#8B0000] relative after:content-[''] after:absolute after:-right-1.5 after:bottom-1 after:w-[3px] after:h-[75%] after:bg-[#D4AF37] after:animate-pulse whitespace-nowrap overflow-hidden pr-1.5 drop-shadow-sm"
                 >
                   {slide.headingWords[slide.headingWords.length - 1]}
                 </motion.span>
@@ -358,7 +430,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-neutral-600 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
+                className="text-[13px] sm:text-[15px] text-amber-900/80 font-semibold leading-[1.5] max-w-lg mt-2 mb-3.5"
               >
                 {slide.subtitle}
               </motion.p>
@@ -368,7 +440,7 @@ export default function Hero() {
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full z-20 mb-2 max-w-md sm:max-w-none mx-auto">
               <Button
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg hover:shadow-[#1A2255]/10 active:scale-[0.98] cursor-pointer group w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-amber-950 transition-all duration-300 bg-gradient-to-r from-[#FFD700] via-[#FDB813] to-[#D4AF37] hover:brightness-105 shadow-md hover:shadow-lg hover:shadow-[#D4AF37]/30 active:scale-[0.98] cursor-pointer group w-full sm:w-auto border border-[#B8860B]/40"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta1}
@@ -379,17 +451,17 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#D4AF37] bg-white text-[#1C1D62] hover:bg-[#FFFDF5] hover:text-[#1A2255] hover:border-[#D4AF37] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#B8860B] bg-white/90 text-[#8B0000] hover:bg-[#FFFDF5] hover:text-[#500000] hover:border-[#8B0000] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto backdrop-blur-sm"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
-                  <ArrowUpRight className="w-4 h-4 text-[#D4AF37] stroke-[2.5]" />
+                  <ArrowUpRight className="w-4 h-4 text-[#8B0000] stroke-[2.5]" />
                 </span>
               </Button>
             </motion.div>
           </div>
 
-          {/* TRICOLOR KASAVU GOLD BORDERED IMAGE CANVAS */}
+          {/* CANVAS DISPLAY FRAME */}
           <motion.div 
             variants={itemVariants} 
             className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
@@ -398,31 +470,29 @@ export default function Hero() {
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] p-[3px] bg-gradient-to-r from-[#D4AF37] via-[#FF8C00] to-[#0A6B32] shadow-[0_25px_60px_-15px_rgba(212,175,55,0.20)] transition-all duration-300 ease-out overflow-hidden"
+              className="relative w-full h-full rounded-[24px] border-4 border-[#FFD700]/70 shadow-[0_25px_60px_-15px_rgba(212,175,55,0.3)] bg-amber-100 transition-all duration-300 ease-out overflow-hidden"
             >
-              <div className="relative w-full h-full rounded-[21px] overflow-hidden bg-neutral-200">
-                <AnimatePresence initial={false} mode="popLayout">
-                  <motion.div
-                    key={`img-${current}`}
-                    initial={{ opacity: 0, scale: 1.02 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="relative w-full h-full"
-                  >
-                    <Image
-                      src={imgSrc}
-                      alt="Credora Enterprise Funding Platform"
-                      fill
-                      unoptimized
-                      onError={() => setImgSrc(slide.fallbackImage)}
-                      className="object-cover object-center brightness-[0.97]"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/15 via-transparent to-transparent pointer-events-none" />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+              <AnimatePresence initial={false} mode="popLayout">
+                <motion.div
+                  key={`img-${current}`}
+                  initial={{ opacity: 0, scale: 1.02 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative w-full h-full"
+                >
+                  <Image
+                    src={imgSrc}
+                    alt="Credora Enterprise Funding Platform"
+                    fill
+                    unoptimized
+                    onError={() => setImgSrc(slide.fallbackImage)}
+                    className="object-cover object-center brightness-[0.97]"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#8B0000]/25 via-transparent to-transparent pointer-events-none" />
+                </motion.div>
+              </AnimatePresence>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -430,7 +500,7 @@ export default function Hero() {
 
       {/* TABS NAVIGATION DOCK STRIP */}
       <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
-        <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(212,175,55,0.12)] border border-amber-200/60 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+        <div className="bg-white/80 backdrop-blur-xl rounded-xl shadow-[0_8px_30px_rgb(212,175,55,0.15)] border border-[#E6C280]/60 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -439,17 +509,17 @@ export default function Hero() {
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
                 className={`relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
-                  isActive ? "text-white" : "text-neutral-500 hover:text-[#1A2255]"
+                  isActive ? "text-amber-950" : "text-amber-900/70 hover:text-[#8B0000]"
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="perfectTabIndicatorPremium"
-                    className="absolute inset-0 z-0 bg-[#1A2255]"
+                    className="absolute inset-0 z-0 bg-gradient-to-r from-[#FFD700] via-[#FDB813] to-[#D4AF37] shadow-sm"
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   />
                 )}
-                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-white" : "text-neutral-400 group-hover:text-[#1A2255]"}`} />
+                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-amber-950" : "text-amber-800/60 group-hover:text-[#8B0000]"}`} />
                 <span className="whitespace-nowrap truncate z-10">{s.tabLabel}</span>
               </button>
             );
