@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { ArrowUpRight, Sparkles, Flower2 } from "lucide-react";
+import { ArrowUpRight, Award, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
@@ -27,11 +27,10 @@ interface PublicHeroSlide {
   sortOrder: number;
 }
 
-/** Fallback slides — rendered immediately and kept if the API is unavailable. */
 const DEFAULT_SLIDES: PublicHeroSlide[] = [
   {
     id: "default-1",
-    badge: "Festive Prosperity",
+    badge: "Empowering Enterprises",
     headingWords: ["Accelerate", "Your MSME", "Growth"],
     subtitle: "Customized collateral-free funding solutions syndicated across 70+ banking partners globally.",
     cta1: "Build Finance",
@@ -43,7 +42,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "₹50 Crores", label: "Max Liquidity Pool Available" },
     tabLabel: "MSME Loan",
     tabIcon: "Building2",
-    accent: "#CA8A04",
+    accent: "#1A2255",
     isActive: true,
     sortOrder: 0
   },
@@ -61,7 +60,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "Syndicated", label: "Multi-Bank Framework Active" },
     tabLabel: "Project Finance",
     tabIcon: "TrendingUp",
-    accent: "#CA8A04",
+    accent: "#1A2255",
     isActive: true,
     sortOrder: 1
   },
@@ -79,7 +78,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "₹25 Crores", label: "Annual SCF Limit Available" },
     tabLabel: "Supply Chain Finance",
     tabIcon: "Briefcase",
-    accent: "#CA8A04",
+    accent: "#1A2255",
     isActive: true,
     sortOrder: 2
   },
@@ -97,7 +96,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "Unlimited", label: "Referral Earning Potential" },
     tabLabel: "Referral Partner",
     tabIcon: "Handshake",
-    accent: "#CA8A04",
+    accent: "#1A2255",
     isActive: true,
     sortOrder: 3
   },
@@ -115,7 +114,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "Restored", label: "Removal of Legacy Default History" },
     tabLabel: "Credit Repair Services",
     tabIcon: "ShieldCheck",
-    accent: "#CA8A04",
+    accent: "#1A2255",
     isActive: true,
     sortOrder: 4
   }
@@ -154,7 +153,7 @@ export default function Hero() {
           setCurrent((c) => (c >= data.length ? 0 : c));
         }
       } catch {
-        // leave DEFAULT_SLIDES in place on any error
+        // leave DEFAULT_SLIDES in place on error
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -204,33 +203,84 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-[#FEFDF8] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-t-4 border-[#CA8A04]"
+      className="relative bg-gradient-to-b from-[#FFFDF7] via-[#FFF9EB] to-[#FFFDF7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
     >
-      {/* ONAM BACKGROUND GLOW & POOKKALAM MOTIF */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Festive Golden Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#CA8A040F_1px,transparent_1px),linear-gradient(to_bottom,#CA8A040F_1px,transparent_1px)] bg-[size:3rem_3rem]" />
-        
-        {/* Deep Festive Gold Ambient Glow */}
-        <motion.div
-          animate={{ 
-            scale: [1, 1.08, 0.95, 1], 
-            x: [0, 20, -20, 0], 
-            y: [0, -15, 15, 0] 
-          }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-[750px] h-[750px] rounded-full blur-[140px] opacity-[0.25] top-[-10%] left-[20%]"
-          style={{ background: `radial-gradient(circle, #EAB308 0%, #15803D 50%, transparent 75%)` }}
-        />
+      {/* 1. FESTIVE TOP MARIGOLD & JASMINE FLORAL GARLAND (THORAN) */}
+      <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none flex justify-between items-start opacity-90 px-2 sm:px-8">
+        {[...Array(12)].map((_, i) => (
+          <div key={i} className="flex flex-col items-center -mt-1 sm:-mt-2">
+            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-b-full border-b-4 border-amber-500 bg-gradient-to-b from-amber-400 via-orange-500 to-amber-600 shadow-sm animate-pulse" />
+            <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-700 -mt-1 shadow-xs" />
+            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-100 -mt-0.5" />
+          </div>
+        ))}
+      </div>
 
-        {/* Decorative Watermark Pookkalam Ring */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 opacity-[0.06] text-[#CA8A04] flex items-center justify-center animate-[spin_60s_linear_infinite]">
-          <Flower2 className="w-full h-full" />
+      {/* 2. ONAM DECORATIVE BACKGROUND & POOKKALAM MOTIFS */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Golden Kerala Kasavu Lattice Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#EAB30812_1px,transparent_1px),linear-gradient(to_bottom,#EAB30812_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+        
+        {/* Animated Rotating Pookkalam (Floral Rangoli) Mandala Centerpiece */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] sm:w-[900px] sm:h-[900px] opacity-[0.08] pointer-events-none">
+          <svg className="w-full h-full animate-[spin_80s_linear_infinite]" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="95" fill="none" stroke="#CA8A04" strokeWidth="0.5" strokeDasharray="3 3" />
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#15803D" strokeWidth="1" />
+            <circle cx="100" cy="100" r="65" fill="none" stroke="#B45309" strokeWidth="0.5" />
+            {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, idx) => (
+              <g key={idx} transform={`rotate(${angle} 100 100)`}>
+                <ellipse cx="100" cy="40" rx="8" ry="25" fill="#EAB308" opacity="0.6" />
+                <ellipse cx="100" cy="45" rx="5" ry="18" fill="#15803D" opacity="0.5" />
+                <circle cx="100" cy="20" r="3" fill="#DC2626" />
+              </g>
+            ))}
+          </svg>
+        </div>
+
+        {/* Floating Festive Gold Sparks/Particles */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.2, 0.7, 0.2],
+              scale: [0.8, 1.2, 0.8]
+            }}
+            transition={{
+              duration: 4 + i,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 0.8
+            }}
+            className="absolute rounded-full bg-amber-400 blur-[1px]"
+            style={{
+              width: `${8 + i * 2}px`,
+              height: `${8 + i * 2}px`,
+              top: `${20 + i * 12}%`,
+              left: `${10 + i * 15}%`
+            }}
+          />
+        ))}
+      </div>
+
+      {/* 3. KATHAKALI TRADITIONAL ARTWORKS ON SIDE FLANKS */}
+      <div className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 opacity-25 hidden xl:block pointer-events-none">
+        <div className="w-24 h-36 border-2 border-amber-600/40 rounded-full flex items-center justify-center relative">
+          <div className="w-16 h-16 bg-emerald-800/20 rounded-full border border-amber-500/40 flex items-center justify-center">
+            <span className="text-amber-800 text-[10px] font-bold tracking-widest uppercase">ONAM</span>
+          </div>
+        </div>
+      </div>
+      <div className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 opacity-25 hidden xl:block pointer-events-none">
+        <div className="w-24 h-36 border-2 border-amber-600/40 rounded-full flex items-center justify-center relative">
+          <div className="w-16 h-16 bg-emerald-800/20 rounded-full border border-amber-500/40 flex items-center justify-center">
+            <span className="text-amber-800 text-[10px] font-bold tracking-widest uppercase">ONAM</span>
+          </div>
         </div>
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto">
+      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto pt-6">
         <motion.div 
           variants={containerVariants}
           initial="hidden"
@@ -240,16 +290,26 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* ONAM FESTIVE BADGE WITH GOLD/RED ACCENTS */}
+            {/* ONAM FESTIVE CELEBRATION RIBBON */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] mb-2 bg-gradient-to-r from-[#854D0E] via-[#CA8A04] to-[#15803D] text-amber-50 shadow-lg border border-[#FDE047]/40 ring-2 ring-[#CA8A04]/20"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-600/30 text-amber-900 text-[11px] font-bold tracking-widest uppercase mb-1.5 shadow-2xs"
             >
-              <Sparkles className="w-4 h-4 text-[#FDE047] shrink-0 animate-pulse" />
-              <span>HAPPY ONAM • PROSPERITY & GROWTH</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" style={{ animationDuration: "6s" }} />
+              <span>Happy Onam • Season of Abundance</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" style={{ animationDuration: "6s" }} />
             </motion.div>
 
-            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-emerald-950 flex flex-col justify-center items-center">
+            {/* RESTORED ORIGINAL ISO CERTIFIED BADGE */}
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-[#1A2255] text-white shadow-md border border-[#1A2255]"
+            >
+              <Award className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>ISO/IEC 27001:2022 CERTIFIED</span>
+            </motion.div>
+
+            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h1-${current}`}
@@ -269,7 +329,7 @@ export default function Hero() {
                   animate={{ opacity: 1, width: "auto" }}
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.5, delay: 0.08 }}
-                  className="block text-transparent bg-clip-text bg-gradient-to-r from-[#B45309] via-[#CA8A04] to-[#15803D] relative after:content-[''] after:absolute after:-right-1.5 after:bottom-1 after:w-[3px] after:h-[75%] after:bg-[#CA8A04] after:animate-pulse whitespace-nowrap overflow-hidden pr-1.5"
+                  className="block text-[#1A2255] relative after:content-[''] after:absolute after:-right-1.5 after:bottom-1 after:w-[3px] after:h-[75%] after:bg-[#1A2255] after:animate-pulse whitespace-nowrap overflow-hidden pr-1.5"
                 >
                   {slide.headingWords[slide.headingWords.length - 1]}
                 </motion.span>
@@ -283,7 +343,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-emerald-900/70 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
+                className="text-[13px] sm:text-[15px] text-neutral-600 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
               >
                 {slide.subtitle}
               </motion.p>
@@ -293,7 +353,7 @@ export default function Hero() {
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full z-20 mb-2 max-w-md sm:max-w-none mx-auto">
               <Button
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-gradient-to-r from-[#15803D] to-[#166534] hover:from-[#166534] hover:to-[#14532D] shadow-md hover:shadow-lg hover:shadow-[#15803D]/20 active:scale-[0.98] cursor-pointer group w-full sm:w-auto border border-[#86EFAC]/30"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg hover:shadow-[#1A2255]/10 active:scale-[0.98] cursor-pointer group w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta1}
@@ -304,7 +364,7 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#CA8A04] bg-[#FEFCE8] text-[#854D0E] hover:bg-[#FEF08A] hover:text-[#713F12] hover:border-[#A16207] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#CA8A04] bg-white text-[#1A2255] hover:bg-[#FEFCE8] hover:text-[#1A2255] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
@@ -314,16 +374,22 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* WIDER & SHORTER IMAGE CANVAS WITH KASAVU GOLD BORDER */}
+          {/* IMAGE CANVAS WITH KERALA KASAVU GOLD BORDER DECORATION */}
           <motion.div 
             variants={itemVariants} 
             className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
           >
+            {/* Corner Decorative Kasavu Flourishes */}
+            <div className="absolute -top-2 -left-2 z-20 w-8 h-8 border-t-4 border-l-4 border-amber-500 rounded-tl-lg pointer-events-none" />
+            <div className="absolute -top-2 -right-2 z-20 w-8 h-8 border-t-4 border-r-4 border-amber-500 rounded-tr-lg pointer-events-none" />
+            <div className="absolute -bottom-2 -left-2 z-20 w-8 h-8 border-b-4 border-l-4 border-amber-500 rounded-bl-lg pointer-events-none" />
+            <div className="absolute -bottom-2 -right-2 z-20 w-8 h-8 border-b-4 border-r-4 border-amber-500 rounded-br-lg pointer-events-none" />
+
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-[#FDE047] shadow-[0_25px_60px_-15px_rgba(202,138,4,0.25)] bg-amber-50 transition-all duration-300 ease-out overflow-hidden ring-4 ring-[#15803D]/20"
+              className="relative w-full h-full rounded-[24px] border-4 border-[#FDE047] shadow-[0_25px_60px_-15px_rgba(202,138,4,0.2)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden ring-2 ring-amber-500/30"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
@@ -343,7 +409,7 @@ export default function Hero() {
                     className="object-cover object-center brightness-[0.97]"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#15803D]/25 via-transparent to-[#CA8A04]/10 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/20 via-transparent to-amber-500/10 pointer-events-none" />
                 </motion.div>
               </AnimatePresence>
             </motion.div>
@@ -351,9 +417,9 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* TABS NAVIGATION DOCK STRIP WITH FESTIVE PALETTE */}
+      {/* TABS NAVIGATION DOCK STRIP */}
       <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
-        <div className="bg-[#FEFCE8]/90 backdrop-blur-xl rounded-xl shadow-[0_8px_25px_-5px_rgba(202,138,4,0.15)] border border-[#FEF08A] p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(202,138,4,0.15)] border border-amber-200/60 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -362,17 +428,17 @@ export default function Hero() {
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
                 className={`relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
-                  isActive ? "text-amber-50" : "text-emerald-900/60 hover:text-[#854D0E]"
+                  isActive ? "text-white" : "text-neutral-600 hover:text-[#1A2255]"
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="perfectTabIndicatorPremium"
-                    className="absolute inset-0 z-0 bg-gradient-to-r from-[#15803D] to-[#CA8A04]"
+                    className="absolute inset-0 z-0 bg-[#1A2255]"
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   />
                 )}
-                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-[#FDE047]" : "text-amber-700/50 group-hover:text-[#CA8A04]"}`} />
+                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-amber-400" : "text-neutral-400 group-hover:text-[#1A2255]"}`} />
                 <span className="whitespace-nowrap truncate z-10">{s.tabLabel}</span>
               </button>
             );
