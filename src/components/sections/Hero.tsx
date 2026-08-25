@@ -155,7 +155,7 @@ const CenterPookkalam = () => (
 
 /** Authentic Kerala Chundan Vallam (Snake Boat) Vector */
 const AuthenticSnakeBoat = () => (
-  <svg viewBox="0 0 1000 160" className="w-full max-w-[900px] h-auto filter drop-shadow-xl" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 1000 140" className="w-full max-w-[850px] h-auto filter drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#2A1208" />
@@ -168,9 +168,6 @@ const AuthenticSnakeBoat = () => (
         <stop offset="100%" stopColor="#D97706" />
       </linearGradient>
     </defs>
-
-    {/* Water Splash Lines */}
-    <path d="M40 135 Q300 148 940 120" stroke="#FFFFFF" strokeWidth="3" opacity="0.6" strokeDasharray="15 8" />
 
     {/* Main Curved Hull */}
     <path d="M40 92 C120 130 840 130 940 92 C955 75 960 40 950 25 C940 45 920 72 900 82 C820 115 140 115 70 82 C55 72 45 45 35 25 C25 40 25 75 40 92 Z" fill="url(#woodGrad)" />
@@ -364,7 +361,7 @@ export default function Hero() {
       aria-busy={loading}
       className="relative bg-gradient-to-b from-[#FFFDF0] via-[#FEF9C3] to-[#FEF3C7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-b-4 border-[#D97706]"
     >
-      {/* FALLING PETALS ANIMATION (BEHIND MAIN SLIDE CONTENT) */}
+      {/* FALLING PETALS ANIMATION */}
       <PetalsOverlay />
 
       {/* CENTERED POOKKALAM */}
@@ -472,17 +469,17 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* SLIDE CANVAS WITH ACCURATE CHUNDAN VALLAM (SNAKE BOAT) OVERLAY */}
+          {/* SLIDE CANVAS WITH ELEVATED SNAKE BOAT OVERLAY */}
           <motion.div 
             variants={itemVariants} 
-            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2 z-30 flex justify-center"
+            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] mt-10 mb-2 z-30 flex justify-center"
           >
-            {/* ACCURATE SNAKE BOAT MOUNTED OVER TOP OF THE SLIDES */}
+            {/* POSITIONED HIGH ABOVE THE SLIDE CONTAINER */}
             <motion.div 
               initial={{ x: -120, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
-              className="absolute -top-14 sm:-top-20 left-1/2 -translate-x-1/2 z-40 w-full flex justify-center pointer-events-none"
+              className="absolute -top-28 sm:-top-36 left-1/2 -translate-x-1/2 z-40 w-full flex justify-center pointer-events-none"
             >
               <AuthenticSnakeBoat />
             </motion.div>
