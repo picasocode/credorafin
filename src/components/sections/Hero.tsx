@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { ArrowUpRight, Award, Sparkles } from "lucide-react";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
@@ -120,11 +120,11 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
   }
 ];
 
-// SVG Pookkalam Component
+/** SVG Pookkalam Ornament Component */
 const Pookkalam = ({ className = "" }: { className?: string }) => (
-  <svg viewBox="0 0 200 200" className={`w-64 h-64 sm:w-96 sm:h-96 opacity-35 ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 200 200" className={`w-72 h-72 sm:w-96 sm:h-96 opacity-40 ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="100" cy="100" r="95" stroke="#EAB308" strokeWidth="2" strokeDasharray="6 6" />
-    <circle cx="100" cy="100" r="85" fill="#FEF08A" opacity="0.4" />
+    <circle cx="100" cy="100" r="85" fill="#FEF08A" opacity="0.5" />
     <circle cx="100" cy="100" r="75" stroke="#D97706" strokeWidth="3" />
     <g transform="translate(100, 100)">
       {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, i) => (
@@ -133,7 +133,7 @@ const Pookkalam = ({ className = "" }: { className?: string }) => (
           d="M0 0 C-15 -40 0 -70 0 -70 C0 -70 15 -40 0 0 Z"
           fill={i % 2 === 0 ? "#DC2626" : "#F59E0B"}
           transform={`rotate(${angle})`}
-          opacity="0.8"
+          opacity="0.85"
         />
       ))}
       {[15, 45, 75, 105, 135, 165, 195, 225, 255, 285, 315, 345].map((angle, i) => (
@@ -142,42 +142,46 @@ const Pookkalam = ({ className = "" }: { className?: string }) => (
           d="M0 0 C-10 -25 0 -50 0 -50 C0 -50 10 -25 0 0 Z"
           fill="#16A34A"
           transform={`rotate(${angle})`}
-          opacity="0.85"
+          opacity="0.9"
         />
       ))}
-      <circle cx="0" cy="0" r="25" fill="#B45309" />
-      <circle cx="0" cy="0" r="15" fill="#FEF08A" />
+      <circle cx="0" cy="0" r="24" fill="#B45309" />
+      <circle cx="0" cy="0" r="16" fill="#FEF08A" />
       <circle cx="0" cy="0" r="8" fill="#DC2626" />
     </g>
   </svg>
 );
 
-// SVG Snake Boat (Vallamkali) Component
+/** SVG Snake Boat (Vallamkali) Component positioned over the slide card */
 const SnakeBoat = ({ className = "" }: { className?: string }) => (
-  <svg viewBox="0 0 500 120" className={`w-72 sm:w-96 lg:w-[480px] h-auto ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Hull */}
-    <path d="M10 75 Q150 110 490 55 C420 85 200 85 10 75 Z" fill="#78350F" />
-    <path d="M10 75 Q150 100 480 50 C410 75 200 75 10 75 Z" fill="#92400E" />
-    {/* Raised Stern (Aamadi / Snake Head style tail) */}
-    <path d="M480 50 C500 30 495 10 485 5 C475 20 465 35 450 45 Z" fill="#D97706" />
-    <circle cx="482" cy="18" r="4" fill="#DC2626" />
-    {/* Decorative Gold & Red Bands */}
-    <path d="M30 76 Q180 95 460 55" stroke="#F59E0B" strokeWidth="4" />
-    <path d="M40 80 Q180 98 450 60" stroke="#DC2626" strokeWidth="2" />
-    {/* Rowers (Simplified Festive Figures) */}
+  <svg viewBox="0 0 520 120" className={`w-80 sm:w-[500px] lg:w-[600px] h-auto ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Boat Body */}
+    <path d="M10 75 Q160 115 510 55 C430 85 210 85 10 75 Z" fill="#6B21A8" opacity="0.15" />
+    <path d="M10 75 Q160 110 500 55 C420 82 200 82 10 75 Z" fill="#78350F" />
+    <path d="M10 75 Q160 100 490 50 C410 75 200 75 10 75 Z" fill="#92400E" />
+    
+    {/* Traditional Snake Head Raised Prow */}
+    <path d="M490 50 C515 25 505 5 490 2 C480 20 470 35 450 45 Z" fill="#D97706" />
+    <circle cx="488" cy="15" r="4" fill="#DC2626" />
+    
+    {/* Gold Accent Strip & Red Trim */}
+    <path d="M30 76 Q180 95 470 55" stroke="#F59E0B" strokeWidth="4" />
+    <path d="M40 80 Q180 98 460 60" stroke="#DC2626" strokeWidth="2" />
+    
+    {/* Festive Rowers */}
     {[50, 80, 110, 140, 170, 200, 230, 260, 290, 320, 350, 380, 410, 440].map((x, i) => (
       <g key={i}>
-        <circle cx={x} cy={55 + (i * 0.5)} r="5" fill="#FDE047" />
-        <path d={`M${x - 2} ${60 + (i * 0.5)} L${x + 2} ${75 + (i * 0.5)}`} stroke="#DC2626" strokeWidth="3" />
-        <line x1={x} y1={65 + (i * 0.5)} x2={x - 8} y2={85 + (i * 0.5)} stroke="#78350F" strokeWidth="2" />
+        <circle cx={x} cy={55 + i * 0.4} r="4.5" fill="#FDE047" />
+        <path d={`M${x - 2} ${60 + i * 0.4} L${x + 2} ${75 + i * 0.4}`} stroke="#DC2626" strokeWidth="3" />
+        <line x1={x} y1={65 + i * 0.4} x2={x - 8} y2={85 + i * 0.4} stroke="#78350F" strokeWidth="2" />
       </g>
     ))}
   </svg>
 );
 
-// Falling Flower Petals Animation
+/** Falling Flower Petals Overlay Animation */
 const PetalsOverlay = () => {
-  const petals = Array.from({ length: 18 }).map((_, i) => ({
+  const petals = Array.from({ length: 20 }).map((_, i) => ({
     id: i,
     x: Math.random() * 100,
     duration: 6 + Math.random() * 6,
@@ -253,7 +257,7 @@ export default function Hero() {
           setCurrent((c) => (c >= data.length ? 0 : c));
         }
       } catch {
-        // Fallback slides remain on error
+        // Fallback slides remain active
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -308,11 +312,11 @@ export default function Hero() {
       {/* FALLING PETALS ANIMATION */}
       <PetalsOverlay />
 
-      {/* POOKKALAM BACKGROUND ELEMENTS (BOTH ENDS) */}
-      <div className="absolute -left-20 -top-10 pointer-events-none z-0">
+      {/* POOKKALAM ON BOTH ENDS */}
+      <div className="absolute -left-20 top-1/4 pointer-events-none z-0">
         <Pookkalam />
       </div>
-      <div className="absolute -right-20 -bottom-10 pointer-events-none z-0">
+      <div className="absolute -right-20 top-1/4 pointer-events-none z-0">
         <Pookkalam />
       </div>
 
@@ -417,17 +421,17 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* IMAGE CANVAS WITH OVERLAYING SNAKE BOAT (VALLAMKALI) */}
+          {/* IMAGE CANVAS WITH SNAKE BOAT OVERLAY ON TOP */}
           <motion.div 
             variants={itemVariants} 
             className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
           >
-            {/* SNAKE BOAT (POSITIONED ON TOP OF SLIDE IMAGE) */}
+            {/* SNAKE BOAT (POSITIONED ON TOP OF SLIDE IMAGES) */}
             <motion.div 
-              initial={{ x: -100, opacity: 0 }}
+              initial={{ x: -120, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
-              className="absolute -top-12 sm:-top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none filter drop-shadow-xl"
+              className="absolute -top-14 sm:-top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-none filter drop-shadow-xl"
             >
               <SnakeBoat />
             </motion.div>
