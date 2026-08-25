@@ -120,21 +120,20 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
   }
 ];
 
-/** Poo Thoran Hanging Garland Component (Vertical String of Yellow & Orange Marigolds) */
+/** Mobile-Optimized Poo Thoran Garland */
 const PooThoran = ({ position }: { position: "left" | "right" }) => {
   const marigoldCount = 13;
 
   return (
     <svg
       viewBox="0 0 100 450"
-      className={`w-14 sm:w-20 md:w-24 h-auto absolute top-0 ${
-        position === "left" ? "left-2 sm:left-4" : "right-2 sm:right-4 scale-x-[-1]"
-      } pointer-events-none z-30 filter drop-shadow-md`}
+      className={`w-10 sm:w-16 md:w-20 lg:w-24 h-auto absolute top-0 ${
+        position === "left" ? "left-1 sm:left-3 md:left-5" : "right-1 sm:right-3 md:right-5 scale-x-[-1]"
+      } pointer-events-none z-30 filter drop-shadow-md transition-all duration-300`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        {/* Flower Petal Radial Gradients */}
         <radialGradient id="orangeMarigold" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#FB923C" />
           <stop offset="60%" stopColor="#EA580C" />
@@ -151,26 +150,15 @@ const PooThoran = ({ position }: { position: "left" | "right" }) => {
         </radialGradient>
       </defs>
 
-      {/* Garland Hanging Thread */}
       <line x1="60" y1="0" x2="60" y2="440" stroke="#15803D" strokeWidth="2.5" strokeDasharray="4 2" />
 
-      {/* Decorative Mango Leaves along the string */}
       {Array.from({ length: 6 }).map((_, i) => (
         <g key={`leaf-${i}`} transform={`translate(28, ${i * 70 + 20})`}>
-          <path
-            d="M 30 0 C 10 15 5 35 15 50 C 25 35 30 15 30 0 Z"
-            fill="#15803D"
-            opacity="0.9"
-          />
-          <path
-            d="M 30 0 C 10 15 5 35 15 50"
-            stroke="#166534"
-            strokeWidth="1"
-          />
+          <path d="M 30 0 C 10 15 5 35 15 50 C 25 35 30 15 30 0 Z" fill="#15803D" opacity="0.9" />
+          <path d="M 30 0 C 10 15 5 35 15 50" stroke="#166534" strokeWidth="1" />
         </g>
       ))}
 
-      {/* Vertical Alternating Marigold Flowers */}
       {Array.from({ length: marigoldCount }).map((_, i) => {
         const y = i * 32 + 20;
         const isOrange = i % 2 === 0;
@@ -178,7 +166,6 @@ const PooThoran = ({ position }: { position: "left" | "right" }) => {
 
         return (
           <g key={`marigold-${i}`} transform={`translate(60, ${y})`}>
-            {/* Outer Petal Fluff Layer */}
             {Array.from({ length: 10 }).map((_, p) => (
               <circle
                 key={`p1-${p}`}
@@ -188,7 +175,6 @@ const PooThoran = ({ position }: { position: "left" | "right" }) => {
                 fill={fillUrl}
               />
             ))}
-            {/* Inner Petal Fluff Layer */}
             {Array.from({ length: 8 }).map((_, p) => (
               <circle
                 key={`p2-${p}`}
@@ -198,7 +184,6 @@ const PooThoran = ({ position }: { position: "left" | "right" }) => {
                 fill={isOrange ? "#F97316" : "#FDE047"}
               />
             ))}
-            {/* Core Center */}
             <circle cx="0" cy="0" r="4" fill="url(#flowerCenter)" />
           </g>
         );
@@ -209,7 +194,7 @@ const PooThoran = ({ position }: { position: "left" | "right" }) => {
 
 /** Authentic Kerala Chundan Vallam (Snake Boat) Vector */
 const AuthenticSnakeBoat = () => (
-  <svg viewBox="0 0 1000 140" className="w-full max-w-[750px] sm:max-w-[850px] h-auto filter drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 1000 140" className="w-full max-w-[92%] sm:max-w-[850px] h-auto filter drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#2A1208" />
@@ -271,12 +256,12 @@ const AuthenticSnakeBoat = () => (
 
 /** Falling Marigold Flower Petals Overlay Animation */
 const PetalsOverlay = () => {
-  const petals = Array.from({ length: 18 }).map((_, i) => ({
+  const petals = Array.from({ length: 14 }).map((_, i) => ({
     id: i,
     x: Math.random() * 100,
-    duration: 7 + Math.random() * 5,
+    duration: 6 + Math.random() * 5,
     delay: Math.random() * 4,
-    scale: 0.6 + Math.random() * 0.7,
+    scale: 0.5 + Math.random() * 0.6,
     color: i % 2 === 0 ? "#FACC15" : "#EA580C",
   }));
 
@@ -300,7 +285,7 @@ const PetalsOverlay = () => {
           }}
           className="absolute top-0 left-0"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <path
               d="M10 0 C15 5 20 10 10 20 C0 10 5 5 10 0 Z"
               fill={p.color}
@@ -397,9 +382,9 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-gradient-to-b from-[#FFFDF0] via-[#FEF9C3] to-[#FEF3C7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-b-4 border-[#D97706]"
+      className="relative bg-gradient-to-b from-[#FFFDF0] via-[#FEF9C3] to-[#FEF3C7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-3 sm:px-6 lg:px-12 py-4 sm:py-6 font-sans antialiased border-b-4 border-[#D97706]"
     >
-      {/* POO THORAN (MARIGOLD FLOWER GARLANDS) ON BOTH LEFT & RIGHT ENDS */}
+      {/* POO THORAN (RESPONSIVE MARIGOLD GARLANDS) */}
       <PooThoran position="left" />
       <PooThoran position="right" />
 
@@ -408,7 +393,7 @@ export default function Hero() {
 
       {/* GOLDEN GLOW BACKGROUND */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#B453090F_1px,transparent_1px),linear-gradient(to_bottom,#B453090F_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#B453090F_1px,transparent_1px),linear-gradient(to_bottom,#B453090F_1px,transparent_1px)] bg-[size:2rem_2rem] sm:bg-[size:3rem_3rem]" />
         
         <motion.div
           animate={{ 
@@ -417,13 +402,13 @@ export default function Hero() {
             y: [0, -15, 15, 0] 
           }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-[750px] h-[750px] rounded-full blur-[140px] opacity-[0.35] top-[-15%] left-[20%]"
+          className="absolute w-[400px] sm:w-[750px] h-[400px] sm:h-[750px] rounded-full blur-[90px] sm:blur-[140px] opacity-[0.35] top-[-15%] left-[10%] sm:left-[20%]"
           style={{ background: `radial-gradient(circle, #F59E0B 0%, transparent 70%)` }}
         />
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto">
+      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto px-2 sm:px-0">
         <motion.div 
           variants={containerVariants}
           initial="hidden"
@@ -431,17 +416,17 @@ export default function Hero() {
           className="flex flex-col items-center text-center gap-2 w-full"
         >
           {/* HEADER TYPOGRAPHY */}
-          <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
+          <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0 px-4 sm:px-0">
             
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-white shadow-lg border border-amber-300 z-10"
+              className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.08em] sm:tracking-[0.12em] mb-2 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-white shadow-lg border border-amber-300 z-10 max-w-full truncate"
             >
-              <Sparkles className="w-4 h-4 text-yellow-200 shrink-0 fill-yellow-200 animate-pulse" />
-              <span>HAPPY ONAM • ISO/IEC 27001:2022 CERTIFIED</span>
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-200 shrink-0 fill-yellow-200 animate-pulse" />
+              <span className="truncate">HAPPY ONAM • ISO 27001:2022</span>
             </motion.div>
 
-            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-amber-950 flex flex-col justify-center items-center z-10">
+            <h1 className="text-[1.65rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.15] sm:leading-[1.1] text-amber-950 flex flex-col justify-center items-center z-10">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h1-${current}`}
@@ -475,43 +460,43 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-amber-900/80 font-medium leading-[1.5] max-w-lg mt-2 mb-3 z-10"
+                className="text-[12px] sm:text-[15px] text-amber-900/80 font-medium leading-[1.4] sm:leading-[1.5] max-w-lg mt-1.5 sm:mt-2 mb-2 sm:mb-3 z-10 px-2"
               >
                 {slide.subtitle}
               </motion.p>
             </AnimatePresence>
 
             {/* ACTION BUTTONS */}
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full z-20 mb-2 max-w-md sm:max-w-none mx-auto">
+            <motion.div variants={itemVariants} className="flex flex-row items-center justify-center gap-2 sm:gap-3 w-full z-20 mb-1 sm:mb-2 max-w-xs sm:max-w-none mx-auto">
               <Button
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 shadow-md hover:shadow-lg hover:shadow-amber-600/20 active:scale-[0.98] cursor-pointer group w-full sm:w-auto"
+                className="h-10 sm:h-10 px-4 sm:px-7 rounded-full text-[11px] sm:text-[12px] font-bold text-white transition-all duration-300 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 shadow-md hover:shadow-lg active:scale-[0.98] cursor-pointer group flex-1 sm:flex-none"
               >
-                <span className="flex items-center justify-center gap-1.5">
+                <span className="flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap">
                   {slide.cta1}
-                  <ArrowUpRight className="w-4 h-4 stroke-[2.5] transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                 </span>
               </Button>
 
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-amber-600 bg-white/90 text-amber-900 hover:bg-amber-100/60 hover:text-amber-950 hover:border-amber-700 shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-10 sm:h-10 px-4 sm:px-7 rounded-full text-[11px] sm:text-[12px] font-bold border-amber-600 bg-white/90 text-amber-900 hover:bg-amber-100/60 shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer flex-1 sm:flex-none"
               >
-                <span className="flex items-center justify-center gap-1.5">
+                <span className="flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap">
                   {slide.cta2}
-                  <ArrowUpRight className="w-4 h-4 text-amber-700 stroke-[2.5]" />
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-700 stroke-[2.5]" />
                 </span>
               </Button>
             </motion.div>
           </div>
 
-          {/* SNAKE BOAT POSITIONED SAFELY BELOW BUTTONS */}
+          {/* SNAKE BOAT (MOBILE & DESKTOP ADJUSTED) */}
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="w-full flex justify-center z-30 -mb-5 sm:-mb-7 pointer-events-none"
+            className="w-full flex justify-center z-30 -mb-3 sm:-mb-7 pointer-events-none"
           >
             <AuthenticSnakeBoat />
           </motion.div>
@@ -519,13 +504,13 @@ export default function Hero() {
           {/* SLIDE CANVAS */}
           <motion.div 
             variants={itemVariants} 
-            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] mb-2 z-20 flex justify-center"
+            className="relative w-full max-w-[1280px] h-[200px] xs:h-[240px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] mb-2 z-20 flex justify-center"
           >
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-amber-300/90 shadow-[0_25px_60px_-15px_rgba(217,119,6,0.25)] bg-amber-100 transition-all duration-300 ease-out overflow-hidden z-20"
+              className="relative w-full h-full rounded-[16px] sm:rounded-[24px] border-2 sm:border-4 border-amber-300/90 shadow-[0_15px_35px_-10px_rgba(217,119,6,0.25)] sm:shadow-[0_25px_60px_-15px_rgba(217,119,6,0.25)] bg-amber-100 transition-all duration-300 ease-out overflow-hidden z-20"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
@@ -553,9 +538,9 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* TABS NAVIGATION DOCK STRIP */}
-      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-40 pt-2">
-        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(180,83,9,0.15)] border border-amber-200 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+      {/* HORIZONTALLY SCROLLABLE TABS DOCK FOR MOBILE */}
+      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-40 pt-1 sm:pt-2">
+        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-md border border-amber-200 p-1 flex sm:grid sm:grid-cols-5 gap-1 overflow-x-auto no-scrollbar scroll-smooth">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -563,7 +548,7 @@ export default function Hero() {
               <button
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
-                className={`relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
+                className={`relative flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[10px] sm:text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden flex-shrink-0 sm:flex-shrink group ${
                   isActive ? "text-white" : "text-amber-900/70 hover:text-amber-950"
                 }`}
               >
@@ -574,8 +559,8 @@ export default function Hero() {
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   />
                 )}
-                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-white" : "text-amber-700 group-hover:text-amber-900"}`} />
-                <span className="whitespace-nowrap truncate z-10">{s.tabLabel}</span>
+                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 ${isActive ? "text-white" : "text-amber-700"}`} />
+                <span className="whitespace-nowrap z-10">{s.tabLabel}</span>
               </button>
             );
           })}
