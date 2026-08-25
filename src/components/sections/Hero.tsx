@@ -121,8 +121,8 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
 ];
 
 /** Centered Grand Pookkalam Ornament */
-const CenterPookkalam = ({ className = "" }: { className?: string }) => (
-  <svg viewBox="0 0 300 300" className={`w-[450px] h-[450px] sm:w-[650px] sm:h-[650px] opacity-25 ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+const CenterPookkalam = () => (
+  <svg viewBox="0 0 300 300" className="w-[450px] h-[450px] sm:w-[650px] sm:h-[650px] opacity-25" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="150" cy="150" r="145" stroke="#EAB308" strokeWidth="2.5" strokeDasharray="8 8" />
     <circle cx="150" cy="150" r="130" fill="#FEF08A" opacity="0.35" />
     <circle cx="150" cy="150" r="115" stroke="#D97706" strokeWidth="4" />
@@ -153,54 +153,88 @@ const CenterPookkalam = ({ className = "" }: { className?: string }) => (
   </svg>
 );
 
-/** Ornate Snake Boat (Vallamkali) */
-const SnakeBoat = ({ className = "" }: { className?: string }) => (
-  <svg viewBox="0 0 600 140" className={`w-80 sm:w-[540px] lg:w-[640px] h-auto ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+/** Authentic Kerala Chundan Vallam (Snake Boat) Vector */
+const AuthenticSnakeBoat = () => (
+  <svg viewBox="0 0 1000 160" className="w-full max-w-[900px] h-auto filter drop-shadow-xl" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="boatGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#451A03" />
-        <stop offset="50%" stopColor="#78350F" />
-        <stop offset="100%" stopColor="#92400E" />
+      <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#2A1208" />
+        <stop offset="20%" stopColor="#4A200E" />
+        <stop offset="80%" stopColor="#4A200E" />
+        <stop offset="100%" stopColor="#2A1208" />
       </linearGradient>
-      <linearGradient id="goldRibbon" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#F59E0B" />
-        <stop offset="50%" stopColor="#FEF08A" />
+      <linearGradient id="goldDetail" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stopColor="#FCD34D" />
         <stop offset="100%" stopColor="#D97706" />
       </linearGradient>
     </defs>
 
-    {/* Shadow */}
-    <path d="M15 90 Q180 135 580 65 C480 100 230 100 15 90 Z" fill="#451A03" opacity="0.25" filter="blur(4px)" />
+    {/* Water Splash Lines */}
+    <path d="M40 135 Q300 148 940 120" stroke="#FFFFFF" strokeWidth="3" opacity="0.6" strokeDasharray="15 8" />
 
-    {/* Hull */}
-    <path d="M10 85 Q180 130 570 60 C480 92 230 92 10 85 Z" fill="url(#boatGrad)" />
-    <path d="M10 85 Q180 118 550 54 C460 85 220 85 10 85 Z" fill="#92400E" />
+    {/* Main Curved Hull */}
+    <path d="M40 92 C120 130 840 130 940 92 C955 75 960 40 950 25 C940 45 920 72 900 82 C820 115 140 115 70 82 C55 72 45 45 35 25 C25 40 25 75 40 92 Z" fill="url(#woodGrad)" />
+    
+    {/* Inner Deck Shadow */}
+    <path d="M70 84 Q490 112 900 84 Q490 106 70 84 Z" fill="#1C0A04" opacity="0.7" />
 
-    {/* Traditional High Curved Snake Hood (Aamadi) */}
-    <path d="M550 54 C585 25 575 -5 555 -10 C540 10 530 30 510 42 Z" fill="#D97706" />
-    <path d="M555 -10 C565 -5 570 8 560 18 C550 28 535 38 515 45 Z" fill="url(#goldRibbon)" />
-    <circle cx="552" cy="5" r="5" fill="#DC2626" />
-    <circle cx="552" cy="5" r="2" fill="#FEF08A" />
+    {/* High Stern (Left Rear Top Ornament & Flag) */}
+    <g transform="translate(30, 20)">
+      <path d="M 5 10 Q -5 -5 5 -15 Q 15 -5 5 10 Z" fill="url(#goldDetail)" />
+      <line x1="5" y1="-15" x2="5" y2="-45" stroke="#4A200E" strokeWidth="2.5" />
+      <path d="M 5 -45 L -22 -35 L 5 -25 Z" fill="#EA580C" />
+      <line x1="12" y1="5" x2="28" y2="45" stroke="#4A200E" strokeWidth="3" />
+    </g>
 
-    {/* Decorative Gold & Red Trims */}
-    <path d="M30 87 Q200 110 530 58" stroke="url(#goldRibbon)" strokeWidth="4.5" strokeLinecap="round" />
-    <path d="M40 91 Q200 113 520 62" stroke="#DC2626" strokeWidth="2.5" strokeLinecap="round" />
+    {/* Prow (Right Front Crown & Flag) */}
+    <g transform="translate(950, 20)">
+      <path d="M -5 10 Q 5 -5 -5 -15 Q -15 -5 -5 10 Z" fill="url(#goldDetail)" />
+      <line x1="-5" y1="-15" x2="-5" y2="-45" stroke="#4A200E" strokeWidth="2.5" />
+      <path d="M -5 -45 L 22 -35 L -5 -25 Z" fill="#EA580C" />
+    </g>
 
-    {/* Rowers & Decorative Umbrellas */}
-    {[60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480].map((x, i) => (
-      <g key={i}>
-        {i % 4 === 0 && (
-          <path d={`M${x - 2} ${38 + i * 0.3} Q${x} ${28 + i * 0.3} ${x + 8} ${38 + i * 0.3} Z`} fill="#DC2626" />
-        )}
-        <circle cx={x} cy={60 + i * 0.35} r="4.5" fill="#FDE047" />
-        <path d={`M${x - 2} ${65 + i * 0.35} L${x + 2} ${82 + i * 0.35}`} stroke="#DC2626" strokeWidth="3" />
-        <line x1={x} y1={70 + i * 0.35} x2={x - 10} y2={95 + i * 0.35} stroke="#451A03" strokeWidth="2.5" strokeLinecap="round" />
-      </g>
-    ))}
+    {/* Brass Gold Trim Along the Boat Edge */}
+    <path d="M68 85 Q490 114 902 85" stroke="url(#goldDetail)" strokeWidth="2.5" />
+
+    {/* 22 Rowers with Traditional Bare Torso & White Mundu */}
+    {Array.from({ length: 22 }).map((_, i) => {
+      const xPos = 110 + i * 35;
+      const yOffset = Math.sin((i / 21) * Math.PI) * 12;
+      const isLeader = i === 0 || i === 21;
+
+      return (
+        <g key={i} transform={`translate(${xPos}, ${64 + yOffset})`}>
+          {/* Oar Pole */}
+          <line
+            x1={isLeader ? (i === 0 ? -12 : 12) : -4}
+            y1={isLeader ? -5 : 5}
+            x2={isLeader ? (i === 0 ? -28 : 28) : -18}
+            y2="38"
+            stroke="#36170A"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          {/* Oar Blade */}
+          <circle cx={isLeader ? (i === 0 ? -29 : 29) : -19} cy="39" r="2.5" fill="#D97706" />
+
+          {/* Torso */}
+          <path d="M -3 10 C -3 0 5 0 5 10 L 4 22 L -4 22 Z" fill="#B45309" />
+          
+          {/* Head */}
+          <circle cx="1" cy="-2" r="4.5" fill="#78350F" />
+          {/* Hair Bun / Kudumi */}
+          <circle cx="-2" cy="-3" r="2" fill="#1C0A04" />
+
+          {/* White Mundu (Dhoti) */}
+          <path d="M -5 21 L 6 21 L 5 32 L -6 32 Z" fill="#FAFAFA" />
+          <path d="M -5 31 L 6 31" stroke="#D97706" strokeWidth="1" />
+        </g>
+      );
+    })}
   </svg>
 );
 
-/** Falling Flower Petals Overlay Animation (Confined to Background Layer) */
+/** Falling Flower Petals Overlay Animation */
 const PetalsOverlay = () => {
   const petals = Array.from({ length: 18 }).map((_, i) => ({
     id: i,
@@ -330,15 +364,15 @@ export default function Hero() {
       aria-busy={loading}
       className="relative bg-gradient-to-b from-[#FFFDF0] via-[#FEF9C3] to-[#FEF3C7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-b-4 border-[#D97706]"
     >
-      {/* FALLING PETALS ANIMATION (BEHIND MAIN CONTENT) */}
+      {/* FALLING PETALS ANIMATION (BEHIND MAIN SLIDE CONTENT) */}
       <PetalsOverlay />
 
-      {/* POOKKALAM IN THE EXACT CENTER */}
+      {/* CENTERED POOKKALAM */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
         <CenterPookkalam />
       </div>
 
-      {/* GOLDEN GLOW OVERLAY */}
+      {/* GOLDEN GLOW BACKGROUND */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#B453090F_1px,transparent_1px),linear-gradient(to_bottom,#B453090F_1px,transparent_1px)] bg-[size:3rem_3rem]" />
         
@@ -365,7 +399,6 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* FESTIVE GOLD BADGE */}
             <motion.div
               variants={itemVariants}
               className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-white shadow-lg border border-amber-300 z-10"
@@ -439,19 +472,19 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* IMAGE CANVAS WITH ELEVATED Z-INDEX TO KEEP SLIDES CLEAR */}
+          {/* SLIDE CANVAS WITH ACCURATE CHUNDAN VALLAM (SNAKE BOAT) OVERLAY */}
           <motion.div 
             variants={itemVariants} 
-            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2 z-30"
+            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2 z-30 flex justify-center"
           >
-            {/* PRETTIER SNAKE BOAT OVERLAY */}
+            {/* ACCURATE SNAKE BOAT MOUNTED OVER TOP OF THE SLIDES */}
             <motion.div 
               initial={{ x: -120, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
-              className="absolute -top-16 sm:-top-20 left-1/2 -translate-x-1/2 z-40 pointer-events-none filter drop-shadow-2xl"
+              className="absolute -top-14 sm:-top-20 left-1/2 -translate-x-1/2 z-40 w-full flex justify-center pointer-events-none"
             >
-              <SnakeBoat />
+              <AuthenticSnakeBoat />
             </motion.div>
 
             <motion.div
@@ -486,7 +519,7 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* TABS NAVIGATION DOCK STRIP (HIGH Z-INDEX TO STAY UNBLURRED BY PETALS) */}
+      {/* TABS NAVIGATION DOCK STRIP */}
       <div className="w-full max-w-[1000px] mx-auto shrink-0 z-40 pt-2">
         <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(180,83,9,0.15)] border border-amber-200 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
