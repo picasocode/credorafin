@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { ArrowUpRight, Award } from "lucide-react";
+import { ArrowUpRight, Sparkles, Flower2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
@@ -31,7 +31,7 @@ interface PublicHeroSlide {
 const DEFAULT_SLIDES: PublicHeroSlide[] = [
   {
     id: "default-1",
-    badge: "Empowering Enterprises",
+    badge: "Festive Prosperity",
     headingWords: ["Accelerate", "Your MSME", "Growth"],
     subtitle: "Customized collateral-free funding solutions syndicated across 70+ banking partners globally.",
     cta1: "Build Finance",
@@ -43,7 +43,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "₹50 Crores", label: "Max Liquidity Pool Available" },
     tabLabel: "MSME Loan",
     tabIcon: "Building2",
-    accent: "#1A2255",
+    accent: "#CA8A04",
     isActive: true,
     sortOrder: 0
   },
@@ -61,7 +61,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "Syndicated", label: "Multi-Bank Framework Active" },
     tabLabel: "Project Finance",
     tabIcon: "TrendingUp",
-    accent: "#1A2255",
+    accent: "#CA8A04",
     isActive: true,
     sortOrder: 1
   },
@@ -79,7 +79,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "₹25 Crores", label: "Annual SCF Limit Available" },
     tabLabel: "Supply Chain Finance",
     tabIcon: "Briefcase",
-    accent: "#1A2255",
+    accent: "#CA8A04",
     isActive: true,
     sortOrder: 2
   },
@@ -97,7 +97,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "Unlimited", label: "Referral Earning Potential" },
     tabLabel: "Referral Partner",
     tabIcon: "Handshake",
-    accent: "#1A2255",
+    accent: "#CA8A04",
     isActive: true,
     sortOrder: 3
   },
@@ -115,7 +115,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
     hudGraph: { value: "Restored", label: "Removal of Legacy Default History" },
     tabLabel: "Credit Repair Services",
     tabIcon: "ShieldCheck",
-    accent: "#1A2255",
+    accent: "#CA8A04",
     isActive: true,
     sortOrder: 4
   }
@@ -204,22 +204,29 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-[#FAFBFD] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
+      className="relative bg-[#FEFDF8] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-t-4 border-[#CA8A04]"
     >
-      {/* BACKGROUND GLOW */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A225504_1px,transparent_1px),linear-gradient(to_bottom,#1A225504_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+      {/* ONAM BACKGROUND GLOW & POOKKALAM MOTIF */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Festive Golden Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#CA8A040F_1px,transparent_1px),linear-gradient(to_bottom,#CA8A040F_1px,transparent_1px)] bg-[size:3rem_3rem]" />
         
+        {/* Deep Festive Gold Ambient Glow */}
         <motion.div
           animate={{ 
-            scale: [1, 1.05, 0.95, 1], 
-            x: [0, 15, -15, 0], 
-            y: [0, -10, 10, 0] 
+            scale: [1, 1.08, 0.95, 1], 
+            x: [0, 20, -20, 0], 
+            y: [0, -15, 15, 0] 
           }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-[700px] h-[700px] rounded-full blur-[140px] opacity-[0.20] top-[-10%] left-[25%]"
-          style={{ background: `radial-gradient(circle, #1A225540 0%, transparent 70%)` }}
+          className="absolute w-[750px] h-[750px] rounded-full blur-[140px] opacity-[0.25] top-[-10%] left-[20%]"
+          style={{ background: `radial-gradient(circle, #EAB308 0%, #15803D 50%, transparent 75%)` }}
         />
+
+        {/* Decorative Watermark Pookkalam Ring */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 opacity-[0.06] text-[#CA8A04] flex items-center justify-center animate-[spin_60s_linear_infinite]">
+          <Flower2 className="w-full h-full" />
+        </div>
       </div>
 
       {/* MAIN CONTENT AREA */}
@@ -233,16 +240,16 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* DARK BLUE RECTANGLE ISO CERTIFIED BADGE WITH AWARD ICON */}
+            {/* ONAM FESTIVE BADGE WITH GOLD/RED ACCENTS */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-[#1A2255] text-white shadow-md border border-[#1A2255]"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] mb-2 bg-gradient-to-r from-[#854D0E] via-[#CA8A04] to-[#15803D] text-amber-50 shadow-lg border border-[#FDE047]/40 ring-2 ring-[#CA8A04]/20"
             >
-              <Award className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>ISO/IEC 27001:2022 CERTIFIED</span>
+              <Sparkles className="w-4 h-4 text-[#FDE047] shrink-0 animate-pulse" />
+              <span>HAPPY ONAM • PROSPERITY & GROWTH</span>
             </motion.div>
 
-            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
+            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-emerald-950 flex flex-col justify-center items-center">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h1-${current}`}
@@ -262,7 +269,7 @@ export default function Hero() {
                   animate={{ opacity: 1, width: "auto" }}
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.5, delay: 0.08 }}
-                  className="block text-[#1A2255] relative after:content-[''] after:absolute after:-right-1.5 after:bottom-1 after:w-[3px] after:h-[75%] after:bg-[#1A2255] after:animate-pulse whitespace-nowrap overflow-hidden pr-1.5"
+                  className="block text-transparent bg-clip-text bg-gradient-to-r from-[#B45309] via-[#CA8A04] to-[#15803D] relative after:content-[''] after:absolute after:-right-1.5 after:bottom-1 after:w-[3px] after:h-[75%] after:bg-[#CA8A04] after:animate-pulse whitespace-nowrap overflow-hidden pr-1.5"
                 >
                   {slide.headingWords[slide.headingWords.length - 1]}
                 </motion.span>
@@ -276,7 +283,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-neutral-500 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
+                className="text-[13px] sm:text-[15px] text-emerald-900/70 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
               >
                 {slide.subtitle}
               </motion.p>
@@ -286,7 +293,7 @@ export default function Hero() {
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full z-20 mb-2 max-w-md sm:max-w-none mx-auto">
               <Button
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg hover:shadow-[#1A2255]/10 active:scale-[0.98] cursor-pointer group w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-gradient-to-r from-[#15803D] to-[#166534] hover:from-[#166534] hover:to-[#14532D] shadow-md hover:shadow-lg hover:shadow-[#15803D]/20 active:scale-[0.98] cursor-pointer group w-full sm:w-auto border border-[#86EFAC]/30"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta1}
@@ -297,17 +304,17 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#304AC0] bg-white text-[#1C1D62] hover:bg-[#F0F4FF] hover:text-[#1A2255] hover:border-[#1A2255] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#CA8A04] bg-[#FEFCE8] text-[#854D0E] hover:bg-[#FEF08A] hover:text-[#713F12] hover:border-[#A16207] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
-                  <ArrowUpRight className="w-4 h-4 text-[#304AC0] stroke-[2.5]" />
+                  <ArrowUpRight className="w-4 h-4 text-[#CA8A04] stroke-[2.5]" />
                 </span>
               </Button>
             </motion.div>
           </div>
 
-          {/* WIDER & SHORTER IMAGE CANVAS */}
+          {/* WIDER & SHORTER IMAGE CANVAS WITH KASAVU GOLD BORDER */}
           <motion.div 
             variants={itemVariants} 
             className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
@@ -316,7 +323,7 @@ export default function Hero() {
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-white shadow-[0_25px_60px_-15px_rgba(26,34,85,0.12)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden"
+              className="relative w-full h-full rounded-[24px] border-4 border-[#FDE047] shadow-[0_25px_60px_-15px_rgba(202,138,4,0.25)] bg-amber-50 transition-all duration-300 ease-out overflow-hidden ring-4 ring-[#15803D]/20"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
@@ -336,7 +343,7 @@ export default function Hero() {
                     className="object-cover object-center brightness-[0.97]"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/15 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#15803D]/25 via-transparent to-[#CA8A04]/10 pointer-events-none" />
                 </motion.div>
               </AnimatePresence>
             </motion.div>
@@ -344,9 +351,9 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* TABS NAVIGATION DOCK STRIP */}
+      {/* TABS NAVIGATION DOCK STRIP WITH FESTIVE PALETTE */}
       <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
-        <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.03)] border border-neutral-200/50 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+        <div className="bg-[#FEFCE8]/90 backdrop-blur-xl rounded-xl shadow-[0_8px_25px_-5px_rgba(202,138,4,0.15)] border border-[#FEF08A] p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -355,17 +362,17 @@ export default function Hero() {
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
                 className={`relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
-                  isActive ? "text-white" : "text-neutral-500 hover:text-[#1A2255]"
+                  isActive ? "text-amber-50" : "text-emerald-900/60 hover:text-[#854D0E]"
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="perfectTabIndicatorPremium"
-                    className="absolute inset-0 z-0 bg-[#1A2255]"
+                    className="absolute inset-0 z-0 bg-gradient-to-r from-[#15803D] to-[#CA8A04]"
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   />
                 )}
-                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-white" : "text-neutral-400 group-hover:text-[#1A2255]"}`} />
+                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-[#FDE047]" : "text-amber-700/50 group-hover:text-[#CA8A04]"}`} />
                 <span className="whitespace-nowrap truncate z-10">{s.tabLabel}</span>
               </button>
             );
