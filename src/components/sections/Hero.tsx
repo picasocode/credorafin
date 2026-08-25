@@ -27,6 +27,7 @@ interface PublicHeroSlide {
   sortOrder: number;
 }
 
+/** Fallback slides — rendered immediately and kept if the API is unavailable. */
 const DEFAULT_SLIDES: PublicHeroSlide[] = [
   {
     id: "default-1",
@@ -130,6 +131,69 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
 };
 
+// --- ONAM POOKKALAM (FLORAL RANGOLI) WATERMARK ---
+const PookkalamWatermark = () => {
+  const petals = Array.from({ length: 8 });
+  return (
+    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] pointer-events-none opacity-[0.08] z-0">
+      <motion.svg
+        viewBox="0 0 200 200"
+        className="w-full h-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 140, ease: "linear", repeat: Infinity }}
+      >
+        <circle cx="100" cy="100" r="95" fill="none" stroke="#D4AF37" strokeWidth="2" strokeDasharray="4 4" />
+        <circle cx="100" cy="100" r="85" fill="none" stroke="#C41E3A" strokeWidth="3" />
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#FF8C00" strokeWidth="2" />
+        {petals.map((_, i) => {
+          const angle = i * 45;
+          return (
+            <g key={i} transform={`rotate(${angle} 100 100)`}>
+              <path
+                d="M100 15 C115 40 115 60 100 75 C85 60 85 40 100 15 Z"
+                fill="#E5A21A"
+                opacity="0.6"
+              />
+              <path
+                d="M100 30 C108 45 108 55 100 65 C92 55 92 45 100 30 Z"
+                fill="#C41E3A"
+                opacity="0.8"
+              />
+            </g>
+          );
+        })}
+        <circle cx="100" cy="100" r="22" fill="#D4AF37" opacity="0.4" />
+        <circle cx="100" cy="100" r="12" fill="#C41E3A" />
+      </motion.svg>
+    </div>
+  );
+};
+
+// --- FLOATING FESTIVE PETAL ---
+interface FestivePetalProps {
+  color: string;
+  xPosition: number;
+  delay: number;
+  duration: number;
+  size: number;
+}
+
+const FestivePetal = ({ color, xPosition, delay, duration, size }: FestivePetalProps) => {
+  return (
+    <motion.div
+      className="absolute pointer-events-none z-0"
+      style={{ left: `${xPosition}%`, width: `${size}px`, height: `${size * 1.2}px` }}
+      initial={{ y: "-10vh", rotate: 0 }}
+      animate={{ y: "110vh", x: [0, 20, -20, 0], rotate: 360 }}
+      transition={{ duration: duration, delay: delay, ease: "linear", repeat: Infinity }}
+    >
+      <svg viewBox="0 0 30 40" fill="none" className="w-full h-full drop-shadow-xs">
+        <path d="M15 0 C25 10 30 25 15 40 C0 25 5 10 15 0 Z" fill={color} opacity="0.6" />
+      </svg>
+    </motion.div>
+  );
+};
+
 export default function Hero() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
@@ -139,6 +203,15 @@ export default function Hero() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const slide = slides[current] ?? slides[0];
+
+  const petalConfig = [
+    { color: "#E5A21A", xPosition: 6, delay: 0, duration: 12, size: 22 },
+    { color: "#FF8C00", xPosition: 22, delay: 2, duration: 15, size: 26 },
+    { color: "#0A6B32", xPosition: 38, delay: 1, duration: 14, size: 20 },
+    { color: "#C41E3A", xPosition: 68, delay: 4, duration: 16, size: 24 },
+    { color: "#E5A21A", xPosition: 84, delay: 2, duration: 13, size: 22 },
+    { color: "#FF8C00", xPosition: 92, delay: 3, duration: 17, size: 28 },
+  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -153,7 +226,7 @@ export default function Hero() {
           setCurrent((c) => (c >= data.length ? 0 : c));
         }
       } catch {
-        // keep defaults
+        // leave DEFAULT_SLIDES in place on any error
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -169,8 +242,8 @@ export default function Hero() {
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-300, 300], [2, -2]);
-  const rotateY = useTransform(x, [-300, 300], [-2, 2]);
+  const rotateX = useTransform(y, [-300, 300], [3, -3]);
+  const rotateY = useTransform(x, [-300, 300], [-3, 3]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -203,103 +276,33 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-[#FAF9F5] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-t-8 border-[#D97706]"
+      className="relative bg-[#FAF8F2] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
     >
-      {/* 1. HIGH-END ANIMATED FLOWER RAIN (PETALS FALLING DOWNWARD) */}
-      <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden">
-        {[...Array(22)].map((_, i) => {
-          const petalColors = ["#D97706", "#DC2626", "#059669", "#F59E0B"];
-          const color = petalColors[i % petalColors.length];
-          const leftPercent = (i * 4.5) + 1;
+      {/* KERALA KASAVU GOLD BORDER STRIP */}
+      <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#D4AF37] via-[#FFF3C4] to-[#D4AF37] z-30 pointer-events-none shadow-xs" />
 
-          return (
-            <motion.div
-              key={i}
-              initial={{ y: -40, opacity: 0, rotate: 0 }}
-              animate={{
-                y: ["0vh", "105vh"],
-                opacity: [0, 0.9, 0.9, 0],
-                rotate: [0, 240, 480],
-                x: [0, i % 2 === 0 ? 25 : -25, 0]
-              }}
-              transition={{
-                duration: 6 + (i % 5),
-                repeat: Infinity,
-                ease: "linear",
-                delay: i * 0.3
-              }}
-              style={{ left: `${leftPercent}%` }}
-              className="absolute top-0"
-            >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 filter drop-shadow-sm" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2C8 7 3 11 3 15.5C3 19.1 6.1 22 12 22C17.9 22 21 19.1 21 15.5C21 11 16 7 12 2Z"
-                  fill={color}
-                  opacity="0.85"
-                />
-              </svg>
-            </motion.div>
-          );
-        })}
+      {/* BACKGROUND ELEMENTS & POOKKALAM WATERMARK */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#D4AF3710_1px,transparent_1px),linear-gradient(to_bottom,#D4AF3710_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+        
+        {/* Pookkalam Central Motif */}
+        <PookkalamWatermark />
+
+        {/* Floating Petals */}
+        {petalConfig.map((p, index) => (
+          <FestivePetal
+            key={index}
+            color={p.color}
+            xPosition={p.xPosition}
+            delay={p.delay}
+            duration={p.duration}
+            size={p.size}
+          />
+        ))}
       </div>
 
-      {/* 2. ELEGANT POOKKALAM GEOMETRIC MANDALA (BACKGROUND) */}
-      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
-        {/* Soft Golden Ambient Light */}
-        <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-b from-amber-200/40 via-amber-100/20 to-transparent blur-3xl rounded-full" />
-
-        {/* Dynamic Rotating Geometric Pookkalam */}
-        <div className="w-[550px] h-[550px] sm:w-[750px] sm:h-[750px] lg:w-[900px] lg:h-[900px] opacity-[0.14] transition-all">
-          <svg className="w-full h-full animate-[spin_120s_linear_infinite]" viewBox="0 0 400 400" fill="none">
-            {/* Concentric Traditional Rings */}
-            <circle cx="200" cy="200" r="190" stroke="#D97706" strokeWidth="2" strokeDasharray="8 4" />
-            <circle cx="200" cy="200" r="165" stroke="#15803D" strokeWidth="3" />
-            <circle cx="200" cy="200" r="140" stroke="#B45309" strokeWidth="2" />
-            <circle cx="200" cy="200" r="110" stroke="#DC2626" strokeWidth="2.5" />
-            <circle cx="200" cy="200" r="80" fill="#FDE047" opacity="0.15" />
-            
-            {/* Symmetric Radial Petal Layers */}
-            {[0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345].map((deg, i) => (
-              <g key={i} transform={`rotate(${deg} 200 200)`}>
-                <path d="M200 35 C208 65 208 95 200 125 C192 95 192 65 200 35 Z" fill={i % 2 === 0 ? "#D97706" : "#059669"} opacity="0.6" />
-                <circle cx="200" cy="25" r="4" fill="#DC2626" />
-              </g>
-            ))}
-          </svg>
-        </div>
-      </div>
-
-      {/* 3. VALLAM KALI (SNAKE BOAT SILHOUETTE) WITH BACKWATER FLOATING ANIMATION */}
-      <div className="absolute bottom-12 left-0 right-0 z-10 pointer-events-none flex justify-center overflow-hidden">
-        <motion.div
-          animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-          className="w-full max-w-[1300px] h-28 opacity-25 flex items-end"
-        >
-          <svg className="w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="none">
-            {/* Backwater Fluid Wave Lines */}
-            <path d="M0,90 Q300,110 600,90 T1200,90 L1200,120 L0,120 Z" fill="#059669" />
-            
-            {/* Grand Snake Boat (Vallam) Profile */}
-            <path
-              d="M 100,92 Q 300,105 600,100 Q 900,105 1080,88 C 1105,65 1115,35 1120,10 C 1110,42 1090,75 1060,85 L 140,85 C 120,72 105,42 100,10 C 95,38 90,70 100,92 Z"
-              fill="#1A2255"
-            />
-
-            {/* Traditional Royal Umbrellas (Muthukkuda) */}
-            {[260, 430, 600, 770, 940].map((uX, idx) => (
-              <g key={idx}>
-                <line x1={uX} y1="85" x2={uX} y2="40" stroke="#1A2255" strokeWidth="2.5" />
-                <path d={`M ${uX - 22},40 Q ${uX},22 ${uX + 22},40 Z`} fill={idx % 2 === 0 ? "#D97706" : "#DC2626"} />
-                <line x1={uX - 22} y1="40" x2={uX + 22} y2="40" stroke="#1A2255" strokeWidth="1.5" />
-              </g>
-            ))}
-          </svg>
-        </motion.div>
-      </div>
-
-      {/* MAIN HERO CONTENT */}
-      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-30 my-auto pt-2">
+      {/* MAIN CONTENT AREA */}
+      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto">
         <motion.div 
           variants={containerVariants}
           initial="hidden"
@@ -309,23 +312,16 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* FESTIVE ONAM BADGE */}
+            {/* THIRUVONAM SPECIAL ONAM BADGE */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-amber-500/10 border border-amber-600/30 text-[#B45309] text-[11px] font-bold tracking-widest uppercase mb-1.5 shadow-2xs backdrop-blur-xs"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-white/95 text-[#1A2255] shadow-sm border border-[#E5A21A]/50 backdrop-blur-md"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>Happy Onam • Festival of Abundance</span>
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-            </motion.div>
-
-            {/* RESTORED EXACT ORIGINAL ISO CERTIFIED BADGE */}
-            <motion.div
-              variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-[#1A2255] text-white shadow-md border border-[#1A2255]"
-            >
-              <Award className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>ISO/IEC 27001:2022 CERTIFIED</span>
+              <Award className="w-4 h-4 text-[#D4AF37] shrink-0" />
+              <span className="text-[#C41E3A] font-extrabold">THIRUVONAM SPECIAL</span>
+              <span className="text-amber-300">|</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#E5A21A]" />
+              <span className="text-[#1A2255] font-bold">{slide.badge}</span>
             </motion.div>
 
             <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-neutral-950 flex flex-col justify-center items-center">
@@ -383,60 +379,58 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#D97706] bg-white text-[#1A2255] hover:bg-[#FEFCE8] hover:border-[#B45309] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#D4AF37] bg-white text-[#1C1D62] hover:bg-[#FFFDF5] hover:text-[#1A2255] hover:border-[#D4AF37] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
-                  <ArrowUpRight className="w-4 h-4 text-[#D97706] stroke-[2.5]" />
+                  <ArrowUpRight className="w-4 h-4 text-[#D4AF37] stroke-[2.5]" />
                 </span>
               </Button>
             </motion.div>
           </div>
 
-          {/* MAIN IMAGE CANVAS FRAME WITH KASAVU GOLD BORDER */}
+          {/* TRICOLOR KASAVU GOLD BORDERED IMAGE CANVAS */}
           <motion.div 
             variants={itemVariants} 
             className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
           >
-            {/* Kasavu Gold Top and Bottom Accent Strips */}
-            <div className="absolute -top-1.5 inset-x-12 h-1 bg-gradient-to-r from-transparent via-[#D97706] to-transparent z-20" />
-            <div className="absolute -bottom-1.5 inset-x-12 h-1 bg-gradient-to-r from-transparent via-[#D97706] to-transparent z-20" />
-
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-amber-300/80 shadow-[0_25px_60px_-15px_rgba(217,119,6,0.18)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden ring-1 ring-[#1A2255]/10"
+              className="relative w-full h-full rounded-[24px] p-[3px] bg-gradient-to-r from-[#D4AF37] via-[#FF8C00] to-[#0A6B32] shadow-[0_25px_60px_-15px_rgba(212,175,55,0.20)] transition-all duration-300 ease-out overflow-hidden"
             >
-              <AnimatePresence initial={false} mode="popLayout">
-                <motion.div
-                  key={`img-${current}`}
-                  initial={{ opacity: 0, scale: 1.02 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative w-full h-full"
-                >
-                  <Image
-                    src={imgSrc}
-                    alt="Credora Enterprise Funding Platform"
-                    fill
-                    unoptimized
-                    onError={() => setImgSrc(slide.fallbackImage)}
-                    className="object-cover object-center brightness-[0.97]"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/20 via-transparent to-amber-500/10 pointer-events-none" />
-                </motion.div>
-              </AnimatePresence>
+              <div className="relative w-full h-full rounded-[21px] overflow-hidden bg-neutral-200">
+                <AnimatePresence initial={false} mode="popLayout">
+                  <motion.div
+                    key={`img-${current}`}
+                    initial={{ opacity: 0, scale: 1.02 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative w-full h-full"
+                  >
+                    <Image
+                      src={imgSrc}
+                      alt="Credora Enterprise Funding Platform"
+                      fill
+                      unoptimized
+                      onError={() => setImgSrc(slide.fallbackImage)}
+                      className="object-cover object-center brightness-[0.97]"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1A2255]/15 via-transparent to-transparent pointer-events-none" />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </motion.div>
           </motion.div>
         </motion.div>
       </div>
 
       {/* TABS NAVIGATION DOCK STRIP */}
-      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-40 pt-2 pb-2">
-        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.06)] border border-amber-200/60 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
+        <div className="bg-white/90 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(212,175,55,0.12)] border border-amber-200/60 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -455,7 +449,7 @@ export default function Hero() {
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   />
                 )}
-                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-amber-400" : "text-neutral-400 group-hover:text-[#1A2255]"}`} />
+                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-white" : "text-neutral-400 group-hover:text-[#1A2255]"}`} />
                 <span className="whitespace-nowrap truncate z-10">{s.tabLabel}</span>
               </button>
             );
