@@ -130,19 +130,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
 };
 
-// Cartoon Flower Petal Component
-function CartoonFlower({ color, centerColor }: { color: string; centerColor: string }) {
-  return (
-    <svg className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md" viewBox="0 0 40 40" fill="none">
-      <circle cx="20" cy="10" r="7" fill={color} stroke="#78350F" strokeWidth="2" />
-      <circle cx="30" cy="20" r="7" fill={color} stroke="#78350F" strokeWidth="2" />
-      <circle cx="20" cy="30" r="7" fill={color} stroke="#78350F" strokeWidth="2" />
-      <circle cx="10" cy="20" r="7" fill={color} stroke="#78350F" strokeWidth="2" />
-      <circle cx="20" cy="20" r="6" fill={centerColor} stroke="#78350F" strokeWidth="2" />
-    </svg>
-  );
-}
-
 export default function Hero() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
@@ -182,8 +169,8 @@ export default function Hero() {
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-300, 300], [3, -3]);
-  const rotateY = useTransform(x, [-300, 300], [-3, 3]);
+  const rotateX = useTransform(y, [-300, 300], [2, -2]);
+  const rotateY = useTransform(x, [-300, 300], [-2, 2]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -212,145 +199,106 @@ export default function Hero() {
     };
   }, [goNext]);
 
-  // Cartoon flower colors array
-  const flowerStyles = [
-    { color: "#FF4500", centerColor: "#FFD700" }, // Bright Orange-Red
-    { color: "#FF1493", centerColor: "#FFFFFF" }, // Deep Pink
-    { color: "#FFD700", centerColor: "#FF4500" }, // Vibrant Yellow
-    { color: "#9370DB", centerColor: "#FFD700" }, // Bright Purple
-    { color: "#00FF7F", centerColor: "#FF1493" }, // Spring Green
-  ];
-
   return (
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-gradient-to-b from-[#FFF5D6] via-[#FDE68A] to-[#FFF5D6] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-t-8 border-[#F59E0B]"
+      className="relative bg-[#FAF9F5] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-t-8 border-[#D97706]"
     >
-      {/* 1. CARTOON FLOWER RAIN (FALLING VERTICALLY FROM TOP) */}
+      {/* 1. HIGH-END ANIMATED FLOWER RAIN (PETALS FALLING DOWNWARD) */}
       <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden">
-        {[...Array(16)].map((_, i) => {
-          const style = flowerStyles[i % flowerStyles.length];
-          const leftPos = (i * 6.25) + 1; // Even horizontal distribution
+        {[...Array(22)].map((_, i) => {
+          const petalColors = ["#D97706", "#DC2626", "#059669", "#F59E0B"];
+          const color = petalColors[i % petalColors.length];
+          const leftPercent = (i * 4.5) + 1;
+
           return (
             <motion.div
               key={i}
-              initial={{ y: "-10vh", rotate: 0 }}
+              initial={{ y: -40, opacity: 0, rotate: 0 }}
               animate={{
-                y: "115vh",
-                rotate: 360,
+                y: ["0vh", "105vh"],
+                opacity: [0, 0.9, 0.9, 0],
+                rotate: [0, 240, 480],
+                x: [0, i % 2 === 0 ? 25 : -25, 0]
               }}
               transition={{
-                duration: 5 + (i % 4),
+                duration: 6 + (i % 5),
                 repeat: Infinity,
                 ease: "linear",
-                delay: i * 0.35,
+                delay: i * 0.3
               }}
-              style={{ left: `${leftPos}%` }}
+              style={{ left: `${leftPercent}%` }}
               className="absolute top-0"
             >
-              <CartoonFlower color={style.color} centerColor={style.centerColor} />
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 filter drop-shadow-sm" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2C8 7 3 11 3 15.5C3 19.1 6.1 22 12 22C17.9 22 21 19.1 21 15.5C21 11 16 7 12 2Z"
+                  fill={color}
+                  opacity="0.85"
+                />
+              </svg>
             </motion.div>
           );
         })}
       </div>
 
-      {/* 2. BRIGHT CARTOON POOKKALAM (ROTATING FLOWER CARPET) */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] lg:w-[850px] lg:h-[850px] z-0 pointer-events-none opacity-85">
-        <svg className="w-full h-full animate-[spin_40s_linear_infinite]" viewBox="0 0 300 300">
-          {/* Outer Marigold Ring */}
-          <circle cx="150" cy="150" r="140" fill="#F59E0B" stroke="#B45309" strokeWidth="6" />
-          <circle cx="150" cy="150" r="125" fill="#EF4444" stroke="#991B1B" strokeWidth="5" />
-          <circle cx="150" cy="150" r="105" fill="#10B981" stroke="#065F46" strokeWidth="5" />
-          <circle cx="150" cy="150" r="85" fill="#FBBF24" stroke="#D97706" strokeWidth="5" />
-          <circle cx="150" cy="150" r="60" fill="#EC4899" stroke="#BE185D" strokeWidth="5" />
-          <circle cx="150" cy="150" r="35" fill="#3B82F6" stroke="#1D4ED8" strokeWidth="4" />
-          <circle cx="150" cy="150" r="15" fill="#FEF08A" stroke="#CA8A04" strokeWidth="3" />
+      {/* 2. ELEGANT POOKKALAM GEOMETRIC MANDALA (BACKGROUND) */}
+      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
+        {/* Soft Golden Ambient Light */}
+        <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-b from-amber-200/40 via-amber-100/20 to-transparent blur-3xl rounded-full" />
 
-          {/* Cartoon Petals Around Circles */}
-          {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, idx) => (
-            <g key={idx} transform={`rotate(${angle} 150 150)`}>
-              <ellipse cx="150" cy="30" rx="12" ry="22" fill="#FF4500" stroke="#78350F" strokeWidth="3" />
-              <circle cx="150" cy="12" r="7" fill="#FFD700" stroke="#78350F" strokeWidth="2" />
-              <ellipse cx="150" cy="72" rx="9" ry="16" fill="#FFFFFF" stroke="#78350F" strokeWidth="3" />
-            </g>
-          ))}
-        </svg>
-      </div>
-
-      {/* 3. BRIGHT CARTOON VALLAM KALI (ANIMATED ROWING SNAKE BOAT WITH UMBRELLAS) */}
-      <div className="absolute bottom-10 left-0 right-0 h-36 z-10 pointer-events-none overflow-hidden">
-        {/* Animated Boat Moving Across Screen */}
-        <motion.div
-          initial={{ x: "-100%" }}
-          animate={{ x: "100%" }}
-          transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-0 flex items-end"
-        >
-          <svg className="w-[600px] sm:w-[800px] h-32" viewBox="0 0 800 160" fill="none">
-            {/* Snake Boat Hull */}
-            <path
-              d="M 20 130 Q 150 150 400 145 Q 680 150 780 120 C 795 90 800 40 790 10 C 780 60 760 110 730 125 L 50 125 C 35 110 25 70 20 10 C 15 50 10 90 20 130 Z"
-              fill="#854D0E"
-              stroke="#451A03"
-              strokeWidth="6"
-            />
-            {/* Gold Stripe on Boat */}
-            <path d="M 40 130 Q 400 142 740 125" stroke="#FBBF24" strokeWidth="6" fill="none" />
-
-            {/* Cartoon Rowers */}
-            {[100, 160, 220, 280, 340, 400, 460, 520, 580, 640].map((xPos, idx) => (
-              <g key={idx}>
-                {/* Rower Body */}
-                <circle cx={xPos} cy="100" r="10" fill="#FDBA74" stroke="#78350F" strokeWidth="3" />
-                <rect x={xPos - 8} y="110" width="16" height="18" rx="4" fill="#DC2626" stroke="#78350F" strokeWidth="3" />
-                {/* Oar Moving */}
-                <motion.line
-                  x1={xPos}
-                  y1="115"
-                  x2={xPos - 15}
-                  y2="150"
-                  stroke="#451A03"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  animate={{ rotate: [0, -20, 0] }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-                />
+        {/* Dynamic Rotating Geometric Pookkalam */}
+        <div className="w-[550px] h-[550px] sm:w-[750px] sm:h-[750px] lg:w-[900px] lg:h-[900px] opacity-[0.14] transition-all">
+          <svg className="w-full h-full animate-[spin_120s_linear_infinite]" viewBox="0 0 400 400" fill="none">
+            {/* Concentric Traditional Rings */}
+            <circle cx="200" cy="200" r="190" stroke="#D97706" strokeWidth="2" strokeDasharray="8 4" />
+            <circle cx="200" cy="200" r="165" stroke="#15803D" strokeWidth="3" />
+            <circle cx="200" cy="200" r="140" stroke="#B45309" strokeWidth="2" />
+            <circle cx="200" cy="200" r="110" stroke="#DC2626" strokeWidth="2.5" />
+            <circle cx="200" cy="200" r="80" fill="#FDE047" opacity="0.15" />
+            
+            {/* Symmetric Radial Petal Layers */}
+            {[0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345].map((deg, i) => (
+              <g key={i} transform={`rotate(${deg} 200 200)`}>
+                <path d="M200 35 C208 65 208 95 200 125 C192 95 192 65 200 35 Z" fill={i % 2 === 0 ? "#D97706" : "#059669"} opacity="0.6" />
+                <circle cx="200" cy="25" r="4" fill="#DC2626" />
               </g>
             ))}
+          </svg>
+        </div>
+      </div>
 
-            {/* Bright Cartoon Ceremonial Umbrellas (Muthukkuda) */}
-            {[130, 250, 370, 490, 610].map((uX, idx) => (
+      {/* 3. VALLAM KALI (SNAKE BOAT SILHOUETTE) WITH BACKWATER FLOATING ANIMATION */}
+      <div className="absolute bottom-12 left-0 right-0 z-10 pointer-events-none flex justify-center overflow-hidden">
+        <motion.div
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+          className="w-full max-w-[1300px] h-28 opacity-25 flex items-end"
+        >
+          <svg className="w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="none">
+            {/* Backwater Fluid Wave Lines */}
+            <path d="M0,90 Q300,110 600,90 T1200,90 L1200,120 L0,120 Z" fill="#059669" />
+            
+            {/* Grand Snake Boat (Vallam) Profile */}
+            <path
+              d="M 100,92 Q 300,105 600,100 Q 900,105 1080,88 C 1105,65 1115,35 1120,10 C 1110,42 1090,75 1060,85 L 140,85 C 120,72 105,42 100,10 C 95,38 90,70 100,92 Z"
+              fill="#1A2255"
+            />
+
+            {/* Traditional Royal Umbrellas (Muthukkuda) */}
+            {[260, 430, 600, 770, 940].map((uX, idx) => (
               <g key={idx}>
-                <line x1={uX} y1="125" x2={uX} y2="55" stroke="#451A03" strokeWidth="5" />
-                {/* Umbrella Canopy */}
-                <path
-                  d={`M ${uX - 32} 55 Q ${uX} 15 ${uX + 32} 55 Z`}
-                  fill={idx % 2 === 0 ? "#EF4444" : "#F59E0B"}
-                  stroke="#78350F"
-                  strokeWidth="4"
-                />
-                {/* Hanging Gold Tassels */}
-                <circle cx={uX - 28} cy="58" r="4" fill="#FBBF24" stroke="#78350F" strokeWidth="2" />
-                <circle cx={uX - 14} cy="58" r="4" fill="#FBBF24" stroke="#78350F" strokeWidth="2" />
-                <circle cx={uX} cy="58" r="4" fill="#FBBF24" stroke="#78350F" strokeWidth="2" />
-                <circle cx={uX + 14} cy="58" r="4" fill="#FBBF24" stroke="#78350F" strokeWidth="2" />
-                <circle cx={uX + 28} cy="58" r="4" fill="#FBBF24" stroke="#78350F" strokeWidth="2" />
+                <line x1={uX} y1="85" x2={uX} y2="40" stroke="#1A2255" strokeWidth="2.5" />
+                <path d={`M ${uX - 22},40 Q ${uX},22 ${uX + 22},40 Z`} fill={idx % 2 === 0 ? "#D97706" : "#DC2626"} />
+                <line x1={uX - 22} y1="40" x2={uX + 22} y2="40" stroke="#1A2255" strokeWidth="1.5" />
               </g>
             ))}
           </svg>
         </motion.div>
       </div>
 
-      {/* CARTOON WATER WAVES AT BOTTOM */}
-      <div className="absolute bottom-0 left-0 right-0 h-14 z-10 pointer-events-none">
-        <svg className="w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
-          <path d="M0,40 C150,90 350,-10 500,50 C650,110 900,10 1200,40 L1200,120 L0,120 Z" fill="#0284C7" />
-          <path d="M0,60 C200,100 450,20 700,70 C950,120 1100,30 1200,60 L1200,120 L0,120 Z" fill="#0369A1" />
-        </svg>
-      </div>
-
-      {/* MAIN CONTENT AREA */}
+      {/* MAIN HERO CONTENT */}
       <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-30 my-auto pt-2">
         <motion.div 
           variants={containerVariants}
@@ -361,17 +309,17 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* CARTOON FESTIVE BADGE */}
+            {/* FESTIVE ONAM BADGE */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-[#F59E0B] stroke-[#78350F] border-3 border-[#78350F] text-[#78350F] text-[12px] font-black tracking-widest uppercase mb-2 shadow-[3px_3px_0px_#78350F]"
+              className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-amber-500/10 border border-amber-600/30 text-[#B45309] text-[11px] font-bold tracking-widest uppercase mb-1.5 shadow-2xs backdrop-blur-xs"
             >
-              <Sparkles className="w-4 h-4 text-white fill-white" />
-              <span>Happy Onam • Grand Celebrations</span>
-              <Sparkles className="w-4 h-4 text-white fill-white" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>Happy Onam • Festival of Abundance</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
             </motion.div>
 
-            {/* RESTORED ISO CERTIFIED BADGE (EXACT ORIGINAL STYLING) */}
+            {/* RESTORED EXACT ORIGINAL ISO CERTIFIED BADGE */}
             <motion.div
               variants={itemVariants}
               className="inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-[#1A2255] text-white shadow-md border border-[#1A2255]"
@@ -388,7 +336,7 @@ export default function Hero() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="block drop-shadow-sm"
+                  className="block"
                 >
                   {slide.headingWords.slice(0, -1).join(" ")}
                 </motion.span>
@@ -400,7 +348,7 @@ export default function Hero() {
                   animate={{ opacity: 1, width: "auto" }}
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.5, delay: 0.08 }}
-                  className="block text-[#1A2255] relative after:content-[''] after:absolute after:-right-1.5 after:bottom-1 after:w-[3px] after:h-[75%] after:bg-[#1A2255] after:animate-pulse whitespace-nowrap overflow-hidden pr-1.5 drop-shadow-sm"
+                  className="block text-[#1A2255] relative after:content-[''] after:absolute after:-right-1.5 after:bottom-1 after:w-[3px] after:h-[75%] after:bg-[#1A2255] after:animate-pulse whitespace-nowrap overflow-hidden pr-1.5"
                 >
                   {slide.headingWords[slide.headingWords.length - 1]}
                 </motion.span>
@@ -414,7 +362,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-neutral-900 font-bold leading-[1.5] max-w-lg mt-2 mb-3.5 bg-white/70 backdrop-blur-xs px-4 py-1.5 rounded-xl border-2 border-amber-400/60"
+                className="text-[13px] sm:text-[15px] text-neutral-600 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
               >
                 {slide.subtitle}
               </motion.p>
@@ -424,7 +372,7 @@ export default function Hero() {
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full z-20 mb-2 max-w-md sm:max-w-none mx-auto">
               <Button
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg hover:shadow-[#1A2255]/10 active:scale-[0.98] cursor-pointer group w-full sm:w-auto border-2 border-slate-900"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold text-white transition-all duration-300 bg-[#1A2255] hover:bg-[#141b44] shadow-md hover:shadow-lg hover:shadow-[#1A2255]/10 active:scale-[0.98] cursor-pointer group w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta1}
@@ -435,26 +383,30 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-2 border-amber-600 bg-white text-[#1A2255] hover:bg-[#FEFCE8] hover:border-amber-700 shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#D97706] bg-white text-[#1A2255] hover:bg-[#FEFCE8] hover:border-[#B45309] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
-                  <ArrowUpRight className="w-4 h-4 text-amber-600 stroke-[2.5]" />
+                  <ArrowUpRight className="w-4 h-4 text-[#D97706] stroke-[2.5]" />
                 </span>
               </Button>
             </motion.div>
           </div>
 
-          {/* CANVAS CARD WITH CARTOON BORDER */}
+          {/* MAIN IMAGE CANVAS FRAME WITH KASAVU GOLD BORDER */}
           <motion.div 
             variants={itemVariants} 
-            className="relative w-full max-w-[1280px] h-[260px] sm:h-[280px] md:h-[340px] lg:h-[380px] perspective-[1200px] my-2"
+            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
           >
+            {/* Kasavu Gold Top and Bottom Accent Strips */}
+            <div className="absolute -top-1.5 inset-x-12 h-1 bg-gradient-to-r from-transparent via-[#D97706] to-transparent z-20" />
+            <div className="absolute -bottom-1.5 inset-x-12 h-1 bg-gradient-to-r from-transparent via-[#D97706] to-transparent z-20" />
+
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-[#78350F] shadow-[8px_8px_0px_#78350F] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden"
+              className="relative w-full h-full rounded-[24px] border-4 border-amber-300/80 shadow-[0_25px_60px_-15px_rgba(217,119,6,0.18)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden ring-1 ring-[#1A2255]/10"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
@@ -483,8 +435,8 @@ export default function Hero() {
       </div>
 
       {/* TABS NAVIGATION DOCK STRIP */}
-      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-40 pt-2 pb-6">
-        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[4px_4px_0px_#78350F] border-2 border-[#78350F] p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-40 pt-2 pb-2">
+        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.06)] border border-amber-200/60 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -493,7 +445,7 @@ export default function Hero() {
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
                 className={`relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
-                  isActive ? "text-white" : "text-neutral-700 hover:text-[#1A2255]"
+                  isActive ? "text-white" : "text-neutral-500 hover:text-[#1A2255]"
                 }`}
               >
                 {isActive && (
@@ -503,7 +455,7 @@ export default function Hero() {
                     transition={{ type: "spring", stiffness: 420, damping: 32 }}
                   />
                 )}
-                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-amber-400" : "text-neutral-500 group-hover:text-[#1A2255]"}`} />
+                <TabIcon className={`w-3.5 h-3.5 z-10 shrink-0 transition-transform duration-300 group-hover:scale-105 ${isActive ? "text-amber-400" : "text-neutral-400 group-hover:text-[#1A2255]"}`} />
                 <span className="whitespace-nowrap truncate z-10">{s.tabLabel}</span>
               </button>
             );
