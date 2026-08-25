@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { ArrowUpRight, Award, Flame, Sparkles } from "lucide-react";
+import { ArrowUpRight, Award, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
@@ -203,41 +203,91 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-[#FAFAF7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-t-8 border-[#CA8A04]"
+      className="relative bg-gradient-to-b from-[#FFFDF2] via-[#FAF3DC] to-[#FFFDF2] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-t-8 border-[#D97706]"
     >
-      {/* BACKGROUND ELEMENTS (POOKKALAM & NILAVILAKKU GLOW) */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Soft Gold/Emerald Grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#CA8A040D_1px,transparent_1px),linear-gradient(to_bottom,#CA8A040D_1px,transparent_1px)] bg-[size:3rem_3rem]" />
-        
-        {/* Nilavilakku Warm Flame Ambient Light */}
-        <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-amber-400/20 via-orange-400/10 to-transparent blur-3xl rounded-full" />
+      {/* 1. ONAM POOKKALAM FLOWER RAIN (FALLING PETALS FROM TOP) */}
+      <div className="absolute inset-x-0 top-0 h-full z-20 pointer-events-none overflow-hidden">
+        {[...Array(18)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ y: -30, opacity: 0, x: `${(i * 5.5) + 2}%`, rotate: 0 }}
+            animate={{
+              y: ["0vh", "100vh"],
+              opacity: [0, 0.85, 0.85, 0],
+              x: [`${(i * 5.5) + 2}%`, `${(i * 5.5) + (i % 2 === 0 ? 5 : -3)}%`],
+              rotate: [0, 360]
+            }}
+            transition={{
+              duration: 7 + (i % 5),
+              repeat: Infinity,
+              ease: "linear",
+              delay: (i * 0.4)
+            }}
+            className="absolute"
+          >
+            {/* Flower Petal SVG Variations */}
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2C13.5 6 18 8 18 12C18 16 13.5 18 12 22C10.5 18 6 16 6 12C6 8 10.5 6 12 2Z"
+                fill={i % 3 === 0 ? "#F59E0B" : i % 3 === 1 ? "#EF4444" : "#10B981"}
+                opacity="0.8"
+              />
+              <circle cx="12" cy="12" r="2" fill="#FEF08A" />
+            </svg>
+          </motion.div>
+        ))}
+      </div>
 
-        {/* POOKKALAM: Rotating Flower Carpet Background Pattern */}
-        <div className="absolute -top-32 -right-32 w-[550px] h-[550px] opacity-[0.07]">
-          <svg className="w-full h-full animate-[spin_100s_linear_infinite]" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="95" fill="none" stroke="#CA8A04" strokeWidth="1" strokeDasharray="4 2" />
-            <circle cx="100" cy="100" r="80" fill="none" stroke="#15803D" strokeWidth="1.5" />
-            <circle cx="100" cy="100" r="60" fill="none" stroke="#B45309" strokeWidth="1" />
+      {/* 2. BACKGROUND POOKKALAM MANDALA & GOLD GLOW */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Soft Kerala Kasavu Grid Texture */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#D9770612_1px,transparent_1px),linear-gradient(to_bottom,#D9770612_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+        
+        {/* Warm Golden Backdrop Lighting */}
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-amber-300/30 via-orange-300/15 to-transparent blur-3xl rounded-full" />
+
+        {/* POOKKALAM: Large Traditional Rotating Flower Carpet Centerpiece */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] sm:w-[850px] sm:h-[850px] opacity-[0.09]">
+          <svg className="w-full h-full animate-[spin_90s_linear_infinite]" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="95" fill="none" stroke="#D97706" strokeWidth="1" strokeDasharray="3 3" />
+            <circle cx="100" cy="100" r="82" fill="none" stroke="#059669" strokeWidth="1.5" />
+            <circle cx="100" cy="100" r="68" fill="none" stroke="#DC2626" strokeWidth="1" />
             {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, idx) => (
               <g key={idx} transform={`rotate(${angle} 100 100)`}>
-                <path d="M100 20 Q105 40 100 60 Q95 40 100 20 Z" fill="#CA8A04" />
-                <circle cx="100" cy="15" r="3" fill="#DC2626" />
+                <ellipse cx="100" cy="32" rx="7" ry="20" fill="#F59E0B" opacity="0.8" />
+                <ellipse cx="100" cy="38" rx="4" ry="14" fill="#059669" opacity="0.7" />
+                <circle cx="100" cy="16" r="3" fill="#DC2626" />
               </g>
             ))}
           </svg>
         </div>
+      </div>
 
-        {/* VALLAM KALI: Backwaters Snake Boat Wave Silhouette at Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-10 flex items-end">
-          <svg className="w-full h-12" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z" fill="#15803D" />
-          </svg>
-        </div>
+      {/* 3. VALLAM KALI (SNAKE BOAT) WITH MUTHUKKUDA (CEREMONIAL UMBRELLAS) */}
+      <div className="absolute bottom-0 left-0 right-0 h-28 opacity-20 pointer-events-none z-0 flex items-end justify-center overflow-hidden">
+        <svg className="w-full max-w-[1400px] h-24" viewBox="0 0 1000 120" preserveAspectRatio="none">
+          {/* Backwater Waves */}
+          <path d="M0,80 Q250,110 500,80 T1000,80 L1000,120 L0,120 Z" fill="#059669" />
+          
+          {/* Snake Boat (Vallam) Curved Silhouette */}
+          <path d="M50,90 Q150,98 500,95 Q850,98 950,90 C970,70 980,40 985,20 C980,50 960,80 940,88 L60,88 Q40,75 25,20 C32,50 40,75 50,90 Z" fill="#78350F" />
+          
+          {/* Muthukkuda Decorative Umbrellas on the Snake Boat */}
+          {[200, 350, 500, 650, 800].map((cx, idx) => (
+            <g key={idx}>
+              <line x1={cx} y1="90" x2={cx} y2="45" stroke="#78350F" strokeWidth="2" />
+              <path d={`M${cx - 20},45 Q${cx},25 ${cx + 20},45 Z`} fill={idx % 2 === 0 ? "#DC2626" : "#F59E0B"} />
+              {/* Umbrella Frills */}
+              <circle cx={cx - 18} cy="46" r="2" fill="#FEF08A" />
+              <circle cx={cx} cy="46" r="2" fill="#FEF08A" />
+              <circle cx={cx + 18} cy="46" r="2" fill="#FEF08A" />
+            </g>
+          ))}
+        </svg>
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto">
+      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto pt-4">
         <motion.div 
           variants={containerVariants}
           initial="hidden"
@@ -247,17 +297,17 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* ONAM SADYA / BANANA LEAF CELEBRATION BADGE */}
+            {/* FESTIVE ONAM BANNER */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-md bg-[#15803D]/10 border border-[#15803D]/30 text-[#15803D] text-[11px] font-bold tracking-widest uppercase mb-2 shadow-2xs"
+              className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-emerald-500/20 border border-amber-600/30 text-amber-900 text-[11px] font-bold tracking-widest uppercase mb-1.5 shadow-xs"
             >
-              <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-bounce" />
-              <span>Happy Onam • Festival of Abundance</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>Happy Onam • Festivities & Prosperity</span>
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
             </motion.div>
 
-            {/* RESTORED EXACT ORIGINAL ISO CERTIFIED BADGE */}
+            {/* RESTORED ISO CERTIFIED BADGE (EXACT ORIGINAL STYLING) */}
             <motion.div
               variants={itemVariants}
               className="inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-[#1A2255] text-white shadow-md border border-[#1A2255]"
@@ -300,7 +350,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-neutral-600 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
+                className="text-[13px] sm:text-[15px] text-neutral-700 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
               >
                 {slide.subtitle}
               </motion.p>
@@ -321,30 +371,30 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#CA8A04] bg-white text-[#1A2255] hover:bg-[#FEFCE8] hover:border-[#CA8A04] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#D97706] bg-white text-[#1A2255] hover:bg-[#FEFCE8] hover:border-[#B45309] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
-                  <ArrowUpRight className="w-4 h-4 text-[#CA8A04] stroke-[2.5]" />
+                  <ArrowUpRight className="w-4 h-4 text-[#D97706] stroke-[2.5]" />
                 </span>
               </Button>
             </motion.div>
           </div>
 
-          {/* CANVAS WITH KASAVU (ONAKKODI) BORDER DECORATION */}
+          {/* IMAGE CANVAS WITH KASAVU GOLD DECORATION */}
           <motion.div 
             variants={itemVariants} 
             className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
           >
-            {/* Kasavu Traditional Gold Ribbon Edges */}
-            <div className="absolute -top-1.5 inset-x-8 h-1 bg-gradient-to-r from-transparent via-[#CA8A04] to-transparent z-20" />
-            <div className="absolute -bottom-1.5 inset-x-8 h-1 bg-gradient-to-r from-transparent via-[#CA8A04] to-transparent z-20" />
+            {/* Decorative Golden Kasavu Edging */}
+            <div className="absolute -top-1.5 inset-x-12 h-1 bg-gradient-to-r from-transparent via-[#D97706] to-transparent z-20" />
+            <div className="absolute -bottom-1.5 inset-x-12 h-1 bg-gradient-to-r from-transparent via-[#D97706] to-transparent z-20" />
 
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-amber-300/80 shadow-[0_25px_60px_-15px_rgba(202,138,4,0.15)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden ring-2 ring-[#15803D]/20"
+              className="relative w-full h-full rounded-[24px] border-4 border-[#FDE047] shadow-[0_25px_60px_-15px_rgba(217,119,6,0.2)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden ring-2 ring-amber-500/30"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
@@ -374,7 +424,7 @@ export default function Hero() {
 
       {/* TABS NAVIGATION DOCK STRIP */}
       <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
-        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.05)] border border-amber-200/50 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(217,119,6,0.12)] border border-amber-200/60 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -383,7 +433,7 @@ export default function Hero() {
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
                 className={`relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
-                  isActive ? "text-white" : "text-neutral-500 hover:text-[#1A2255]"
+                  isActive ? "text-white" : "text-neutral-600 hover:text-[#1A2255]"
                 }`}
               >
                 {isActive && (
