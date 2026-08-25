@@ -120,61 +120,92 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
   }
 ];
 
-/** Corner Marigold Pookkalam Ornament (Poo Thoran Design) */
-const CornerMarigoldPookkalam = ({ position }: { position: "left" | "right" }) => (
-  <svg
-    viewBox="0 0 240 240"
-    className={`w-36 h-36 sm:w-52 sm:h-52 md:w-64 md:h-64 absolute top-0 ${
-      position === "left" ? "left-0 -translate-x-12 -translate-y-12" : "right-0 translate-x-12 -translate-y-12 scale-x-[-1]"
-    } opacity-90 pointer-events-none z-20 filter drop-shadow-md`}
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    {/* Outer Dotted Gold Border */}
-    <circle cx="120" cy="120" r="110" stroke="#F59E0B" strokeWidth="2.5" strokeDasharray="6 6" />
-    
-    {/* Outer Marigold Orange Ring */}
-    <circle cx="120" cy="120" r="98" stroke="#EA580C" strokeWidth="8" opacity="0.95" />
+/** Poo Thoran Hanging Garland Component (Vertical String of Yellow & Orange Marigolds) */
+const PooThoran = ({ position }: { position: "left" | "right" }) => {
+  const marigoldCount = 13;
 
-    {/* Bright Yellow Marigold Ring */}
-    <circle cx="120" cy="120" r="86" stroke="#FACC15" strokeWidth="6" opacity="0.95" />
+  return (
+    <svg
+      viewBox="0 0 100 450"
+      className={`w-14 sm:w-20 md:w-24 h-auto absolute top-0 ${
+        position === "left" ? "left-2 sm:left-4" : "right-2 sm:right-4 scale-x-[-1]"
+      } pointer-events-none z-30 filter drop-shadow-md`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        {/* Flower Petal Radial Gradients */}
+        <radialGradient id="orangeMarigold" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FB923C" />
+          <stop offset="60%" stopColor="#EA580C" />
+          <stop offset="100%" stopColor="#C2410C" />
+        </radialGradient>
+        <radialGradient id="yellowMarigold" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FEF08A" />
+          <stop offset="60%" stopColor="#FACC15" />
+          <stop offset="100%" stopColor="#EAB308" />
+        </radialGradient>
+        <radialGradient id="flowerCenter" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#92400E" />
+          <stop offset="100%" stopColor="#451A03" />
+        </radialGradient>
+      </defs>
 
-    {/* Radiating Yellow & Orange Marigold Petal Patterns */}
-    <g transform="translate(120, 120)">
-      {Array.from({ length: 16 }).map((_, i) => (
-        <path
-          key={`orange-petal-${i}`}
-          d="M0 0 C-12 -35 0 -80 0 -80 C0 -80 12 -35 0 0 Z"
-          fill="#D97706"
-          transform={`rotate(${i * 22.5})`}
-          opacity="0.9"
-        />
+      {/* Garland Hanging Thread */}
+      <line x1="60" y1="0" x2="60" y2="440" stroke="#15803D" strokeWidth="2.5" strokeDasharray="4 2" />
+
+      {/* Decorative Mango Leaves along the string */}
+      {Array.from({ length: 6 }).map((_, i) => (
+        <g key={`leaf-${i}`} transform={`translate(28, ${i * 70 + 20})`}>
+          <path
+            d="M 30 0 C 10 15 5 35 15 50 C 25 35 30 15 30 0 Z"
+            fill="#15803D"
+            opacity="0.9"
+          />
+          <path
+            d="M 30 0 C 10 15 5 35 15 50"
+            stroke="#166534"
+            strokeWidth="1"
+          />
+        </g>
       ))}
-      {Array.from({ length: 16 }).map((_, i) => (
-        <path
-          key={`yellow-petal-${i}`}
-          d="M0 0 C-9 -28 0 -65 0 -65 C0 -65 9 -28 0 0 Z"
-          fill="#FDE047"
-          transform={`rotate(${i * 22.5 + 11.25})`}
-          opacity="0.95"
-        />
-      ))}
-      {Array.from({ length: 12 }).map((_, i) => (
-        <path
-          key={`inner-petal-${i}`}
-          d="M0 0 C-6 -18 0 -45 0 -45 C0 -45 6 -18 0 0 Z"
-          fill="#EA580C"
-          transform={`rotate(${i * 30})`}
-        />
-      ))}
-      
-      {/* Center Floral Core */}
-      <circle cx="0" cy="0" r="24" fill="#B45309" />
-      <circle cx="0" cy="0" r="16" fill="#FACC15" />
-      <circle cx="0" cy="0" r="8" fill="#DC2626" />
-    </g>
-  </svg>
-);
+
+      {/* Vertical Alternating Marigold Flowers */}
+      {Array.from({ length: marigoldCount }).map((_, i) => {
+        const y = i * 32 + 20;
+        const isOrange = i % 2 === 0;
+        const fillUrl = isOrange ? "url(#orangeMarigold)" : "url(#yellowMarigold)";
+
+        return (
+          <g key={`marigold-${i}`} transform={`translate(60, ${y})`}>
+            {/* Outer Petal Fluff Layer */}
+            {Array.from({ length: 10 }).map((_, p) => (
+              <circle
+                key={`p1-${p}`}
+                cx={Math.cos((p * Math.PI) / 5) * 12}
+                cy={Math.sin((p * Math.PI) / 5) * 12}
+                r="7"
+                fill={fillUrl}
+              />
+            ))}
+            {/* Inner Petal Fluff Layer */}
+            {Array.from({ length: 8 }).map((_, p) => (
+              <circle
+                key={`p2-${p}`}
+                cx={Math.cos((p * Math.PI) / 4) * 6}
+                cy={Math.sin((p * Math.PI) / 4) * 6}
+                r="5.5"
+                fill={isOrange ? "#F97316" : "#FDE047"}
+              />
+            ))}
+            {/* Core Center */}
+            <circle cx="0" cy="0" r="4" fill="url(#flowerCenter)" />
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
 
 /** Authentic Kerala Chundan Vallam (Snake Boat) Vector */
 const AuthenticSnakeBoat = () => (
@@ -368,9 +399,9 @@ export default function Hero() {
       aria-busy={loading}
       className="relative bg-gradient-to-b from-[#FFFDF0] via-[#FEF9C3] to-[#FEF3C7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-b-4 border-[#D97706]"
     >
-      {/* CORNER MARIGOLD POOKKALAM (POO THORAN) ON BOTH ENDS */}
-      <CornerMarigoldPookkalam position="left" />
-      <CornerMarigoldPookkalam position="right" />
+      {/* POO THORAN (MARIGOLD FLOWER GARLANDS) ON BOTH LEFT & RIGHT ENDS */}
+      <PooThoran position="left" />
+      <PooThoran position="right" />
 
       {/* FALLING PETALS ANIMATION */}
       <PetalsOverlay />
@@ -475,7 +506,7 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* SNAKE BOAT POSITIONED SAFELY BELOW BUTTONS AND RIDING ON THE TOP BORDER OF THE IMAGE SLIDER */}
+          {/* SNAKE BOAT POSITIONED SAFELY BELOW BUTTONS */}
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
