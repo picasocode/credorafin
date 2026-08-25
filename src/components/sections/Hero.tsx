@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { ArrowUpRight, Award, Sparkles } from "lucide-react";
+import { ArrowUpRight, Award, Flame, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "@/lib/icon-registry";
 
@@ -153,7 +153,7 @@ export default function Hero() {
           setCurrent((c) => (c >= data.length ? 0 : c));
         }
       } catch {
-        // leave DEFAULT_SLIDES in place on error
+        // keep defaults
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -203,84 +203,41 @@ export default function Hero() {
     <section
       id="hero"
       aria-busy={loading}
-      className="relative bg-gradient-to-b from-[#FFFDF7] via-[#FFF9EB] to-[#FFFDF7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased"
+      className="relative bg-[#FAFAF7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-t-8 border-[#CA8A04]"
     >
-      {/* 1. FESTIVE TOP MARIGOLD & JASMINE FLORAL GARLAND (THORAN) */}
-      <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none flex justify-between items-start opacity-90 px-2 sm:px-8">
-        {[...Array(12)].map((_, i) => (
-          <div key={i} className="flex flex-col items-center -mt-1 sm:-mt-2">
-            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-b-full border-b-4 border-amber-500 bg-gradient-to-b from-amber-400 via-orange-500 to-amber-600 shadow-sm animate-pulse" />
-            <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-700 -mt-1 shadow-xs" />
-            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-100 -mt-0.5" />
-          </div>
-        ))}
-      </div>
-
-      {/* 2. ONAM DECORATIVE BACKGROUND & POOKKALAM MOTIFS */}
+      {/* BACKGROUND ELEMENTS (POOKKALAM & NILAVILAKKU GLOW) */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Golden Kerala Kasavu Lattice Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#EAB30812_1px,transparent_1px),linear-gradient(to_bottom,#EAB30812_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+        {/* Soft Gold/Emerald Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#CA8A040D_1px,transparent_1px),linear-gradient(to_bottom,#CA8A040D_1px,transparent_1px)] bg-[size:3rem_3rem]" />
         
-        {/* Animated Rotating Pookkalam (Floral Rangoli) Mandala Centerpiece */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] sm:w-[900px] sm:h-[900px] opacity-[0.08] pointer-events-none">
-          <svg className="w-full h-full animate-[spin_80s_linear_infinite]" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="95" fill="none" stroke="#CA8A04" strokeWidth="0.5" strokeDasharray="3 3" />
-            <circle cx="100" cy="100" r="80" fill="none" stroke="#15803D" strokeWidth="1" />
-            <circle cx="100" cy="100" r="65" fill="none" stroke="#B45309" strokeWidth="0.5" />
+        {/* Nilavilakku Warm Flame Ambient Light */}
+        <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-amber-400/20 via-orange-400/10 to-transparent blur-3xl rounded-full" />
+
+        {/* POOKKALAM: Rotating Flower Carpet Background Pattern */}
+        <div className="absolute -top-32 -right-32 w-[550px] h-[550px] opacity-[0.07]">
+          <svg className="w-full h-full animate-[spin_100s_linear_infinite]" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="95" fill="none" stroke="#CA8A04" strokeWidth="1" strokeDasharray="4 2" />
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#15803D" strokeWidth="1.5" />
+            <circle cx="100" cy="100" r="60" fill="none" stroke="#B45309" strokeWidth="1" />
             {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, idx) => (
               <g key={idx} transform={`rotate(${angle} 100 100)`}>
-                <ellipse cx="100" cy="40" rx="8" ry="25" fill="#EAB308" opacity="0.6" />
-                <ellipse cx="100" cy="45" rx="5" ry="18" fill="#15803D" opacity="0.5" />
-                <circle cx="100" cy="20" r="3" fill="#DC2626" />
+                <path d="M100 20 Q105 40 100 60 Q95 40 100 20 Z" fill="#CA8A04" />
+                <circle cx="100" cy="15" r="3" fill="#DC2626" />
               </g>
             ))}
           </svg>
         </div>
 
-        {/* Floating Festive Gold Sparks/Particles */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.2, 0.7, 0.2],
-              scale: [0.8, 1.2, 0.8]
-            }}
-            transition={{
-              duration: 4 + i,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.8
-            }}
-            className="absolute rounded-full bg-amber-400 blur-[1px]"
-            style={{
-              width: `${8 + i * 2}px`,
-              height: `${8 + i * 2}px`,
-              top: `${20 + i * 12}%`,
-              left: `${10 + i * 15}%`
-            }}
-          />
-        ))}
-      </div>
-
-      {/* 3. KATHAKALI TRADITIONAL ARTWORKS ON SIDE FLANKS */}
-      <div className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 opacity-25 hidden xl:block pointer-events-none">
-        <div className="w-24 h-36 border-2 border-amber-600/40 rounded-full flex items-center justify-center relative">
-          <div className="w-16 h-16 bg-emerald-800/20 rounded-full border border-amber-500/40 flex items-center justify-center">
-            <span className="text-amber-800 text-[10px] font-bold tracking-widest uppercase">ONAM</span>
-          </div>
-        </div>
-      </div>
-      <div className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 opacity-25 hidden xl:block pointer-events-none">
-        <div className="w-24 h-36 border-2 border-amber-600/40 rounded-full flex items-center justify-center relative">
-          <div className="w-16 h-16 bg-emerald-800/20 rounded-full border border-amber-500/40 flex items-center justify-center">
-            <span className="text-amber-800 text-[10px] font-bold tracking-widest uppercase">ONAM</span>
-          </div>
+        {/* VALLAM KALI: Backwaters Snake Boat Wave Silhouette at Bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-10 flex items-end">
+          <svg className="w-full h-12" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z" fill="#15803D" />
+          </svg>
         </div>
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto pt-6">
+      <div className="relative w-full max-w-[1400px] mx-auto flex-1 flex flex-col items-center justify-center z-10 my-auto">
         <motion.div 
           variants={containerVariants}
           initial="hidden"
@@ -290,17 +247,17 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* ONAM FESTIVE CELEBRATION RIBBON */}
+            {/* ONAM SADYA / BANANA LEAF CELEBRATION BADGE */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-600/30 text-amber-900 text-[11px] font-bold tracking-widest uppercase mb-1.5 shadow-2xs"
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-md bg-[#15803D]/10 border border-[#15803D]/30 text-[#15803D] text-[11px] font-bold tracking-widest uppercase mb-2 shadow-2xs"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" style={{ animationDuration: "6s" }} />
-              <span>Happy Onam • Season of Abundance</span>
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" style={{ animationDuration: "6s" }} />
+              <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-bounce" />
+              <span>Happy Onam • Festival of Abundance</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
             </motion.div>
 
-            {/* RESTORED ORIGINAL ISO CERTIFIED BADGE */}
+            {/* RESTORED EXACT ORIGINAL ISO CERTIFIED BADGE */}
             <motion.div
               variants={itemVariants}
               className="inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-[#1A2255] text-white shadow-md border border-[#1A2255]"
@@ -364,7 +321,7 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#CA8A04] bg-white text-[#1A2255] hover:bg-[#FEFCE8] hover:text-[#1A2255] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-[#CA8A04] bg-white text-[#1A2255] hover:bg-[#FEFCE8] hover:border-[#CA8A04] shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
@@ -374,22 +331,20 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* IMAGE CANVAS WITH KERALA KASAVU GOLD BORDER DECORATION */}
+          {/* CANVAS WITH KASAVU (ONAKKODI) BORDER DECORATION */}
           <motion.div 
             variants={itemVariants} 
             className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
           >
-            {/* Corner Decorative Kasavu Flourishes */}
-            <div className="absolute -top-2 -left-2 z-20 w-8 h-8 border-t-4 border-l-4 border-amber-500 rounded-tl-lg pointer-events-none" />
-            <div className="absolute -top-2 -right-2 z-20 w-8 h-8 border-t-4 border-r-4 border-amber-500 rounded-tr-lg pointer-events-none" />
-            <div className="absolute -bottom-2 -left-2 z-20 w-8 h-8 border-b-4 border-l-4 border-amber-500 rounded-bl-lg pointer-events-none" />
-            <div className="absolute -bottom-2 -right-2 z-20 w-8 h-8 border-b-4 border-r-4 border-amber-500 rounded-br-lg pointer-events-none" />
+            {/* Kasavu Traditional Gold Ribbon Edges */}
+            <div className="absolute -top-1.5 inset-x-8 h-1 bg-gradient-to-r from-transparent via-[#CA8A04] to-transparent z-20" />
+            <div className="absolute -bottom-1.5 inset-x-8 h-1 bg-gradient-to-r from-transparent via-[#CA8A04] to-transparent z-20" />
 
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-[#FDE047] shadow-[0_25px_60px_-15px_rgba(202,138,4,0.2)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden ring-2 ring-amber-500/30"
+              className="relative w-full h-full rounded-[24px] border-4 border-amber-300/80 shadow-[0_25px_60px_-15px_rgba(202,138,4,0.15)] bg-neutral-200 transition-all duration-300 ease-out overflow-hidden ring-2 ring-[#15803D]/20"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
@@ -419,7 +374,7 @@ export default function Hero() {
 
       {/* TABS NAVIGATION DOCK STRIP */}
       <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
-        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(202,138,4,0.15)] border border-amber-200/60 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.05)] border border-amber-200/50 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
@@ -428,7 +383,7 @@ export default function Hero() {
                 key={s.id ?? i}
                 onClick={() => goTo(i)}
                 className={`relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[11px] font-bold tracking-tight transition-all duration-300 cursor-pointer overflow-hidden group ${
-                  isActive ? "text-white" : "text-neutral-600 hover:text-[#1A2255]"
+                  isActive ? "text-white" : "text-neutral-500 hover:text-[#1A2255]"
                 }`}
               >
                 {isActive && (
