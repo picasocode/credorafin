@@ -120,17 +120,18 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
   }
 ];
 
-/** SVG Pookkalam Ornament Component */
-const Pookkalam = ({ className = "" }: { className?: string }) => (
-  <svg viewBox="0 0 200 200" className={`w-72 h-72 sm:w-96 sm:h-96 opacity-40 ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="100" cy="100" r="95" stroke="#EAB308" strokeWidth="2" strokeDasharray="6 6" />
-    <circle cx="100" cy="100" r="85" fill="#FEF08A" opacity="0.5" />
-    <circle cx="100" cy="100" r="75" stroke="#D97706" strokeWidth="3" />
-    <g transform="translate(100, 100)">
+/** Centered Grand Pookkalam Ornament */
+const CenterPookkalam = ({ className = "" }: { className?: string }) => (
+  <svg viewBox="0 0 300 300" className={`w-[450px] h-[450px] sm:w-[650px] sm:h-[650px] opacity-25 ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="150" cy="150" r="145" stroke="#EAB308" strokeWidth="2.5" strokeDasharray="8 8" />
+    <circle cx="150" cy="150" r="130" fill="#FEF08A" opacity="0.35" />
+    <circle cx="150" cy="150" r="115" stroke="#D97706" strokeWidth="4" />
+    <circle cx="150" cy="150" r="100" stroke="#DC2626" strokeWidth="2" strokeDasharray="4 4" />
+    <g transform="translate(150, 150)">
       {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, i) => (
         <path
           key={i}
-          d="M0 0 C-15 -40 0 -70 0 -70 C0 -70 15 -40 0 0 Z"
+          d="M0 0 C-22 -60 0 -105 0 -105 C0 -105 22 -60 0 0 Z"
           fill={i % 2 === 0 ? "#DC2626" : "#F59E0B"}
           transform={`rotate(${angle})`}
           opacity="0.85"
@@ -139,67 +140,87 @@ const Pookkalam = ({ className = "" }: { className?: string }) => (
       {[15, 45, 75, 105, 135, 165, 195, 225, 255, 285, 315, 345].map((angle, i) => (
         <path
           key={i}
-          d="M0 0 C-10 -25 0 -50 0 -50 C0 -50 10 -25 0 0 Z"
+          d="M0 0 C-15 -40 0 -75 0 -75 C0 -75 15 -40 0 0 Z"
           fill="#16A34A"
           transform={`rotate(${angle})`}
           opacity="0.9"
         />
       ))}
-      <circle cx="0" cy="0" r="24" fill="#B45309" />
-      <circle cx="0" cy="0" r="16" fill="#FEF08A" />
-      <circle cx="0" cy="0" r="8" fill="#DC2626" />
+      <circle cx="0" cy="0" r="35" fill="#B45309" />
+      <circle cx="0" cy="0" r="22" fill="#FEF08A" />
+      <circle cx="0" cy="0" r="12" fill="#DC2626" />
     </g>
   </svg>
 );
 
-/** SVG Snake Boat (Vallamkali) Component positioned over the slide card */
+/** Ornate Snake Boat (Vallamkali) */
 const SnakeBoat = ({ className = "" }: { className?: string }) => (
-  <svg viewBox="0 0 520 120" className={`w-80 sm:w-[500px] lg:w-[600px] h-auto ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Boat Body */}
-    <path d="M10 75 Q160 115 510 55 C430 85 210 85 10 75 Z" fill="#6B21A8" opacity="0.15" />
-    <path d="M10 75 Q160 110 500 55 C420 82 200 82 10 75 Z" fill="#78350F" />
-    <path d="M10 75 Q160 100 490 50 C410 75 200 75 10 75 Z" fill="#92400E" />
-    
-    {/* Traditional Snake Head Raised Prow */}
-    <path d="M490 50 C515 25 505 5 490 2 C480 20 470 35 450 45 Z" fill="#D97706" />
-    <circle cx="488" cy="15" r="4" fill="#DC2626" />
-    
-    {/* Gold Accent Strip & Red Trim */}
-    <path d="M30 76 Q180 95 470 55" stroke="#F59E0B" strokeWidth="4" />
-    <path d="M40 80 Q180 98 460 60" stroke="#DC2626" strokeWidth="2" />
-    
-    {/* Festive Rowers */}
-    {[50, 80, 110, 140, 170, 200, 230, 260, 290, 320, 350, 380, 410, 440].map((x, i) => (
+  <svg viewBox="0 0 600 140" className={`w-80 sm:w-[540px] lg:w-[640px] h-auto ${className}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="boatGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#451A03" />
+        <stop offset="50%" stopColor="#78350F" />
+        <stop offset="100%" stopColor="#92400E" />
+      </linearGradient>
+      <linearGradient id="goldRibbon" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#F59E0B" />
+        <stop offset="50%" stopColor="#FEF08A" />
+        <stop offset="100%" stopColor="#D97706" />
+      </linearGradient>
+    </defs>
+
+    {/* Shadow */}
+    <path d="M15 90 Q180 135 580 65 C480 100 230 100 15 90 Z" fill="#451A03" opacity="0.25" filter="blur(4px)" />
+
+    {/* Hull */}
+    <path d="M10 85 Q180 130 570 60 C480 92 230 92 10 85 Z" fill="url(#boatGrad)" />
+    <path d="M10 85 Q180 118 550 54 C460 85 220 85 10 85 Z" fill="#92400E" />
+
+    {/* Traditional High Curved Snake Hood (Aamadi) */}
+    <path d="M550 54 C585 25 575 -5 555 -10 C540 10 530 30 510 42 Z" fill="#D97706" />
+    <path d="M555 -10 C565 -5 570 8 560 18 C550 28 535 38 515 45 Z" fill="url(#goldRibbon)" />
+    <circle cx="552" cy="5" r="5" fill="#DC2626" />
+    <circle cx="552" cy="5" r="2" fill="#FEF08A" />
+
+    {/* Decorative Gold & Red Trims */}
+    <path d="M30 87 Q200 110 530 58" stroke="url(#goldRibbon)" strokeWidth="4.5" strokeLinecap="round" />
+    <path d="M40 91 Q200 113 520 62" stroke="#DC2626" strokeWidth="2.5" strokeLinecap="round" />
+
+    {/* Rowers & Decorative Umbrellas */}
+    {[60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480].map((x, i) => (
       <g key={i}>
-        <circle cx={x} cy={55 + i * 0.4} r="4.5" fill="#FDE047" />
-        <path d={`M${x - 2} ${60 + i * 0.4} L${x + 2} ${75 + i * 0.4}`} stroke="#DC2626" strokeWidth="3" />
-        <line x1={x} y1={65 + i * 0.4} x2={x - 8} y2={85 + i * 0.4} stroke="#78350F" strokeWidth="2" />
+        {i % 4 === 0 && (
+          <path d={`M${x - 2} ${38 + i * 0.3} Q${x} ${28 + i * 0.3} ${x + 8} ${38 + i * 0.3} Z`} fill="#DC2626" />
+        )}
+        <circle cx={x} cy={60 + i * 0.35} r="4.5" fill="#FDE047" />
+        <path d={`M${x - 2} ${65 + i * 0.35} L${x + 2} ${82 + i * 0.35}`} stroke="#DC2626" strokeWidth="3" />
+        <line x1={x} y1={70 + i * 0.35} x2={x - 10} y2={95 + i * 0.35} stroke="#451A03" strokeWidth="2.5" strokeLinecap="round" />
       </g>
     ))}
   </svg>
 );
 
-/** Falling Flower Petals Overlay Animation */
+/** Falling Flower Petals Overlay Animation (Confined to Background Layer) */
 const PetalsOverlay = () => {
-  const petals = Array.from({ length: 20 }).map((_, i) => ({
+  const petals = Array.from({ length: 18 }).map((_, i) => ({
     id: i,
     x: Math.random() * 100,
-    duration: 6 + Math.random() * 6,
-    delay: Math.random() * 5,
-    scale: 0.6 + Math.random() * 0.8,
+    duration: 7 + Math.random() * 5,
+    delay: Math.random() * 4,
+    scale: 0.6 + Math.random() * 0.7,
     color: i % 3 === 0 ? "#DC2626" : i % 3 === 1 ? "#F59E0B" : "#FEF08A",
   }));
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
       {petals.map((p) => (
         <motion.div
           key={p.id}
           initial={{ y: "-10vh", x: `${p.x}vw`, opacity: 0, rotate: 0 }}
           animate={{
             y: "110vh",
-            x: [`${p.x}vw`, `${p.x + (p.id % 2 === 0 ? 4 : -4)}vw`, `${p.x}vw`],
-            opacity: [0, 1, 1, 0],
+            x: [`${p.x}vw`, `${p.x + (p.id % 2 === 0 ? 3 : -3)}vw`, `${p.x}vw`],
+            opacity: [0, 0.9, 0.9, 0],
             rotate: 360,
           }}
           transition={{
@@ -214,7 +235,7 @@ const PetalsOverlay = () => {
             <path
               d="M10 0 C15 5 20 10 10 20 C0 10 5 5 10 0 Z"
               fill={p.color}
-              opacity="0.85"
+              opacity="0.8"
               transform={`scale(${p.scale})`}
             />
           </svg>
@@ -309,18 +330,15 @@ export default function Hero() {
       aria-busy={loading}
       className="relative bg-gradient-to-b from-[#FFFDF0] via-[#FEF9C3] to-[#FEF3C7] w-full min-h-[100svh] flex flex-col justify-between overflow-hidden select-none px-4 sm:px-6 lg:px-12 py-6 font-sans antialiased border-b-4 border-[#D97706]"
     >
-      {/* FALLING PETALS ANIMATION */}
+      {/* FALLING PETALS ANIMATION (BEHIND MAIN CONTENT) */}
       <PetalsOverlay />
 
-      {/* POOKKALAM ON BOTH ENDS */}
-      <div className="absolute -left-20 top-1/4 pointer-events-none z-0">
-        <Pookkalam />
-      </div>
-      <div className="absolute -right-20 top-1/4 pointer-events-none z-0">
-        <Pookkalam />
+      {/* POOKKALAM IN THE EXACT CENTER */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
+        <CenterPookkalam />
       </div>
 
-      {/* GOLDEN GLOW & GRID OVERLAY */}
+      {/* GOLDEN GLOW OVERLAY */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#B453090F_1px,transparent_1px),linear-gradient(to_bottom,#B453090F_1px,transparent_1px)] bg-[size:3rem_3rem]" />
         
@@ -347,16 +365,16 @@ export default function Hero() {
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
             
-            {/* FESTIVE GOLD BADGE WITH SPARKLES */}
+            {/* FESTIVE GOLD BADGE */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-white shadow-lg border border-amber-300"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] mb-2 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-white shadow-lg border border-amber-300 z-10"
             >
               <Sparkles className="w-4 h-4 text-yellow-200 shrink-0 fill-yellow-200 animate-pulse" />
               <span>HAPPY ONAM • ISO/IEC 27001:2022 CERTIFIED</span>
             </motion.div>
 
-            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-amber-950 flex flex-col justify-center items-center">
+            <h1 className="text-[1.9rem] sm:text-[2.8rem] md:text-[3.3rem] lg:text-[3.6rem] font-black tracking-[-0.03em] leading-[1.1] text-amber-950 flex flex-col justify-center items-center z-10">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={`h1-${current}`}
@@ -390,7 +408,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-amber-900/80 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5"
+                className="text-[13px] sm:text-[15px] text-amber-900/80 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5 z-10"
               >
                 {slide.subtitle}
               </motion.p>
@@ -411,7 +429,7 @@ export default function Hero() {
               <Button
                 variant="outline"
                 onClick={() => router.push("/contact")}
-                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-amber-600 bg-white/80 text-amber-900 hover:bg-amber-100/60 hover:text-amber-950 hover:border-amber-700 shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
+                className="h-11 sm:h-10 px-6 sm:px-7 rounded-full text-[12px] font-bold border-amber-600 bg-white/90 text-amber-900 hover:bg-amber-100/60 hover:text-amber-950 hover:border-amber-700 shadow-xs transition-all duration-300 active:scale-[0.98] cursor-pointer w-full sm:w-auto"
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {slide.cta2}
@@ -421,17 +439,17 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* IMAGE CANVAS WITH SNAKE BOAT OVERLAY ON TOP */}
+          {/* IMAGE CANVAS WITH ELEVATED Z-INDEX TO KEEP SLIDES CLEAR */}
           <motion.div 
             variants={itemVariants} 
-            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2"
+            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] my-2 z-30"
           >
-            {/* SNAKE BOAT (POSITIONED ON TOP OF SLIDE IMAGES) */}
+            {/* PRETTIER SNAKE BOAT OVERLAY */}
             <motion.div 
               initial={{ x: -120, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
-              className="absolute -top-14 sm:-top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-none filter drop-shadow-xl"
+              className="absolute -top-16 sm:-top-20 left-1/2 -translate-x-1/2 z-40 pointer-events-none filter drop-shadow-2xl"
             >
               <SnakeBoat />
             </motion.div>
@@ -440,7 +458,7 @@ export default function Hero() {
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-amber-300/80 shadow-[0_25px_60px_-15px_rgba(217,119,6,0.25)] bg-amber-100 transition-all duration-300 ease-out overflow-hidden"
+              className="relative w-full h-full rounded-[24px] border-4 border-amber-300/90 shadow-[0_25px_60px_-15px_rgba(217,119,6,0.25)] bg-amber-100 transition-all duration-300 ease-out overflow-hidden z-30"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
@@ -468,9 +486,9 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* TABS NAVIGATION DOCK STRIP */}
-      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-30 pt-2">
-        <div className="bg-white/80 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(180,83,9,0.15)] border border-amber-200/80 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
+      {/* TABS NAVIGATION DOCK STRIP (HIGH Z-INDEX TO STAY UNBLURRED BY PETALS) */}
+      <div className="w-full max-w-[1000px] mx-auto shrink-0 z-40 pt-2">
+        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_5px_20px_-5px_rgba(180,83,9,0.15)] border border-amber-200 p-1.5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1">
           {slides.map((s, i) => {
             const TabIcon = getIcon(s.tabIcon);
             const isActive = current === i;
