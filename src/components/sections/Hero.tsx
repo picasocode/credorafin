@@ -31,7 +31,7 @@ const DEFAULT_SLIDES: PublicHeroSlide[] = [
   {
     id: "default-1",
     badge: "Festive Onam Offers",
-    headingWords: ["Celebrate Onam", "With MSME", "Growth"],
+    headingWords: ["Celebrate Onam", "With", "MSME Growth"],
     subtitle: "Customized collateral-free funding solutions syndicated across 70+ banking partners globally.",
     cta1: "Build Finance",
     cta2: "Contact us",
