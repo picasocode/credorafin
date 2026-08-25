@@ -155,7 +155,7 @@ const CenterPookkalam = () => (
 
 /** Authentic Kerala Chundan Vallam (Snake Boat) Vector */
 const AuthenticSnakeBoat = () => (
-  <svg viewBox="0 0 1000 140" className="w-full max-w-[850px] h-auto filter drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 1000 140" className="w-full max-w-[750px] sm:max-w-[850px] h-auto filter drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#2A1208" />
@@ -391,7 +391,7 @@ export default function Hero() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="flex flex-col items-center text-center gap-3 w-full"
+          className="flex flex-col items-center text-center gap-2 w-full"
         >
           {/* HEADER TYPOGRAPHY */}
           <div className="flex flex-col items-center max-w-3xl w-full tracking-tight shrink-0">
@@ -438,7 +438,7 @@ export default function Hero() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-[13px] sm:text-[15px] text-amber-900/80 font-medium leading-[1.5] max-w-lg mt-2 mb-3.5 z-10"
+                className="text-[13px] sm:text-[15px] text-amber-900/80 font-medium leading-[1.5] max-w-lg mt-2 mb-3 z-10"
               >
                 {slide.subtitle}
               </motion.p>
@@ -469,26 +469,26 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* SLIDE CANVAS WITH ELEVATED SNAKE BOAT OVERLAY */}
+          {/* SNAKE BOAT POSITIONED SAFELY BELOW BUTTONS AND RIDING ON THE TOP BORDER OF THE IMAGE SLIDER */}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="w-full flex justify-center z-30 -mb-5 sm:-mb-7 pointer-events-none"
+          >
+            <AuthenticSnakeBoat />
+          </motion.div>
+
+          {/* SLIDE CANVAS */}
           <motion.div 
             variants={itemVariants} 
-            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] mt-10 mb-2 z-30 flex justify-center"
+            className="relative w-full max-w-[1280px] h-[280px] sm:h-[300px] md:h-[360px] lg:h-[400px] perspective-[1200px] mb-2 z-20 flex justify-center"
           >
-            {/* POSITIONED HIGH ABOVE THE SLIDE CONTAINER */}
-            <motion.div 
-              initial={{ x: -120, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="absolute -top-28 sm:-top-36 left-1/2 -translate-x-1/2 z-40 w-full flex justify-center pointer-events-none"
-            >
-              <AuthenticSnakeBoat />
-            </motion.div>
-
             <motion.div
               style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full h-full rounded-[24px] border-4 border-amber-300/90 shadow-[0_25px_60px_-15px_rgba(217,119,6,0.25)] bg-amber-100 transition-all duration-300 ease-out overflow-hidden z-30"
+              className="relative w-full h-full rounded-[24px] border-4 border-amber-300/90 shadow-[0_25px_60px_-15px_rgba(217,119,6,0.25)] bg-amber-100 transition-all duration-300 ease-out overflow-hidden z-20"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.div
